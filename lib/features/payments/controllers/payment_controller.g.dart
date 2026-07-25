@@ -7,7 +7,7 @@ part of 'payment_controller.dart';
 // **************************************************************************
 
 String _$enrollmentPaymentsControllerHash() =>
-    r'78d25f94760dede5fac02ea33441c10975f7ca32';
+    r'e9f4fd999c92262473b3abe5f6ba96ccce6191c3';
 
 /// Copied from Dart SDK
 class _SystemHash {
