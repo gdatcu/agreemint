@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../services/app_update_service.dart';
 
 class AppShellView extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
@@ -9,7 +10,14 @@ class AppShellView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: navigationShell,
+      body: SafeArea(
+        child: Column(
+          children: [
+            const UpdateCheckBanner(),
+            Expanded(child: navigationShell),
+          ],
+        ),
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: (index) {
