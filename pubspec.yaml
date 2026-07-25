@@ -59,6 +59,16 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   build_runner: ^2.4.14
   riverpod_generator: ^2.4.4
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  web:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
+    icon_size: 512
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
