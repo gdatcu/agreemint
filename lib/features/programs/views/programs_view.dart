@@ -110,7 +110,7 @@ class ProgramsView extends ConsumerWidget {
                       ],
                       const SizedBox(height: 8),
                       Text(
-                        'Total Price: ${program.totalPrice.toStringAsFixed(2)} RON',
+                        'Total Price: ${program.totalPrice.toStringAsFixed(2)} ${program.currency}',
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
                               color: Theme.of(context).colorScheme.primary,
                               fontWeight: FontWeight.w600,
@@ -199,6 +199,7 @@ class ProgramsView extends ConsumerWidget {
         TextEditingController(text: program?.description ?? '');
     final priceController = TextEditingController(
         text: program != null ? program.totalPrice.toStringAsFixed(2) : '');
+    String selectedCurrency = program?.currency ?? 'RON';
 
     showDialog(
       context: context,
@@ -235,24 +236,51 @@ class ProgramsView extends ConsumerWidget {
                     maxLines: 3,
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: priceController,
-                    decoration: const InputDecoration(
-                      labelText: 'Total Price (RON / EUR)',
-                      hintText: 'e.g., 1500.00',
-                    ),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter a price';
-                      }
-                      final price = double.tryParse(value);
-                      if (price == null || price < 0) {
-                        return 'Please enter a valid positive number';
-                      }
-                      return null;
-                    },
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: TextFormField(
+                          controller: priceController,
+                          decoration: const InputDecoration(
+                            labelText: 'Total Price',
+                            hintText: 'e.g., 1500.00',
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Please enter a price';
+                            }
+                            final price = double.tryParse(value);
+                            if (price == null || price < 0) {
+                              return 'Please enter a valid positive number';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 1,
+                        child: DropdownButtonFormField<String>(
+                          value: selectedCurrency,
+                          decoration: const InputDecoration(
+                            labelText: 'Currency',
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 'RON', child: Text('RON')),
+                            DropdownMenuItem(value: 'EUR', child: Text('EUR')),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) {
+                              selectedCurrency = val;
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -280,6 +308,7 @@ class ProgramsView extends ConsumerWidget {
                           description:
                               description.isNotEmpty ? description : null,
                           totalPrice: price,
+                          currency: selectedCurrency,
                         );
                   } else {
                     await ref
@@ -289,6 +318,7 @@ class ProgramsView extends ConsumerWidget {
                           description:
                               description.isNotEmpty ? description : null,
                           totalPrice: price,
+                          currency: selectedCurrency,
                         );
                   }
 

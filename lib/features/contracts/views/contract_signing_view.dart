@@ -11,6 +11,7 @@ import '../../payments/controllers/payment_controller.dart';
 import '../controllers/contract_controller.dart';
 import '../models/contract_model.dart';
 import '../../../core/constants.dart';
+import '../../../core/services/frankfurter_service.dart';
 
 class ContractSigningView extends ConsumerStatefulWidget {
   final EnrollmentModel enrollment;
@@ -69,6 +70,7 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
 
   late final TextEditingController _priceRonController;
   late final TextEditingController _contractNumberController;
+  double? _liveRate;
 
   @override
   void initState() {
@@ -87,6 +89,10 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
         TextEditingController(text: initialPrice.toStringAsFixed(2));
     _contractNumberController = TextEditingController();
 
+    if (program != null && program.currency == 'EUR') {
+      _fetchLiveRateAndConvert(program.totalPrice);
+    }
+
     final techCurriculum = (program?.description != null &&
             program!.description!.trim().isNotEmpty)
         ? program.description!.trim()
@@ -94,6 +100,17 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
             ? program.name
             : 'QA Automation (TS + Playwright)';
     _technologiesController = TextEditingController(text: techCurriculum);
+  }
+
+  void _fetchLiveRateAndConvert(double eurPrice) async {
+    final rate = await FrankfurterService.getEurToRonRate();
+    if (mounted) {
+      setState(() {
+        _liveRate = rate;
+        final convertedRon = eurPrice * rate;
+        _priceRonController.text = convertedRon.toStringAsFixed(2);
+      });
+    }
   }
 
   @override
@@ -808,6 +825,34 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
                 ),
           ),
           const SizedBox(height: 12),
+          if (program?.currency == 'EUR') ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.currency_exchange, color: Colors.blueAccent),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _liveRate != null
+                          ? 'Frankfurter API Exchange Rate: 1 EUR = ${_liveRate!.toStringAsFixed(4)} RON\nProgram Price: ${program!.totalPrice.toStringAsFixed(2)} EUR → Auto-converted to RON for Legal Contract.'
+                          : 'Fetching live EUR → RON exchange rate from Frankfurter API...',
+                      style: const TextStyle(
+                          color: Colors.black87,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           Row(
             children: [
               Expanded(

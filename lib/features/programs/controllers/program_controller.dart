@@ -17,6 +17,7 @@ class ProgramController extends _$ProgramController {
     required String name,
     String? description,
     required double totalPrice,
+    String currency = 'RON',
   }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
@@ -25,6 +26,7 @@ class ProgramController extends _$ProgramController {
         name: name,
         description: description,
         totalPrice: totalPrice,
+        currency: currency,
       );
       return repository.fetchPrograms();
     });
@@ -36,6 +38,7 @@ class ProgramController extends _$ProgramController {
     required String name,
     String? description,
     required double totalPrice,
+    String currency = 'RON',
   }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
@@ -45,6 +48,7 @@ class ProgramController extends _$ProgramController {
         name: name,
         description: description,
         totalPrice: totalPrice,
+        currency: currency,
       );
       return repository.fetchPrograms();
     });

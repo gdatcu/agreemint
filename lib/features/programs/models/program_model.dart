@@ -3,6 +3,7 @@ class ProgramModel {
   final String name;
   final String? description;
   final double totalPrice;
+  final String currency;
   final DateTime? createdAt;
 
   const ProgramModel({
@@ -10,6 +11,7 @@ class ProgramModel {
     required this.name,
     this.description,
     required this.totalPrice,
+    this.currency = 'RON',
     this.createdAt,
   });
 
@@ -20,6 +22,7 @@ class ProgramModel {
       name: json['name'] as String? ?? '',
       description: json['description'] as String?,
       totalPrice: (json['total_price'] as num?)?.toDouble() ?? 0.0,
+      currency: json['currency'] as String? ?? 'RON',
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'] as String)
           : null,
@@ -33,6 +36,7 @@ class ProgramModel {
       'name': name,
       'description': description,
       'total_price': totalPrice,
+      'currency': currency,
       if (createdAt != null) 'created_at': createdAt?.toIso8601String(),
     };
   }

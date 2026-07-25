@@ -48,6 +48,7 @@ class ProgramRepository {
     required String name,
     String? description,
     required double totalPrice,
+    String currency = 'RON',
   }) async {
     try {
       final response = await _client
@@ -56,6 +57,7 @@ class ProgramRepository {
             'name': name,
             'description': description,
             'total_price': totalPrice,
+            'currency': currency,
           })
           .select()
           .single();
@@ -72,6 +74,7 @@ class ProgramRepository {
     required String name,
     String? description,
     required double totalPrice,
+    String currency = 'RON',
   }) async {
     try {
       final response = await _client
@@ -80,6 +83,7 @@ class ProgramRepository {
             'name': name,
             'description': description,
             'total_price': totalPrice,
+            'currency': currency,
           })
           .eq('id', id)
           .select()
