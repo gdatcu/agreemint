@@ -55,8 +55,7 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
   final _prestatorBancaController = TextEditingController(text: 'Salt Bank');
 
   // Expanded bilingual contract parameters controllers
-  final _technologiesController =
-      TextEditingController(text: 'QA Automation (TS + Playwrite)');
+  late final TextEditingController _technologiesController;
   final _beneficiaryEntityController =
       TextEditingController(text: 'QualiAdept Community');
   final _serviceDescriptionController = TextEditingController(
@@ -79,9 +78,19 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
     );
     _dataIncepereController.text =
         DateTime.now().toIso8601String().split('T')[0];
-    final initialPrice = widget.enrollment.program?.totalPrice ?? 1000.00;
+
+    final program = widget.enrollment.program;
+    final initialPrice = program?.totalPrice ?? 1000.00;
     _priceRonController =
         TextEditingController(text: initialPrice.toStringAsFixed(2));
+
+    final techCurriculum = (program?.description != null &&
+            program!.description!.trim().isNotEmpty)
+        ? program.description!.trim()
+        : (program?.name != null && program!.name.isNotEmpty)
+            ? program.name
+            : 'QA Automation (TS + Playwright)';
+    _technologiesController = TextEditingController(text: techCurriculum);
   }
 
   @override
