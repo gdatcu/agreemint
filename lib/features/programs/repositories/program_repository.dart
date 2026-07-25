@@ -126,12 +126,16 @@ class ProgramRepository {
       } catch (_) {}
 
       // Fetch enrollments
+      final studentIdsToCheck = <String>{};
       final enrRes =
           await _client.from('enrollments').select().eq('program_id', programId);
       if (enrRes is List) {
         for (final enrItem in enrRes) {
           final enr = Map<String, dynamic>.from(enrItem as Map);
           final enrollmentId = enr['id'] as String;
+          if (enr['student_id'] != null) {
+            studentIdsToCheck.add(enr['student_id'] as String);
+          }
 
           // Fetch and Archive Student Profile
           try {
@@ -213,17 +217,6 @@ class ProgramRepository {
         }
       }
     } catch (_) {}
-
-    // Collect student IDs involved in this program before deleting
-    final studentIdsToCheck = <String>{};
-    if (enrRes is List) {
-      for (final enrItem in enrRes) {
-        final enr = Map<String, dynamic>.from(enrItem as Map);
-        if (enr['student_id'] != null) {
-          studentIdsToCheck.add(enr['student_id'] as String);
-        }
-      }
-    }
 
     // Delete active program (cascades active enrollments/contracts/payments)
     await _client.from('programs').delete().eq('id', programId);
