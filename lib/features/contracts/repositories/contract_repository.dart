@@ -100,21 +100,14 @@ class ContractRepository {
         }
       } else {
         try {
-          final maxRes = await _client
-              .from('contracts')
-              .select('contract_number')
-              .order('contract_number', ascending: false)
-              .limit(1)
-              .maybeSingle();
-
-          if (maxRes != null && maxRes['contract_number'] != null) {
-            final maxNum = maxRes['contract_number'] as int;
-            numberToUse = maxNum + 1;
+          final nextVal = await _client.rpc('get_next_contract_number');
+          if (nextVal is int && nextVal > 0) {
+            numberToUse = nextVal;
           } else {
-            numberToUse = 1;
+            numberToUse = await _getFallbackNextNumber();
           }
         } catch (_) {
-          numberToUse = 1;
+          numberToUse = await _getFallbackNextNumber();
         }
       }
 
@@ -137,6 +130,22 @@ class ContractRepository {
     } catch (e) {
       throw Exception('Failed to create contract placeholder: $e');
     }
+  }
+
+  Future<int> _getFallbackNextNumber() async {
+    try {
+      final res = await _client
+          .from('contracts')
+          .select('contract_number')
+          .order('created_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
+
+      if (res != null && res['contract_number'] != null) {
+        return (res['contract_number'] as int) + 1;
+      }
+    } catch (_) {}
+    return 1;
   }
 
   /// Uploads PDF bytes to storage and updates the database row with the PDF URL.
