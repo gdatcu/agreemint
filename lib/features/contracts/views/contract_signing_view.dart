@@ -370,7 +370,7 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
                       title: Text(program.name,
                           style: const TextStyle(fontWeight: FontWeight.bold)),
                       subtitle: Text(
-                          'Mentorship Price: ${program.totalPrice.toStringAsFixed(2)} RON'),
+                          'Mentorship Price: ${(_priceRonController.text.isNotEmpty ? (double.tryParse(_priceRonController.text) ?? program.totalPrice) : program.totalPrice).toStringAsFixed(2)} RON'),
                       leading: const Icon(Icons.school),
                     ),
                   ),
