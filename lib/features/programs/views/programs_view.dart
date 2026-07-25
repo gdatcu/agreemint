@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../controllers/program_controller.dart';
+import '../models/program_model.dart';
 
 class ProgramsView extends ConsumerWidget {
   const ProgramsView({super.key});
@@ -110,9 +111,29 @@ class ProgramsView extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  trailing: Icon(
-                    Icons.chevron_right,
-                    color: Theme.of(context).colorScheme.outline,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined),
+                        tooltip: 'Edit Program',
+                        onPressed: () {
+                          _showProgramFormDialog(context, ref, program: program);
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                        tooltip: 'Delete Program',
+                        onPressed: () {
+                          _showDeleteConfirmDialog(context, ref, program);
+                        },
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.chevron_right,
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -155,25 +176,29 @@ class ProgramsView extends ConsumerWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showCreateProgramDialog(context, ref),
+        onPressed: () => _showProgramFormDialog(context, ref),
         tooltip: 'Launch New Program',
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  void _showCreateProgramDialog(BuildContext context, WidgetRef ref) {
+  void _showProgramFormDialog(BuildContext context, WidgetRef ref,
+      {ProgramModel? program}) {
+    final isEditing = program != null;
     final formKey = GlobalKey<FormState>();
-    final nameController = TextEditingController();
-    final descriptionController = TextEditingController();
-    final priceController = TextEditingController();
+    final nameController = TextEditingController(text: program?.name ?? '');
+    final descriptionController =
+        TextEditingController(text: program?.description ?? '');
+    final priceController = TextEditingController(
+        text: program != null ? program.totalPrice.toStringAsFixed(2) : '');
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Launch New Program'),
+          title: Text(isEditing ? 'Edit Program Details' : 'Launch New Program'),
           content: SingleChildScrollView(
             child: Form(
               key: formKey,
@@ -239,19 +264,66 @@ class ProgramsView extends ConsumerWidget {
                   final description = descriptionController.text.trim();
                   final price = double.parse(priceController.text.trim());
 
-                  // Call the notifier to add the program
-                  await ref.read(programControllerProvider.notifier).addProgram(
-                        name: name,
-                        description:
-                            description.isNotEmpty ? description : null,
-                        totalPrice: price,
-                      );
+                  if (isEditing) {
+                    await ref
+                        .read(programControllerProvider.notifier)
+                        .updateProgram(
+                          id: program.id,
+                          name: name,
+                          description:
+                              description.isNotEmpty ? description : null,
+                          totalPrice: price,
+                        );
+                  } else {
+                    await ref
+                        .read(programControllerProvider.notifier)
+                        .addProgram(
+                          name: name,
+                          description:
+                              description.isNotEmpty ? description : null,
+                          totalPrice: price,
+                        );
+                  }
 
-                  // Pop the dialog
                   navigator.pop();
                 }
               },
-              child: const Text('Create'),
+              child: Text(isEditing ? 'Save Changes' : 'Create'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDeleteConfirmDialog(
+      BuildContext context, WidgetRef ref, ProgramModel program) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete Program?'),
+          content: Text(
+            'Are you sure you want to delete "${program.name}"?\nThis will remove all associated student enrollments and contracts.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                final navigator = Navigator.of(context);
+                await ref
+                    .read(programControllerProvider.notifier)
+                    .deleteProgram(program.id);
+                navigator.pop();
+              },
+              child: const Text('Delete'),
             ),
           ],
         );

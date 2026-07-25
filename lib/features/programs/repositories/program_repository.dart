@@ -65,6 +65,40 @@ class ProgramRepository {
       throw Exception('Failed to create program: $e');
     }
   }
+
+  /// Updates an existing program in the database.
+  Future<ProgramModel> updateProgram({
+    required String id,
+    required String name,
+    String? description,
+    required double totalPrice,
+  }) async {
+    try {
+      final response = await _client
+          .from('programs')
+          .update({
+            'name': name,
+            'description': description,
+            'total_price': totalPrice,
+          })
+          .eq('id', id)
+          .select()
+          .single();
+
+      return ProgramModel.fromJson(response);
+    } catch (e) {
+      throw Exception('Failed to update program: $e');
+    }
+  }
+
+  /// Deletes a program from the database by its ID.
+  Future<void> deleteProgram(String id) async {
+    try {
+      await _client.from('programs').delete().eq('id', id);
+    } catch (e) {
+      throw Exception('Failed to delete program: $e');
+    }
+  }
 }
 
 @riverpod

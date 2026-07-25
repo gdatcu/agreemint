@@ -29,6 +29,36 @@ class ProgramController extends _$ProgramController {
       return repository.fetchPrograms();
     });
   }
+
+  /// Updates an existing program, setting loading state and refreshing list.
+  Future<void> updateProgram({
+    required String id,
+    required String name,
+    String? description,
+    required double totalPrice,
+  }) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(programRepositoryProvider);
+      await repository.updateProgram(
+        id: id,
+        name: name,
+        description: description,
+        totalPrice: totalPrice,
+      );
+      return repository.fetchPrograms();
+    });
+  }
+
+  /// Deletes a program by ID, setting loading state and refreshing list.
+  Future<void> deleteProgram(String id) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(programRepositoryProvider);
+      await repository.deleteProgram(id);
+      return repository.fetchPrograms();
+    });
+  }
 }
 
 /// Fetches a single program by ID. Used by the router when navigating

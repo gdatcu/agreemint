@@ -164,7 +164,7 @@ class _ProgramByIdProviderElement
   String get programId => (origin as ProgramByIdProvider).programId;
 }
 
-String _$programControllerHash() => r'416af1f2949637b59b85ead98b2bc01bb5053c72';
+String _$programControllerHash() => r'744cab358facd14eaa28f87ac9f437860e153790';
 
 /// See also [ProgramController].
 @ProviderFor(ProgramController)
