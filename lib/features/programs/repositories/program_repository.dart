@@ -133,6 +133,26 @@ class ProgramRepository {
           final enr = Map<String, dynamic>.from(enrItem as Map);
           final enrollmentId = enr['id'] as String;
 
+          // Fetch and Archive Student Profile
+          try {
+            final studentId = enr['student_id'] as String;
+            final studentRes = await _client
+                .from('students')
+                .select()
+                .eq('id', studentId)
+                .maybeSingle();
+            if (studentRes != null) {
+              final s = Map<String, dynamic>.from(studentRes);
+              await _client.from('student_history').insert({
+                'id': s['id'],
+                'name': s['name'],
+                'email': s['email'],
+                'phone': s['phone'],
+                'created_at': s['created_at'],
+              });
+            }
+          } catch (_) {}
+
           // Archive Enrollment
           try {
             await _client.from('enrollment_history').insert({
