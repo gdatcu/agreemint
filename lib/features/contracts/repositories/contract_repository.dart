@@ -82,19 +82,47 @@ class ContractRepository {
     }
   }
 
-  /// Creates a database row first to reserve the auto-incremented or custom contract number.
+  /// Creates a database row reserving a custom or dynamically sequence-incremented contract number.
   Future<ContractModel> createContractPlaceholder({
     required String enrollmentId,
     int? customContractNumber,
+    bool updateSequenceBase = true,
   }) async {
     try {
+      int numberToUse;
+      if (customContractNumber != null && customContractNumber > 0) {
+        numberToUse = customContractNumber;
+        if (updateSequenceBase) {
+          try {
+            await _client.rpc('set_contract_sequence',
+                params: {'new_val': customContractNumber});
+          } catch (_) {}
+        }
+      } else {
+        try {
+          final maxRes = await _client
+              .from('contracts')
+              .select('contract_number')
+              .order('created_at', ascending: false)
+              .limit(1)
+              .maybeSingle();
+
+          if (maxRes != null && maxRes['contract_number'] != null) {
+            final maxNum = maxRes['contract_number'] as int;
+            numberToUse = maxNum + 1;
+          } else {
+            numberToUse = 1;
+          }
+        } catch (_) {
+          numberToUse = 1;
+        }
+      }
+
       final Map<String, dynamic> insertData = {
         'enrollment_id': enrollmentId,
+        'contract_number': numberToUse,
         'signed_date': DateTime.now().toIso8601String(),
       };
-      if (customContractNumber != null) {
-        insertData['contract_number'] = customContractNumber;
-      }
 
       final response = await _client
           .from('contracts')

@@ -7,7 +7,7 @@ part of 'contract_controller.dart';
 // **************************************************************************
 
 String _$enrollmentContractControllerHash() =>
-    r'b929f72c6aa3421f05350687b83afa7d5867da00';
+    r'1001ebdfb733d5f91481f53ac2e2f5d9b91b8c8d';
 
 /// Copied from Dart SDK
 class _SystemHash {

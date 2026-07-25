@@ -50,6 +50,7 @@ class EnrollmentContractController extends _$EnrollmentContractController {
     String? paymentTerm,
     String? refundDeadline,
     int? customContractNumber,
+    bool updateSequenceBase = true,
     required Uint8List signatureBytes,
   }) async {
     state = const AsyncValue.loading();
@@ -60,6 +61,7 @@ class EnrollmentContractController extends _$EnrollmentContractController {
       final placeholder = await repository.createContractPlaceholder(
         enrollmentId: enrollmentId,
         customContractNumber: customContractNumber,
+        updateSequenceBase: updateSequenceBase,
       );
 
       // 2. Generate PDF with mentor signature and contract details

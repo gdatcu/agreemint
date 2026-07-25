@@ -204,6 +204,14 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
       return;
     }
 
+    bool updateSequenceBase = true;
+    final customNum = int.tryParse(_contractNumberController.text.trim());
+    if (customNum != null && customNum > 0) {
+      final choice = await _showSequenceOptionDialog(context, customNum);
+      if (choice == null) return; // User dismissed
+      updateSequenceBase = choice;
+    }
+
     setState(() {
       _isGenerating = true;
     });
@@ -246,7 +254,8 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
         serviceDescription: _serviceDescriptionController.text.trim(),
         paymentTerm: _paymentTermController.text.trim(),
         refundDeadline: _refundDeadlineController.text.trim(),
-        customContractNumber: int.tryParse(_contractNumberController.text.trim()),
+        customContractNumber: customNum,
+        updateSequenceBase: updateSequenceBase,
         signatureBytes: pngBytes,
       );
 
@@ -1081,6 +1090,45 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
           const SizedBox(height: 40),
         ],
       ),
+    );
+  }
+
+  Future<bool?> _showSequenceOptionDialog(
+      BuildContext context, int customNum) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.format_list_numbered, color: Colors.blueAccent),
+              SizedBox(width: 8),
+              Text('Contract Sequence Preference'),
+            ],
+          ),
+          content: Text(
+            'You specified a custom contract number: #$customNum.\n\n'
+            'How should future contracts be numbered?',
+          ),
+          actions: [
+            OutlinedButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text(
+                'One-off Record Only\n(Keep previous sequence)',
+                textAlign: TextAlign.center,
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(
+                'Set as New Sequence Base\n(Continue: ${customNum + 1}, ${customNum + 2}...)',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
