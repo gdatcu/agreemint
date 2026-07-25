@@ -56,7 +56,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy Web Build via SFTP to Server
-        if: ${{ secrets.SERVER_HOST != '' }}
         uses: wlixcc/SFTP-Deploy-Action@v1.2.4
         with:
           username: ${{ secrets.SERVER_USER }}
