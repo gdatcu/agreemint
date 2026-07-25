@@ -111,11 +111,14 @@ class ContractRepository {
         }
       }
 
+      final bool isOneOff = (customContractNumber != null && customContractNumber > 0 && !updateSequenceBase);
+
       final Map<String, dynamic> insertData = {
         'enrollment_id': enrollmentId,
         'contract_number': numberToUse,
         'signed_date': DateTime.now().toIso8601String(),
         'created_at': DateTime.now().toIso8601String(),
+        'is_custom': isOneOff,
       };
 
       final response = await _client
@@ -137,6 +140,7 @@ class ContractRepository {
       final res = await _client
           .from('contracts')
           .select('contract_number')
+          .or('is_custom.eq.false,is_custom.is.null')
           .order('created_at', ascending: false)
           .limit(1)
           .maybeSingle();
