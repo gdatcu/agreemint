@@ -110,7 +110,7 @@ class ProgramsView extends ConsumerWidget {
                       ],
                       const SizedBox(height: 8),
                       Text(
-                        'Total Price: \$${program.totalPrice.toStringAsFixed(2)}',
+                        'Total Price: ${program.totalPrice.toStringAsFixed(2)} RON',
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
                               color: Theme.of(context).colorScheme.primary,
                               fontWeight: FontWeight.w600,
@@ -238,7 +238,7 @@ class ProgramsView extends ConsumerWidget {
                   TextFormField(
                     controller: priceController,
                     decoration: const InputDecoration(
-                      labelText: 'Total Price (\$)',
+                      labelText: 'Total Price (RON / EUR)',
                       hintText: 'e.g., 1500.00',
                     ),
                     keyboardType:
