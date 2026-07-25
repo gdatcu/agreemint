@@ -99,6 +99,57 @@ class PaymentRepository {
       throw Exception('Failed to record payment: $e');
     }
   }
+
+  /// Updates an existing payment installment record with full field flexibility.
+  Future<void> updatePaymentRecord({
+    required String paymentId,
+    required double amountDue,
+    required double amountPaid,
+    required String status,
+    required String paymentMethod,
+  }) async {
+    try {
+      await _client.from('payments').update({
+        'amount_due': amountDue,
+        'amount_paid': amountPaid,
+        'status': status,
+        'payment_method': paymentMethod,
+      }).eq('id', paymentId);
+    } catch (e) {
+      throw Exception('Failed to update payment record: $e');
+    }
+  }
+
+  /// Adds an additional custom installment record for an enrollment.
+  Future<void> addInstallment({
+    required String enrollmentId,
+    required double amountDue,
+    required DateTime dueDate,
+    String status = 'Pending',
+    String? paymentMethod,
+  }) async {
+    try {
+      await _client.from('payments').insert({
+        'enrollment_id': enrollmentId,
+        'amount_due': amountDue,
+        'amount_paid': 0.0,
+        'due_date': dueDate.toIso8601String().split('T')[0],
+        'status': status,
+        'payment_method': paymentMethod,
+      });
+    } catch (e) {
+      throw Exception('Failed to add installment: $e');
+    }
+  }
+
+  /// Deletes an installment record.
+  Future<void> deleteInstallment(String paymentId) async {
+    try {
+      await _client.from('payments').delete().eq('id', paymentId);
+    } catch (e) {
+      throw Exception('Failed to delete installment: $e');
+    }
+  }
 }
 
 @riverpod

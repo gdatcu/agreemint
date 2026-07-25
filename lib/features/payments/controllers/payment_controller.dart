@@ -57,6 +57,37 @@ class EnrollmentPaymentsController extends _$EnrollmentPaymentsController {
       return repository.fetchPaymentsForEnrollment(enrollmentId);
     });
   }
+
+  /// Adds an extra custom installment record.
+  Future<void> addExtraInstallment({
+    required double amountDue,
+    required DateTime dueDate,
+    String? paymentMethod,
+  }) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(paymentRepositoryProvider);
+      await repository.addInstallment(
+        enrollmentId: enrollmentId,
+        amountDue: amountDue,
+        dueDate: dueDate,
+        paymentMethod: paymentMethod,
+      );
+      ref.invalidate(globalPendingPaymentsControllerProvider);
+      return repository.fetchPaymentsForEnrollment(enrollmentId);
+    });
+  }
+
+  /// Deletes an installment record.
+  Future<void> deleteInstallment(String paymentId) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(paymentRepositoryProvider);
+      await repository.deleteInstallment(paymentId);
+      ref.invalidate(globalPendingPaymentsControllerProvider);
+      return repository.fetchPaymentsForEnrollment(enrollmentId);
+    });
+  }
 }
 
 @riverpod

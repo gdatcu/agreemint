@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../students/models/enrollment_model.dart';
 import '../controllers/payment_controller.dart';
 import '../models/payment_model.dart';
+import '../repositories/payment_repository.dart';
 import '../../../core/services/frankfurter_service.dart';
 
 class PaymentTrackerView extends ConsumerStatefulWidget {
@@ -84,6 +85,13 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
       appBar: AppBar(
         title:
             Text(student != null ? '${student.name} - Payments' : 'Payments'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_card),
+            tooltip: 'Add Installment',
+            onPressed: () => _showAddInstallmentDialog(context, ref),
+          ),
+        ],
       ),
       body: paymentsState.when(
         data: (payments) {
@@ -101,12 +109,12 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'No Payment Plan Generated',
+                      'No Payment Schedule',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Generate a payment schedule for the mentorship fee.',
+                      'Generate a payment schedule or add custom installments for the mentorship fee.',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color:
@@ -114,10 +122,21 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                           ),
                     ),
                     const SizedBox(height: 24),
-                    ElevatedButton.icon(
-                      onPressed: () => _showGeneratePlanDialog(context, ref),
-                      icon: const Icon(Icons.playlist_add),
-                      label: const Text('Generate Payment Plan'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () => _showGeneratePlanDialog(context, ref),
+                          icon: const Icon(Icons.playlist_add),
+                          label: const Text('Generate Plan'),
+                        ),
+                        const SizedBox(width: 12),
+                        OutlinedButton.icon(
+                          onPressed: () => _showAddInstallmentDialog(context, ref),
+                          icon: const Icon(Icons.add),
+                          label: const Text('Add Single Installment'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -130,6 +149,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
               payments.fold<double>(0, (sum, p) => sum + p.amountDue);
           final totalPaid =
               payments.fold<double>(0, (sum, p) => sum + p.amountPaid);
+          final remaining = (totalDue - totalPaid) > 0 ? (totalDue - totalPaid) : 0.0;
 
           return Column(
             children: [
@@ -185,7 +205,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                             Text(
                               _formatAmount(totalDue, currency),
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context)
                                     .colorScheme
@@ -209,7 +229,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                             Text(
                               _formatAmount(totalPaid, currency),
                               style: const TextStyle(
-                                fontSize: 16,
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.green,
                               ),
@@ -229,13 +249,11 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                 style: TextStyle(fontSize: 12)),
                             const SizedBox(height: 4),
                             Text(
-                              _formatAmount(totalDue - totalPaid, currency),
+                              _formatAmount(remaining, currency),
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
-                                color: (totalDue - totalPaid) > 0
-                                    ? Colors.red
-                                    : Colors.green,
+                                color: remaining > 0 ? Colors.red : Colors.green,
                               ),
                             ),
                           ],
@@ -243,6 +261,25 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                       ],
                     ),
                   ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Payment Schedule (${payments.length})',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    TextButton.icon(
+                      onPressed: () => _showAddInstallmentDialog(context, ref),
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text('Add Installment'),
+                    ),
+                  ],
                 ),
               ),
               Expanded(
@@ -253,6 +290,10 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                     final payment = payments[index];
                     final dateStr =
                         payment.dueDate.toLocal().toString().split(' ')[0];
+
+                    // Determine effective display status
+                    final isFullyPaid = payment.amountPaid >= payment.amountDue && payment.amountDue > 0;
+                    final displayStatus = isFullyPaid ? 'Paid' : payment.status;
 
                     return Card(
                       elevation: 1,
@@ -281,16 +322,16 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: _getStatusColor(payment.status)
+                                color: _getStatusColor(displayStatus)
                                     .withAlpha(25),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                payment.status,
+                                displayStatus,
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: _getStatusColor(payment.status),
+                                  color: _getStatusColor(displayStatus),
                                 ),
                               ),
                             ),
@@ -338,10 +379,26 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                             ],
                           ],
                         ),
-                        onTap: payment.status != 'Paid'
-                            ? () =>
-                                _showRecordPaymentDialog(context, ref, payment)
-                            : null,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined, size: 20),
+                              tooltip: 'Edit / Record Payment',
+                              onPressed: () =>
+                                  _showRecordPaymentDialog(context, ref, payment),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline,
+                                  size: 20, color: Colors.redAccent),
+                              tooltip: 'Delete Installment',
+                              onPressed: () =>
+                                  _showDeleteInstallmentDialog(context, ref, payment),
+                            ),
+                          ],
+                        ),
+                        onTap: () =>
+                            _showRecordPaymentDialog(context, ref, payment),
                       ),
                     );
                   },
@@ -438,25 +495,22 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
     );
   }
 
-  void _showRecordPaymentDialog(
-      BuildContext context, WidgetRef ref, PaymentModel payment) {
+  void _showAddInstallmentDialog(BuildContext context, WidgetRef ref) {
     final currency = widget.enrollment.program?.currency ?? 'RON';
     final formKey = GlobalKey<FormState>();
-    final remainingBalance = payment.amountDue - payment.amountPaid;
-    final amountController = TextEditingController(
-        text: remainingBalance.toString());
+    final amountController = TextEditingController();
     String selectedMethod = 'Cash';
-    String selectedStatus = 'Paid';
+    DateTime selectedDate = DateTime.now().add(const Duration(days: 30));
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Record Payment'),
-          content: StatefulBuilder(
-            builder: (context, setState) {
-              return Form(
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Add Custom Installment'),
+              content: Form(
                 key: formKey,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -464,21 +518,18 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                     TextFormField(
                       controller: amountController,
                       decoration: InputDecoration(
-                        labelText: 'Amount Received ($currency)',
-                        hintText: 'e.g., 500.00',
+                        labelText: 'Amount Due ($currency)',
+                        hintText: 'e.g., 250.00',
                       ),
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter amount';
+                      keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true),
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) {
+                          return 'Please enter amount due';
                         }
-                        final amount = double.tryParse(value);
+                        final amount = double.tryParse(val.trim());
                         if (amount == null || amount <= 0) {
-                          return 'Please enter a valid amount greater than 0';
-                        }
-                        if (amount > remainingBalance) {
-                          return 'Amount cannot exceed remaining balance';
+                          return 'Please enter a valid positive amount';
                         }
                         return null;
                       },
@@ -503,25 +554,205 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      value: selectedStatus,
-                      decoration:
-                          const InputDecoration(labelText: 'Payment Status'),
-                      items: ['Paid', 'Partial'].map((status) {
-                        return DropdownMenuItem(
-                          value: status,
-                          child: Text(status),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Due Date',
+                          style: TextStyle(fontSize: 14)),
+                      subtitle: Text(
+                          selectedDate.toIso8601String().split('T')[0]),
+                      trailing: const Icon(Icons.calendar_today),
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: selectedDate,
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime(2035),
                         );
-                      }).toList(),
-                      onChanged: (val) {
-                        if (val != null) {
+                        if (picked != null) {
                           setState(() {
-                            selectedStatus = val;
+                            selectedDate = picked;
                           });
                         }
                       },
                     ),
                   ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (formKey.currentState?.validate() ?? false) {
+                      final navigator = Navigator.of(context);
+                      final amountDue =
+                          double.parse(amountController.text.trim());
+
+                      await ref
+                          .read(enrollmentPaymentsControllerProvider(
+                                  widget.enrollment.id)
+                              .notifier)
+                          .addExtraInstallment(
+                            amountDue: amountDue,
+                            dueDate: selectedDate,
+                            paymentMethod: selectedMethod,
+                          );
+
+                      navigator.pop();
+                    }
+                  },
+                  child: const Text('Add Installment'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showRecordPaymentDialog(
+      BuildContext context, WidgetRef ref, PaymentModel payment) {
+    final currency = widget.enrollment.program?.currency ?? 'RON';
+    final formKey = GlobalKey<FormState>();
+
+    final amountDueController =
+        TextEditingController(text: payment.amountDue.toStringAsFixed(2));
+    final amountPaidController =
+        TextEditingController(text: payment.amountPaid.toStringAsFixed(2));
+    String selectedMethod = payment.paymentMethod ?? 'Cash';
+
+    // Auto-calculate initial status
+    String selectedStatus = (payment.amountPaid >= payment.amountDue && payment.amountDue > 0)
+        ? 'Paid'
+        : (payment.status.isNotEmpty ? payment.status : 'Pending');
+
+    bool createFollowUp = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(payment.status == 'Paid' ? 'Edit Payment Record' : 'Record / Edit Payment'),
+          content: StatefulBuilder(
+            builder: (context, setState) {
+              final due = double.tryParse(amountDueController.text.trim()) ?? payment.amountDue;
+              final paid = double.tryParse(amountPaidController.text.trim()) ?? payment.amountPaid;
+              final remainingForThis = (due - paid) > 0 ? (due - paid) : 0.0;
+              final isFullCoverage = paid >= due && due > 0;
+
+              if (isFullCoverage && selectedStatus != 'Paid') {
+                selectedStatus = 'Paid';
+              }
+
+              return SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        controller: amountDueController,
+                        decoration: InputDecoration(
+                          labelText: 'Amount Due ($currency)',
+                          hintText: 'e.g., 50.00',
+                        ),
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        onChanged: (_) => setState(() {}),
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) return 'Enter amount due';
+                          final d = double.tryParse(val.trim());
+                          if (d == null || d <= 0) return 'Enter valid positive number';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: amountPaidController,
+                        decoration: InputDecoration(
+                          labelText: 'Amount Paid ($currency)',
+                          hintText: 'e.g., 50.00',
+                        ),
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        onChanged: (_) => setState(() {}),
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) return 'Enter amount paid';
+                          final p = double.tryParse(val.trim());
+                          if (p == null || p < 0) return 'Enter valid non-negative number';
+                          if (p > due) return 'Amount paid cannot exceed amount due';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: selectedStatus,
+                        decoration: const InputDecoration(labelText: 'Payment Status'),
+                        items: ['Paid', 'Partial', 'Pending'].map((status) {
+                          return DropdownMenuItem(
+                            value: status,
+                            child: Text(status),
+                          );
+                        }).toList(),
+                        onChanged: isFullCoverage
+                            ? null // Lock to Paid if full amount is covered!
+                            : (val) {
+                                if (val != null) {
+                                  setState(() {
+                                    selectedStatus = val;
+                                  });
+                                }
+                              },
+                      ),
+                      if (isFullCoverage)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 4),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              '✓ Full amount covered → Status automatically set to Paid',
+                              style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: selectedMethod,
+                        decoration: const InputDecoration(labelText: 'Payment Method'),
+                        items: ['Cash', 'Bank Transfer', 'Card'].map((method) {
+                          return DropdownMenuItem(
+                            value: method,
+                            child: Text(method),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) {
+                            setState(() {
+                              selectedMethod = val;
+                            });
+                          }
+                        },
+                      ),
+                      if (!isFullCoverage && remainingForThis > 0) ...[
+                        const SizedBox(height: 12),
+                        CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(
+                            'Create new installment for remaining balance (${_formatAmount(remainingForThis, currency)})',
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                          ),
+                          value: createFollowUp,
+                          onChanged: (val) {
+                            setState(() {
+                              createFollowUp = val ?? false;
+                            });
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               );
             },
@@ -535,27 +766,45 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
               onPressed: () async {
                 if (formKey.currentState?.validate() ?? false) {
                   final navigator = Navigator.of(context);
-                  final enteredAmount =
-                      double.parse(amountController.text.trim());
+                  final newDue = double.parse(amountDueController.text.trim());
+                  final newPaid = double.parse(amountPaidController.text.trim());
+                  final isFullyCovered = newPaid >= newDue && newDue > 0;
+                  final finalStatus = isFullyCovered ? 'Paid' : selectedStatus;
 
-                  // Calculate new amountPaid
-                  final newAmountPaid = payment.amountPaid + enteredAmount;
-
+                  // Save current installment update
                   await ref
-                      .read(enrollmentPaymentsControllerProvider(widget.enrollment.id)
-                          .notifier)
-                      .logPayment(
+                      .read(paymentRepositoryProvider)
+                      .updatePaymentRecord(
                         paymentId: payment.id,
-                        amountPaid: newAmountPaid,
-                        status: selectedStatus,
+                        amountDue: newDue,
+                        amountPaid: newPaid,
+                        status: finalStatus,
                         paymentMethod: selectedMethod,
                       );
 
-                  // Show success snackbar
+                  // If user selected to create a follow-up installment for the difference
+                  if (!isFullyCovered && createFollowUp && (newDue - newPaid) > 0) {
+                    final diff = newDue - newPaid;
+                    final nextDueDate = payment.dueDate.add(const Duration(days: 14));
+                    await ref
+                        .read(paymentRepositoryProvider)
+                        .addInstallment(
+                          enrollmentId: widget.enrollment.id,
+                          amountDue: diff,
+                          dueDate: nextDueDate,
+                          paymentMethod: selectedMethod,
+                        );
+                  }
+
+                  // Refresh controllers
+                  ref.invalidate(
+                      enrollmentPaymentsControllerProvider(widget.enrollment.id));
+                  ref.invalidate(globalPendingPaymentsControllerProvider);
+
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Payment logged successfully!'),
+                        content: Text('Payment record updated successfully!'),
                         backgroundColor: Colors.green,
                       ),
                     );
@@ -564,7 +813,47 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                   navigator.pop();
                 }
               },
-              child: const Text('Record'),
+              child: const Text('Save Record'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDeleteInstallmentDialog(
+      BuildContext context, WidgetRef ref, PaymentModel payment) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete Installment'),
+          content: const Text('Are you sure you want to delete this payment installment?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+              onPressed: () async {
+                final navigator = Navigator.of(context);
+                await ref
+                    .read(enrollmentPaymentsControllerProvider(widget.enrollment.id)
+                        .notifier)
+                    .deleteInstallment(payment.id);
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Installment deleted.'),
+                    ),
+                  );
+                }
+
+                navigator.pop();
+              },
+              child: const Text('Delete', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
