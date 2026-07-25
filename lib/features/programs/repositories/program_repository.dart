@@ -108,6 +108,7 @@ class ProgramRepository {
   }
 
   Future<void> _archiveProgramClientSide(String programId) async {
+    final studentIdsToCheck = <String>{};
     try {
       // Fetch program record
       final progRes =
@@ -126,7 +127,6 @@ class ProgramRepository {
       } catch (_) {}
 
       // Fetch enrollments
-      final studentIdsToCheck = <String>{};
       final enrRes =
           await _client.from('enrollments').select().eq('program_id', programId);
       if (enrRes is List) {
