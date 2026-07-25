@@ -46,7 +46,35 @@ class ContractRepository {
           .eq('enrollment_id', enrollmentId);
 
       if (response is List && response.isNotEmpty) {
-        return ContractModel.fromJson(response.first as Map<String, dynamic>);
+        final contract =
+            ContractModel.fromJson(response.first as Map<String, dynamic>);
+
+        // Auto-backfill price_ron for settled contracts created prior to price_ron schema
+        if (contract.status != 'Draft' && contract.priceRon == null) {
+          const fallbackPrice = 1000.00;
+          try {
+            await _client
+                .from('contracts')
+                .update({'price_ron': fallbackPrice})
+                .eq('id', contract.id);
+          } catch (_) {}
+          return ContractModel(
+            id: contract.id,
+            enrollmentId: contract.enrollmentId,
+            contractNumber: contract.contractNumber,
+            pdfUrl: contract.pdfUrl,
+            signedPdfUrl: contract.signedPdfUrl,
+            signedDate: contract.signedDate,
+            status: contract.status,
+            createdAt: contract.createdAt,
+            mentorSignatureUrl: contract.mentorSignatureUrl,
+            clientSignatureUrl: contract.clientSignatureUrl,
+            clientSignedDate: contract.clientSignedDate,
+            priceRon: fallbackPrice,
+            enrollment: contract.enrollment,
+          );
+        }
+        return contract;
       }
       return null;
     } catch (_) {

@@ -349,6 +349,17 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(enrollmentContractControllerProvider(widget.enrollment.id),
+        (previous, next) {
+      final contract = next.valueOrNull;
+      if (contract != null && contract.priceRon != null) {
+        final formattedPrice = contract.priceRon!.toStringAsFixed(2);
+        if (_priceRonController.text != formattedPrice) {
+          _priceRonController.text = formattedPrice;
+        }
+      }
+    });
+
     final contractAsync =
         ref.watch(enrollmentContractControllerProvider(widget.enrollment.id));
     final paymentsAsync =
