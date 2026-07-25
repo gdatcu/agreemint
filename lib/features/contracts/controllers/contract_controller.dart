@@ -49,15 +49,17 @@ class EnrollmentContractController extends _$EnrollmentContractController {
     String? serviceDescription,
     String? paymentTerm,
     String? refundDeadline,
+    int? customContractNumber,
     required Uint8List signatureBytes,
   }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       final repository = ref.read(contractRepositoryProvider);
 
-      // 1. Create database row placeholder to get contract number
+      // 1. Create database row placeholder to get or set contract number
       final placeholder = await repository.createContractPlaceholder(
         enrollmentId: enrollmentId,
+        customContractNumber: customContractNumber,
       );
 
       // 2. Generate PDF with mentor signature and contract details

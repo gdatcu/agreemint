@@ -82,17 +82,23 @@ class ContractRepository {
     }
   }
 
-  /// Creates a database row first to reserve the auto-incremented contract number.
+  /// Creates a database row first to reserve the auto-incremented or custom contract number.
   Future<ContractModel> createContractPlaceholder({
     required String enrollmentId,
+    int? customContractNumber,
   }) async {
     try {
+      final Map<String, dynamic> insertData = {
+        'enrollment_id': enrollmentId,
+        'signed_date': DateTime.now().toIso8601String(),
+      };
+      if (customContractNumber != null) {
+        insertData['contract_number'] = customContractNumber;
+      }
+
       final response = await _client
           .from('contracts')
-          .insert({
-            'enrollment_id': enrollmentId,
-            'signed_date': DateTime.now().toIso8601String(),
-          })
+          .insert(insertData)
           .select();
 
       if (response is List && response.isNotEmpty) {

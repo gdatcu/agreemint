@@ -68,6 +68,7 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
       TextEditingController(text: '5 (cinci) zile calendaristice');
 
   late final TextEditingController _priceRonController;
+  late final TextEditingController _contractNumberController;
 
   @override
   void initState() {
@@ -84,6 +85,7 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
     final initialPrice = program?.totalPrice ?? 1000.00;
     _priceRonController =
         TextEditingController(text: initialPrice.toStringAsFixed(2));
+    _contractNumberController = TextEditingController();
 
     final techCurriculum = (program?.description != null &&
             program!.description!.trim().isNotEmpty)
@@ -98,6 +100,7 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
   void dispose() {
     _signatureController.dispose();
     _priceRonController.dispose();
+    _contractNumberController.dispose();
     _adresaController.dispose();
     _cnpController.dispose();
     _serieNrCiController.dispose();
@@ -243,6 +246,7 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
         serviceDescription: _serviceDescriptionController.text.trim(),
         paymentTerm: _paymentTermController.text.trim(),
         refundDeadline: _refundDeadlineController.text.trim(),
+        customContractNumber: int.tryParse(_contractNumberController.text.trim()),
         signatureBytes: pngBytes,
       );
 
@@ -352,10 +356,15 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
     ref.listen(enrollmentContractControllerProvider(widget.enrollment.id),
         (previous, next) {
       final contract = next.valueOrNull;
-      if (contract != null && contract.priceRon != null) {
-        final formattedPrice = contract.priceRon!.toStringAsFixed(2);
-        if (_priceRonController.text != formattedPrice) {
-          _priceRonController.text = formattedPrice;
+      if (contract != null) {
+        if (contract.priceRon != null) {
+          final formattedPrice = contract.priceRon!.toStringAsFixed(2);
+          if (_priceRonController.text != formattedPrice) {
+            _priceRonController.text = formattedPrice;
+          }
+        }
+        if (contract.contractNumber > 0 && _contractNumberController.text.isEmpty) {
+          _contractNumberController.text = contract.contractNumber.toString();
         }
       }
     });
@@ -790,16 +799,35 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
                 ),
           ),
           const SizedBox(height: 12),
-          TextFormField(
-            controller: _editionNameController,
-            decoration: const InputDecoration(
-              labelText: 'Comunitate / Ediție',
-              hintText:
-                  'ex: Ediția pilot / Beta Cohort exclusiv pentru QualiAdept',
-            ),
-            validator: (val) => val == null || val.trim().isEmpty
-                ? 'Introduceți ediția programului'
-                : null,
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: TextFormField(
+                  controller: _editionNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Comunitate / Ediție',
+                    hintText:
+                        'ex: Ediția pilot / Beta Cohort exclusiv pentru QualiAdept',
+                  ),
+                  validator: (val) => val == null || val.trim().isEmpty
+                      ? 'Introduceți ediția programului'
+                      : null,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 1,
+                child: TextFormField(
+                  controller: _contractNumberController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nr. Contract (Auto/Manual)',
+                    hintText: 'ex: 1',
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           Row(
