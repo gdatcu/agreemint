@@ -199,13 +199,14 @@ class ContractRepository {
     }
   }
 
-  /// Updates contract status column.
+  /// Updates contract status column and price.
   Future<ContractModel> updateStatus({
     required String contractId,
     required String status,
     String? mentorSignatureUrl,
     String? clientSignatureUrl,
     DateTime? clientSignedDate,
+    double? priceRon,
   }) async {
     try {
       final Map<String, dynamic> updates = {'status': status};
@@ -217,6 +218,9 @@ class ContractRepository {
       }
       if (clientSignedDate != null) {
         updates['client_signed_date'] = clientSignedDate.toIso8601String();
+      }
+      if (priceRon != null) {
+        updates['price_ron'] = priceRon;
       }
 
       final response = await _client

@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../students/models/enrollment_model.dart';
+import '../../payments/controllers/payment_controller.dart';
 import '../controllers/contract_controller.dart';
 import '../models/contract_model.dart';
 import '../../../core/constants.dart';
@@ -350,8 +351,27 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
   Widget build(BuildContext context) {
     final contractAsync =
         ref.watch(enrollmentContractControllerProvider(widget.enrollment.id));
+    final paymentsAsync =
+        ref.watch(enrollmentPaymentsControllerProvider(widget.enrollment.id));
     final student = widget.enrollment.student;
     final program = widget.enrollment.program;
+    final contract = contractAsync.valueOrNull;
+
+    // Calculate total settled payment amount for this enrollment if payments exist
+    double? totalPaymentsAmount;
+    final payments = paymentsAsync.valueOrNull;
+    if (payments != null && payments.isNotEmpty) {
+      totalPaymentsAmount = payments.fold<double>(
+        0.0,
+        (sum, payment) => sum + payment.amountDue,
+      );
+    }
+
+    final displayPrice = contract?.priceRon ??
+        totalPaymentsAmount ??
+        (double.tryParse(_priceRonController.text) ??
+            program?.totalPrice ??
+            1000.00);
 
     return Scaffold(
       appBar: AppBar(
@@ -370,7 +390,7 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
                       title: Text(program.name,
                           style: const TextStyle(fontWeight: FontWeight.bold)),
                       subtitle: Text(
-                          'Mentorship Price: ${(_priceRonController.text.isNotEmpty ? (double.tryParse(_priceRonController.text) ?? program.totalPrice) : program.totalPrice).toStringAsFixed(2)} RON'),
+                          'Mentorship Price: ${displayPrice.toStringAsFixed(2)} RON'),
                       leading: const Icon(Icons.school),
                     ),
                   ),

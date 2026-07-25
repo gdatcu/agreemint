@@ -116,6 +116,7 @@ class EnrollmentContractController extends _$EnrollmentContractController {
         contractId: placeholder.id,
         status: 'PendingClient',
         mentorSignatureUrl: mentorSigUrl,
+        priceRon: priceRon,
       );
 
       return finalContract;

@@ -12,6 +12,7 @@ class ContractModel {
   final String? mentorSignatureUrl;
   final String? clientSignatureUrl;
   final DateTime? clientSignedDate;
+  final double? priceRon;
   final EnrollmentModel? enrollment;
 
   const ContractModel({
@@ -26,6 +27,7 @@ class ContractModel {
     this.mentorSignatureUrl,
     this.clientSignatureUrl,
     this.clientSignedDate,
+    this.priceRon,
     this.enrollment,
   });
 
@@ -55,6 +57,8 @@ class ContractModel {
       clientSignedDate: json['client_signed_date'] != null
           ? DateTime.tryParse(json['client_signed_date'] as String)
           : null,
+      priceRon: (json['price_ron'] as num?)?.toDouble() ??
+          (json['total_price'] as num?)?.toDouble(),
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'] as String)
           : null,
@@ -80,6 +84,7 @@ class ContractModel {
         'client_signature_url': clientSignatureUrl,
       if (clientSignedDate != null)
         'client_signed_date': clientSignedDate?.toIso8601String(),
+      if (priceRon != null) 'price_ron': priceRon,
       if (createdAt != null) 'created_at': createdAt?.toIso8601String(),
       if (enrollment != null) 'enrollments': enrollment?.toJson(),
     };
@@ -87,6 +92,6 @@ class ContractModel {
 
   void printMigration() {
     print(
-        'ALTER TABLE contracts\n      ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT \'Draft\',\n      ADD COLUMN IF NOT EXISTS mentor_signature_url TEXT,\n      ADD COLUMN IF NOT EXISTS client_signature_url TEXT,\n      ADD COLUMN IF NOT EXISTS client_signed_date TIMESTAMP WITH TIME ZONE,\n      ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE;');
+        'ALTER TABLE contracts\n      ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT \'Draft\',\n      ADD COLUMN IF NOT EXISTS mentor_signature_url TEXT,\n      ADD COLUMN IF NOT EXISTS client_signature_url TEXT,\n      ADD COLUMN IF NOT EXISTS client_signed_date TIMESTAMP WITH TIME ZONE,\n      ADD COLUMN IF NOT EXISTS price_ron NUMERIC,\n      ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE;');
   }
 }
