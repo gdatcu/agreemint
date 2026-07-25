@@ -214,8 +214,32 @@ class ProgramRepository {
       }
     } catch (_) {}
 
+    // Collect student IDs involved in this program before deleting
+    final studentIdsToCheck = <String>{};
+    if (enrRes is List) {
+      for (final enrItem in enrRes) {
+        final enr = Map<String, dynamic>.from(enrItem as Map);
+        if (enr['student_id'] != null) {
+          studentIdsToCheck.add(enr['student_id'] as String);
+        }
+      }
+    }
+
     // Delete active program (cascades active enrollments/contracts/payments)
     await _client.from('programs').delete().eq('id', programId);
+
+    // Option B: Remove students from active students table if they have no other remaining enrollments
+    for (final studentId in studentIdsToCheck) {
+      try {
+        final remaining = await _client
+            .from('enrollments')
+            .select('id')
+            .eq('student_id', studentId);
+        if (remaining is List && remaining.isEmpty) {
+          await _client.from('students').delete().eq('id', studentId);
+        }
+      } catch (_) {}
+    }
   }
 
   /// Fetches archived programs from program_history table.
