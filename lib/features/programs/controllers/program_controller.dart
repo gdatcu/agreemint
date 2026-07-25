@@ -50,15 +50,22 @@ class ProgramController extends _$ProgramController {
     });
   }
 
-  /// Deletes a program by ID, setting loading state and refreshing list.
+  /// Deletes a program by ID, archiving all records to history tables and refreshing active list.
   Future<void> deleteProgram(String id) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       final repository = ref.read(programRepositoryProvider);
       await repository.deleteProgram(id);
+      ref.invalidate(programHistoryProvider);
       return repository.fetchPrograms();
     });
   }
+}
+
+/// Fetches archived programs from program_history.
+@riverpod
+Future<List<ProgramModel>> programHistory(Ref ref) async {
+  return ref.watch(programRepositoryProvider).fetchProgramHistory();
 }
 
 /// Fetches a single program by ID. Used by the router when navigating

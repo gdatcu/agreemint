@@ -26,6 +26,13 @@ class ProgramsView extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mentoring Programs'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history_edu),
+            tooltip: 'Archived Program History',
+            onPressed: () => _showHistoryDialog(context, ref),
+          ),
+        ],
       ),
       body: programsState.when(
         data: (programs) {
@@ -302,9 +309,9 @@ class ProgramsView extends ConsumerWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Delete Program?'),
+          title: const Text('Archive & Delete Program?'),
           content: Text(
-            'Are you sure you want to delete "${program.name}"?\nThis will remove all associated student enrollments and contracts.',
+            'Are you sure you want to delete "${program.name}"?\n\nAll program details, student enrollments, contracts, and payment records will be safely archived into History Tables for audit purposes.',
           ),
           actions: [
             TextButton(
@@ -323,9 +330,84 @@ class ProgramsView extends ConsumerWidget {
                     .deleteProgram(program.id);
                 navigator.pop();
               },
-              child: const Text('Delete'),
+              child: const Text('Archive & Delete'),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  void _showHistoryDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final historyAsync = ref.watch(programHistoryProvider);
+
+            return AlertDialog(
+              title: const Row(
+                children: [
+                  Icon(Icons.history_edu, color: Colors.blueAccent),
+                  SizedBox(width: 8),
+                  Text('Archived Program History'),
+                ],
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: historyAsync.when(
+                  data: (historyList) {
+                    if (historyList.isEmpty) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24),
+                        child: Text(
+                          'No archived program records yet.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      );
+                    }
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: historyList.length,
+                      separatorBuilder: (_, __) => const Divider(),
+                      itemBuilder: (context, index) {
+                        final item = historyList[index];
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(
+                            item.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            '${item.description ?? "No description"}\nTotal Price: ${item.totalPrice.toStringAsFixed(2)} RON',
+                          ),
+                          trailing: const Chip(
+                            label: Text('Archived', style: TextStyle(fontSize: 10)),
+                            backgroundColor: Colors.grey,
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                  error: (err, _) => Text(
+                    'Error loading history: $err',
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Close'),
+                ),
+              ],
+            );
+          },
         );
       },
     );

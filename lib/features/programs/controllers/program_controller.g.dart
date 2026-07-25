@@ -6,6 +6,26 @@ part of 'program_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+String _$programHistoryHash() => r'a010bd1cddcffce99450d6d950988098ada40aa1';
+
+/// Fetches archived programs from program_history.
+///
+/// Copied from [programHistory].
+@ProviderFor(programHistory)
+final programHistoryProvider =
+    AutoDisposeFutureProvider<List<ProgramModel>>.internal(
+      programHistory,
+      name: r'programHistoryProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$programHistoryHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef ProgramHistoryRef = AutoDisposeFutureProviderRef<List<ProgramModel>>;
 String _$programByIdHash() => r'300a0b9a143e9ce4171f8e81e398768fd5010721';
 
 /// Copied from Dart SDK
@@ -164,7 +184,7 @@ class _ProgramByIdProviderElement
   String get programId => (origin as ProgramByIdProvider).programId;
 }
 
-String _$programControllerHash() => r'744cab358facd14eaa28f87ac9f437860e153790';
+String _$programControllerHash() => r'515c702c7ded9062547d2c7faa217c4502c32ba9';
 
 /// See also [ProgramController].
 @ProviderFor(ProgramController)
