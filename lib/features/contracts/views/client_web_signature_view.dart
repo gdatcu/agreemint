@@ -1,0 +1,471 @@
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signature/signature.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../models/contract_model.dart';
+import '../repositories/contract_repository.dart';
+import '../services/pdf_generator_service.dart';
+
+class ClientWebSignatureView extends ConsumerStatefulWidget {
+  final String contractId;
+
+  const ClientWebSignatureView({super.key, required this.contractId});
+
+  @override
+  ConsumerState<ClientWebSignatureView> createState() =>
+      _ClientWebSignatureViewState();
+}
+
+class _ClientWebSignatureViewState
+    extends ConsumerState<ClientWebSignatureView> {
+  late final SignatureController _signatureController;
+  final _pdfService = PdfGeneratorService();
+  bool _isSubmitting = false;
+  ContractModel? _contract;
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _signatureController = SignatureController(
+      penStrokeWidth: 3,
+      penColor: Colors.blue.shade900,
+      exportBackgroundColor: Colors.white,
+    );
+    _loadContract();
+  }
+
+  @override
+  void dispose() {
+    _signatureController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadContract() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final repo = ref.read(contractRepositoryProvider);
+      final contract = await repo.fetchContractById(widget.contractId);
+
+      if (contract == null) {
+        setState(() {
+          _errorMessage = 'Contract not found. Please verify your link.';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      setState(() {
+        _contract = contract;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to load contract: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _viewPdf(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not launch PDF URL: $url')),
+        );
+      }
+    }
+  }
+
+  Future<void> _submitClientSignature() async {
+    if (_signatureController.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please draw your signature before submitting.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final clientSigPngBytes = await _signatureController.toPngBytes();
+      if (clientSigPngBytes == null) {
+        throw Exception('Failed to export signature drawing.');
+      }
+
+      final repo = ref.read(contractRepositoryProvider);
+      final currentContract = _contract;
+      if (currentContract == null) {
+        throw Exception('Contract state is missing.');
+      }
+
+      // 1. Fetch mentor signature PNG bytes stored from step 1
+      final mentorSigBytes = await repo.fetchMentorSignatureBytes(currentContract.enrollmentId);
+
+      // 2. Upload client signature PNG image
+      final clientSigUrl = await repo.uploadClientSignature(
+        contractId: currentContract.id,
+        enrollmentId: currentContract.enrollmentId,
+        signatureBytes: clientSigPngBytes,
+      );
+
+      final student = currentContract.enrollment?.student;
+      final program = currentContract.enrollment?.program;
+
+      // 3. Generate Version 2 PDF with BOTH mentor and client signatures
+      final pdfBytes = await _pdfService.generateContractPdf(
+        contractNumber: currentContract.contractNumber.toString(),
+        date: currentContract.signedDate ?? DateTime.now(),
+        studentName: student?.name ?? 'Beneficiar Program Mentorat',
+        adresaCursant: '',
+        cnpCursant: '',
+        serieNrCi: '',
+        eliberatorCi: '',
+        dataEliberariiCi: '',
+        emailCursant: student?.email ?? '',
+        telefonCursant: student?.phone ?? '',
+        programName: program?.name ?? 'Program Mentorat Tehnic',
+        editionName: 'Ediția Curentă',
+        durataOre: 40,
+        nrSesiuni: 20,
+        dataIncepere: DateTime.now().toIso8601String().split('T')[0],
+        frecventa: '1 sesiune / săptămână',
+        priceRon: program?.totalPrice ?? 0.0,
+        priceLitere: '',
+        modalitatePlata: 'Conform înțelegerii',
+        prestatorNume: 'DATCU GEORGE-CRISTIAN PFA',
+        prestatorSediu: 'București, România',
+        prestatorRegCom: 'F2026003426005',
+        prestatorCif: '53430793',
+        prestatorIban: '',
+        prestatorBanca: 'Salt Bank',
+        mentorSignatureBytes: mentorSigBytes,
+        clientSignatureBytes: clientSigPngBytes,
+      );
+
+      // 3. Upload Version 2 PDF and update signed PDF URL
+      await repo.uploadSignedContractPdf(
+        contractId: currentContract.id,
+        enrollmentId: currentContract.enrollmentId,
+        pdfBytes: pdfBytes,
+      );
+
+      // 4. Mark status as FullySigned in Supabase
+      final updatedContract = await repo.updateStatus(
+        contractId: currentContract.id,
+        status: 'FullySigned',
+        clientSignatureUrl: clientSigUrl,
+        clientSignedDate: DateTime.now(),
+      );
+
+      setState(() {
+        _contract = updatedContract;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Contract signed and executed successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error submitting signature: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('QualiAdept — Client Contract Signing'),
+        centerTitle: true,
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline,
+                            size: 64, color: Colors.red),
+                        const SizedBox(height: 16),
+                        Text(
+                          _errorMessage!,
+                          style: theme.textTheme.titleMedium,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: _loadContract,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Center(
+                    child: Container(
+                      constraints: const BoxConstraints(maxWidth: 800),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Header Card
+                          Card(
+                            elevation: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.school,
+                                          size: 32, color: Colors.blue),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Mentorship Agreement Review & Sign',
+                                              style: theme.textTheme.titleLarge
+                                                  ?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'Contract Nr. ${_contract?.contractNumber ?? 0}',
+                                              style:
+                                                  theme.textTheme.bodyMedium,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // State Branching
+                          if (_contract?.status == 'FullySigned') ...[
+                            // Success State
+                            Card(
+                              color: Colors.green.shade50,
+                              child: Padding(
+                                padding: const EdgeInsets.all(24),
+                                child: Column(
+                                  children: [
+                                    const Icon(Icons.verified,
+                                        size: 72, color: Colors.green),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Contract Fully Executed!',
+                                      style: theme.textTheme.headlineSmall
+                                          ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green.shade900,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Both parties have signed this agreement. A copy has been generated for your records.',
+                                      style: theme.textTheme.bodyMedium
+                                          ?.copyWith(
+                                        color: Colors.green.shade900,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 24),
+                                    if (_contract?.signedPdfUrl != null ||
+                                        _contract?.pdfUrl != null)
+                                      ElevatedButton.icon(
+                                        onPressed: () => _viewPdf(
+                                            _contract?.signedPdfUrl ??
+                                                _contract?.pdfUrl ??
+                                                ''),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.green.shade700,
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 32, vertical: 16),
+                                        ),
+                                        icon: const Icon(Icons.download),
+                                        label: const Text(
+                                            'Download Final Signed Contract'),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ] else ...[
+                            // Step 1: Review Mentor Signed Contract Draft PDF
+                            Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '1. Review Contract Document',
+                                      style: theme.textTheme.titleMedium
+                                          ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Please review the agreement terms signed by your mentor before signing below.',
+                                      style: theme.textTheme.bodyMedium,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    if (_contract?.pdfUrl != null)
+                                      ElevatedButton.icon(
+                                        onPressed: () =>
+                                            _viewPdf(_contract!.pdfUrl!),
+                                        icon: const Icon(Icons.open_in_new),
+                                        label: const Text(
+                                            'Open & Read Draft Contract (PDF)'),
+                                      )
+                                    else
+                                      const Text(
+                                        'Draft PDF is processing...',
+                                        style: TextStyle(
+                                            fontStyle: FontStyle.italic),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Step 2: Draw Signature & Accept
+                            Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '2. Draw Your Signature',
+                                      style: theme.textTheme.titleMedium
+                                          ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Use your finger, mouse, or stylus to sign inside the box below:',
+                                      style: theme.textTheme.bodyMedium,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Card(
+                                      clipBehavior: Clip.antiAlias,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        side: BorderSide(
+                                            color: Colors.grey.shade400),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Container(
+                                        height: 220,
+                                        color: Colors.white,
+                                        child: Signature(
+                                          controller: _signatureController,
+                                          backgroundColor: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        OutlinedButton.icon(
+                                          onPressed: () =>
+                                              _signatureController.clear(),
+                                          icon: const Icon(Icons.clear),
+                                          label: const Text('Clear Signature'),
+                                        ),
+                                        ElevatedButton.icon(
+                                          onPressed: _isSubmitting
+                                              ? null
+                                              : _submitClientSignature,
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.blue.shade800,
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 24, vertical: 14),
+                                          ),
+                                          icon: _isSubmitting
+                                              ? const SizedBox(
+                                                  width: 20,
+                                                  height: 20,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                          strokeWidth: 2,
+                                                          color: Colors.white),
+                                                )
+                                              : const Icon(Icons.check_circle),
+                                          label: const Text(
+                                              'Sign & Accept Contract'),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+    );
+  }
+}

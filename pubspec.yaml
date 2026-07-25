@@ -40,8 +40,11 @@ dependencies:
   go_router: ^17.0.0
   pdf: ^3.11.3
   printing: ^5.14.3
-  signature: ^6.3.0
+  webview_flutter: ^4.7.0
   path_provider: ^2.1.5
+  signature: ^6.3.0
+  file_picker: ^8.0.0
+  share_plus: ^10.1.4
 
 dev_dependencies:
   flutter_test:
@@ -66,6 +69,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/qualiAdept_logo_1.jpg
 
   # To add assets to your application, add an assets section, like this:
   # assets:

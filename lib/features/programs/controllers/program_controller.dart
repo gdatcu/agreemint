@@ -1,0 +1,39 @@
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/program_model.dart';
+import '../repositories/program_repository.dart';
+
+part 'program_controller.g.dart';
+
+@riverpod
+class ProgramController extends _$ProgramController {
+  @override
+  Future<List<ProgramModel>> build() async {
+    return ref.watch(programRepositoryProvider).fetchPrograms();
+  }
+
+  /// Adds a new program, setting loading state and capturing errors via guard.
+  Future<void> addProgram({
+    required String name,
+    String? description,
+    required double totalPrice,
+  }) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(programRepositoryProvider);
+      await repository.createProgram(
+        name: name,
+        description: description,
+        totalPrice: totalPrice,
+      );
+      return repository.fetchPrograms();
+    });
+  }
+}
+
+/// Fetches a single program by ID. Used by the router when navigating
+/// directly to a deep-link URL (i.e. state.extra is null on browser reload).
+@riverpod
+Future<ProgramModel?> programById(Ref ref, String programId) async {
+  return ref.watch(programRepositoryProvider).fetchProgramById(programId);
+}
