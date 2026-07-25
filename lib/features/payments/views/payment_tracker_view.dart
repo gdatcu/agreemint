@@ -3,11 +3,37 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../students/models/enrollment_model.dart';
 import '../controllers/payment_controller.dart';
 import '../models/payment_model.dart';
+import '../../../core/services/frankfurter_service.dart';
 
-class PaymentTrackerView extends ConsumerWidget {
+class PaymentTrackerView extends ConsumerStatefulWidget {
   final EnrollmentModel enrollment;
 
   const PaymentTrackerView({super.key, required this.enrollment});
+
+  @override
+  ConsumerState<PaymentTrackerView> createState() => _PaymentTrackerViewState();
+}
+
+class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
+  double? _liveRate;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLiveRate();
+  }
+
+  void _fetchLiveRate() async {
+    final program = widget.enrollment.program;
+    if (program != null && program.currency == 'EUR') {
+      final rate = await FrankfurterService.getEurToRonRate();
+      if (mounted) {
+        setState(() {
+          _liveRate = rate;
+        });
+      }
+    }
+  }
 
   Color _getStatusColor(String status) {
     switch (status) {
@@ -20,8 +46,23 @@ class PaymentTrackerView extends ConsumerWidget {
     }
   }
 
+  String _formatAmount(double amount, String currency) {
+    if (currency == 'EUR') {
+      final eurText = '${amount.toStringAsFixed(2)} EUR';
+      if (_liveRate != null) {
+        final ronVal = amount * _liveRate!;
+        return '$eurText (~${ronVal.toStringAsFixed(2)} RON)';
+      }
+      return eurText;
+    }
+    return '${amount.toStringAsFixed(2)} $currency';
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    final enrollment = widget.enrollment;
+    final program = enrollment.program;
+    final currency = program?.currency ?? 'RON';
     final paymentsState =
         ref.watch(enrollmentPaymentsControllerProvider(enrollment.id));
     final student = enrollment.student;
@@ -92,6 +133,40 @@ class PaymentTrackerView extends ConsumerWidget {
 
           return Column(
             children: [
+              // EUR Exchange Rate Info Banner
+              if (currency == 'EUR') ...[
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.currency_exchange,
+                            color: Colors.blueAccent),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _liveRate != null
+                                ? 'Frankfurter API Live Rate: 1 EUR = ${_liveRate!.toStringAsFixed(4)} RON'
+                                : 'Fetching live EUR → RON exchange rate from Frankfurter API...',
+                            style: const TextStyle(
+                                color: Colors.black87,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+
               // Summary Banner Card
               Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -108,9 +183,9 @@ class PaymentTrackerView extends ConsumerWidget {
                                 style: TextStyle(fontSize: 12)),
                             const SizedBox(height: 4),
                             Text(
-                              '\$${totalDue.toStringAsFixed(2)}',
+                              _formatAmount(totalDue, currency),
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context)
                                     .colorScheme
@@ -132,9 +207,9 @@ class PaymentTrackerView extends ConsumerWidget {
                                 style: TextStyle(fontSize: 12)),
                             const SizedBox(height: 4),
                             Text(
-                              '\$${totalPaid.toStringAsFixed(2)}',
+                              _formatAmount(totalPaid, currency),
                               style: const TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.green,
                               ),
@@ -154,9 +229,9 @@ class PaymentTrackerView extends ConsumerWidget {
                                 style: TextStyle(fontSize: 12)),
                             const SizedBox(height: 4),
                             Text(
-                              '\$${(totalDue - totalPaid).toStringAsFixed(2)}',
+                              _formatAmount(totalDue - totalPaid, currency),
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: (totalDue - totalPaid) > 0
                                     ? Colors.red
@@ -229,9 +304,9 @@ class PaymentTrackerView extends ConsumerWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                    'Due: \$${payment.amountDue.toStringAsFixed(2)}'),
+                                    'Due: ${_formatAmount(payment.amountDue, currency)}'),
                                 Text(
-                                    'Paid: \$${payment.amountPaid.toStringAsFixed(2)}',
+                                    'Paid: ${_formatAmount(payment.amountPaid, currency)}',
                                     style:
                                         const TextStyle(color: Colors.green)),
                               ],
@@ -304,7 +379,7 @@ class PaymentTrackerView extends ConsumerWidget {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.invalidate(
-                    enrollmentPaymentsControllerProvider(enrollment.id)),
+                    enrollmentPaymentsControllerProvider(widget.enrollment.id)),
                 child: const Text('Retry'),
               ),
             ],
@@ -315,8 +390,9 @@ class PaymentTrackerView extends ConsumerWidget {
   }
 
   void _showGeneratePlanDialog(BuildContext context, WidgetRef ref) {
-    final program = enrollment.program;
+    final program = widget.enrollment.program;
     final programPrice = program != null ? program.totalPrice : 0.0;
+    final currency = program?.currency ?? 'RON';
 
     showDialog(
       context: context,
@@ -327,7 +403,7 @@ class PaymentTrackerView extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Mentorship Price: \$${programPrice.toStringAsFixed(2)}'),
+              Text('Mentorship Price: ${_formatAmount(programPrice, currency)}'),
               const SizedBox(height: 16),
               const Text('Select number of installments:'),
             ],
@@ -345,7 +421,7 @@ class PaymentTrackerView extends ConsumerWidget {
                 onPressed: () async {
                   final navigator = Navigator.of(context);
                   await ref
-                      .read(enrollmentPaymentsControllerProvider(enrollment.id)
+                      .read(enrollmentPaymentsControllerProvider(widget.enrollment.id)
                           .notifier)
                       .generatePlan(
                         totalAmount: programPrice,
@@ -364,9 +440,11 @@ class PaymentTrackerView extends ConsumerWidget {
 
   void _showRecordPaymentDialog(
       BuildContext context, WidgetRef ref, PaymentModel payment) {
+    final currency = widget.enrollment.program?.currency ?? 'RON';
     final formKey = GlobalKey<FormState>();
+    final remainingBalance = payment.amountDue - payment.amountPaid;
     final amountController = TextEditingController(
-        text: (payment.amountDue - payment.amountPaid).toString());
+        text: remainingBalance.toString());
     String selectedMethod = 'Cash';
     String selectedStatus = 'Paid';
 
@@ -385,8 +463,8 @@ class PaymentTrackerView extends ConsumerWidget {
                   children: [
                     TextFormField(
                       controller: amountController,
-                      decoration: const InputDecoration(
-                        labelText: 'Amount Received (\$)',
+                      decoration: InputDecoration(
+                        labelText: 'Amount Received ($currency)',
                         hintText: 'e.g., 500.00',
                       ),
                       keyboardType:
@@ -399,7 +477,7 @@ class PaymentTrackerView extends ConsumerWidget {
                         if (amount == null || amount <= 0) {
                           return 'Please enter a valid amount greater than 0';
                         }
-                        if (amount > (payment.amountDue - payment.amountPaid)) {
+                        if (amount > remainingBalance) {
                           return 'Amount cannot exceed remaining balance';
                         }
                         return null;
@@ -464,7 +542,7 @@ class PaymentTrackerView extends ConsumerWidget {
                   final newAmountPaid = payment.amountPaid + enteredAmount;
 
                   await ref
-                      .read(enrollmentPaymentsControllerProvider(enrollment.id)
+                      .read(enrollmentPaymentsControllerProvider(widget.enrollment.id)
                           .notifier)
                       .logPayment(
                         paymentId: payment.id,
