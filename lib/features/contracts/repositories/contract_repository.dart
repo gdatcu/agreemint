@@ -103,7 +103,7 @@ class ContractRepository {
           final maxRes = await _client
               .from('contracts')
               .select('contract_number')
-              .order('created_at', ascending: false)
+              .order('contract_number', ascending: false)
               .limit(1)
               .maybeSingle();
 
@@ -122,6 +122,7 @@ class ContractRepository {
         'enrollment_id': enrollmentId,
         'contract_number': numberToUse,
         'signed_date': DateTime.now().toIso8601String(),
+        'created_at': DateTime.now().toIso8601String(),
       };
 
       final response = await _client
