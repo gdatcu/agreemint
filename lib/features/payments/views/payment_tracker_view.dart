@@ -911,6 +911,22 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
           builder: (context) => ReceiptPreviewDialog(
             pdfBytes: pdfBytes,
             filename: 'Chitanta_$receiptNumber.pdf',
+            onSignReceipt: (signatureBytes) async {
+              return await ReceiptGeneratorService().generateReceiptPdf(
+                receiptNumber: receiptNumber,
+                paymentDate: payment.dueDate,
+                studentName: student?.name ?? 'Cursant',
+                studentEmail: student?.email ?? 'N/A',
+                programName: program?.name ?? 'Program Mentorat',
+                installmentNumber: installmentIndex,
+                totalInstallments: totalInstallments,
+                amountPaid: payment.amountPaid > 0 ? payment.amountPaid : payment.amountDue,
+                currency: currency,
+                paymentMethod: payment.paymentMethod ?? 'Bank Transfer',
+                transactionReference: payment.id,
+                mentorSignatureBytes: signatureBytes,
+              );
+            },
           ),
         );
       }

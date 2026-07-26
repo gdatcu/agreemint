@@ -129,7 +129,7 @@ void main() {
         ),
       );
 
-      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       expect(find.byType(ClientWebSignatureView), findsOneWidget);
     });
   });
