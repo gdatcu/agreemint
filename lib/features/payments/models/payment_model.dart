@@ -25,6 +25,11 @@ class PaymentModel {
     this.enrollment,
   });
 
+  /// Helper getter returning true if the receipt has been officially signed and saved.
+  bool get isReceiptSigned =>
+      receiptUrl != null && receiptUrl!.toLowerCase().contains('signed');
+
+
   /// Factory constructor to parse PostgreSQL json results cleanly and defensively.
   factory PaymentModel.fromJson(Map<String, dynamic> json) {
     final enrollmentRaw = json['enrollments'];

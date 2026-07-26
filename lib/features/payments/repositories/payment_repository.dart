@@ -158,9 +158,11 @@ class PaymentRepository {
     required String paymentId,
     required String enrollmentId,
     required Uint8List pdfBytes,
+    bool isSigned = false,
   }) async {
     try {
-      final fileName = 'receipts/${enrollmentId}_${paymentId}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      final prefix = isSigned ? 'signed_' : '';
+      final fileName = 'receipts/${prefix}${enrollmentId}_${paymentId}_${DateTime.now().millisecondsSinceEpoch}.pdf';
       await _client.storage.from('contracts').uploadBinary(
             fileName,
             pdfBytes,

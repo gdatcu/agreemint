@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.10 Release Notes
+# 🚀 Agreemint v1.0.17 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -10,17 +10,18 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 * **Student & Enrollment Roster**: Manage active students and enrollments with automatic history archiving upon program deletion.
 * **Bilingual Legal Contracts (RO/EN)**: Native PDF contract generation, dynamic sequence numbering (`is_custom` one-off isolation), and on-screen student signature capture.
 * **Live Frankfurter API Currency Exchange**: Automatic real-time BNR/ECB exchange rate conversion (`EUR` $\rightarrow$ `RON`).
-* **Flexible Payment Schedule Tracker**:
+* **Flexible Payment Schedule & Receipt Tracking**:
   * Auto-enforces **Paid** status when total installment amounts are covered.
-  * Complete editing flexibility for all payment records.
-  * Follow-up installment creation for partial payments & custom single installment additions.
+  * Native bilingual PDF receipt generation with mentor signature capture.
+  * Direct PDF retrieval from Supabase Storage for signed receipts to guarantee signature retention.
 
 ---
 
-## 🎨 What's New in Version 1.0.10
+## 🎨 What's New in Version 1.0.17
 
-- 🧪 **Comprehensive Automated Testing Suite**: Added 34 unit, integration, and widget test cases spanning data models, controllers, business rules, and UI views (`mocktail`, `integration_test`).
-- 🛡️ **CI/CD Quality Gate**: Integrated `flutter test` execution directly into GitHub Actions release workflow to block regressed builds before APK / Web deployment.
-- 📊 **Standalone Windows HTML Coverage Generator**: Created `tool/generate_html_report.dart` to generate interactive code coverage reports (`coverage/html/index.html`).
-- 🔧 **Production Supabase Credential Fallback**: Resolved web portal `Missing Configuration` screen with graceful credential fallback.
-- 📦 **Dynamic Version Alignment**: Updated app version to `v1.0.10` (`1.0.10+10`).
+- ✍️ **Receipt Signature Retention**: Stored signed receipt PDFs are retained and fetched directly from Supabase Storage so mentor signatures are permanently displayed when re-opening receipts.
+- 🔒 **Receipt Immutability & Status Tracking**: Signed receipts display a green `✓ Semnat / Signed` badge and disable re-signing or editing once executed.
+- 📱 **Persistent App Update Dismissal**: Update notice dismissals are remembered per release tag via `SharedPreferences`, preventing repetitive update banners across app relaunches.
+- 🎨 **Overlapping UI Layout Fix**: Redesigned payment installment list tiles to prevent text collision over action buttons.
+- ⚡ **Dialog Lifecycle & Progress Overlay**: Replaced double-dialog patterns with root navigator dismissal and inline modal progress overlays during receipt signing.
+- 📦 **Dynamic Version Alignment**: Updated app version to `v1.0.17` (`1.0.17+17`).

@@ -12,6 +12,7 @@ class ReceiptPreviewDialog extends StatefulWidget {
   final Uint8List pdfBytes;
   final String filename;
   final String title;
+  final bool isSigned;
   final Future<Uint8List> Function(Uint8List signatureBytes)? onSignReceipt;
 
   const ReceiptPreviewDialog({
@@ -19,6 +20,7 @@ class ReceiptPreviewDialog extends StatefulWidget {
     required this.pdfBytes,
     required this.filename,
     this.title = 'Chitanță Plată / Payment Receipt',
+    this.isSigned = false,
     this.onSignReceipt,
   });
 
@@ -28,11 +30,14 @@ class ReceiptPreviewDialog extends StatefulWidget {
 
 class _ReceiptPreviewDialogState extends State<ReceiptPreviewDialog> {
   late Uint8List _currentPdfBytes;
+  late bool _isSignedState;
+  bool _isSigning = false;
 
   @override
   void initState() {
     super.initState();
     _currentPdfBytes = widget.pdfBytes;
+    _isSignedState = widget.isSigned;
   }
 
   Future<void> _sharePdf(BuildContext context) async {
@@ -62,23 +67,45 @@ class _ReceiptPreviewDialogState extends State<ReceiptPreviewDialog> {
   }
 
   Future<void> _openSignaturePad(BuildContext context) async {
+    if (_isSignedState) return;
+
     final signatureBytes = await showDialog<Uint8List?>(
       context: context,
       builder: (context) => const ReceiptSignatureDialog(),
     );
 
     if (signatureBytes != null && widget.onSignReceipt != null) {
-      final updatedBytes = await widget.onSignReceipt!(signatureBytes);
-      if (mounted) {
-        setState(() {
-          _currentPdfBytes = updatedBytes;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Semnătura a fost aplicată cu succes pe chitanță!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+      setState(() {
+        _isSigning = true;
+      });
+
+      try {
+        final updatedBytes = await widget.onSignReceipt!(signatureBytes);
+        if (mounted) {
+          setState(() {
+            _currentPdfBytes = updatedBytes;
+            _isSignedState = true;
+            _isSigning = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Semnătura a fost aplicată cu succes pe chitanță!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isSigning = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error signing receipt: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
@@ -99,9 +126,34 @@ class _ReceiptPreviewDialogState extends State<ReceiptPreviewDialog> {
               surfaceTintColor: Colors.transparent,
               elevation: 1,
               actions: [
-                if (widget.onSignReceipt != null)
+                if (_isSignedState)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.green.shade300),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.verified, size: 16, color: Colors.green.shade700),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Semnat / Signed',
+                          style: TextStyle(
+                            color: Colors.green.shade900,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (widget.onSignReceipt != null)
                   ElevatedButton.icon(
-                    onPressed: () => _openSignaturePad(context),
+                    onPressed: _isSigning ? null : () => _openSignaturePad(context),
                     icon: const Icon(Icons.draw_outlined, size: 18),
                     label: const Text('Semnează / Sign'),
                     style: ElevatedButton.styleFrom(
@@ -118,19 +170,45 @@ class _ReceiptPreviewDialogState extends State<ReceiptPreviewDialog> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: _isSigning ? null : () => Navigator.of(context).pop(),
                 ),
               ],
             ),
-            body: PdfPreview(
-              key: ValueKey(_currentPdfBytes.hashCode),
-              build: (PdfPageFormat format) async => _currentPdfBytes,
-              pdfFileName: widget.filename,
-              allowPrinting: true,
-              allowSharing: true,
-              canChangePageFormat: false,
-              canChangeOrientation: false,
-              canDebug: false,
+            body: Stack(
+              children: [
+                PdfPreview(
+                  key: ValueKey(_currentPdfBytes.hashCode),
+                  build: (PdfPageFormat format) async => _currentPdfBytes,
+                  pdfFileName: widget.filename,
+                  allowPrinting: true,
+                  allowSharing: true,
+                  canChangePageFormat: false,
+                  canChangeOrientation: false,
+                  canDebug: false,
+                ),
+                if (_isSigning)
+                  Container(
+                    color: Colors.black45,
+                    child: const Center(
+                      child: Card(
+                        child: Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CircularProgressIndicator(),
+                              SizedBox(height: 16),
+                              Text(
+                                'Applying signature & saving receipt...',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ),

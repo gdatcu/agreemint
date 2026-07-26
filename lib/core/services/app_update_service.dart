@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AppUpdateInfo {
@@ -26,6 +27,7 @@ class AppUpdateInfo {
 
 class AppUpdateService {
   static const String _defaultVersion = '1.0.10';
+  static const String _dismissedKey = 'dismissed_update_version';
   static const String _githubApiUrl =
       'https://api.github.com/repos/gdatcu/agreemint/releases/latest';
 
@@ -42,6 +44,27 @@ class AppUpdateService {
     return _defaultVersion;
   }
 
+  /// Checks if a version update banner was previously dismissed by the user.
+  static Future<bool> isVersionDismissed(String latestVersion) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_dismissedKey);
+      return saved == latestVersion;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Saves a dismissed version string to SharedPreferences.
+  static Future<void> saveDismissedVersion(String latestVersion) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_dismissedKey, latestVersion);
+    } catch (e) {
+      debugPrint('Error saving dismissed version: $e');
+    }
+  }
+
   /// Checks GitHub Releases API for new version availability.
   static Future<AppUpdateInfo?> checkForUpdates() async {
     try {
@@ -53,7 +76,8 @@ class AppUpdateService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
-        final tagName = (data['tag_name'] as String? ?? '').replaceAll('v', '');
+        final rawTag = data['tag_name'] as String? ?? '';
+        final tagName = rawTag.replaceAll('v', '').trim();
         final releaseNotes = data['body'] as String? ?? '';
         final htmlUrl = data['html_url'] as String? ?? '';
 
@@ -69,10 +93,12 @@ class AppUpdateService {
           }
         }
 
-        final hasUpdate = isVersionHigher(tagName, currentVer);
+        final fullTag = rawTag.isNotEmpty ? rawTag : 'v$tagName';
+        final isDismissed = await isVersionDismissed(fullTag);
+        final hasUpdate = !isDismissed && isVersionHigher(tagName, currentVer);
 
         return AppUpdateInfo(
-          latestVersion: data['tag_name'] as String? ?? 'v$tagName',
+          latestVersion: fullTag,
           releaseNotes: releaseNotes,
           apkDownloadUrl: apkUrl,
           releaseUrl: htmlUrl,
@@ -89,8 +115,14 @@ class AppUpdateService {
   @visibleForTesting
   static bool isVersionHigher(String latest, String current) {
     try {
-      final lParts = latest.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-      final cParts = current.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+      final lClean = latest.replaceAll('v', '').trim();
+      final cClean = current.replaceAll('v', '').trim();
+
+      final lSem = lClean.split('+')[0].split('-')[0];
+      final cSem = cClean.split('+')[0].split('-')[0];
+
+      final lParts = lSem.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+      final cParts = cSem.split('.').map((e) => int.tryParse(e) ?? 0).toList();
 
       for (int i = 0; i < 3; i++) {
         final l = i < lParts.length ? lParts[i] : 0;
@@ -138,6 +170,17 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
     }
   }
 
+  void _dismissBanner() async {
+    if (_updateInfo != null) {
+      await AppUpdateService.saveDismissedVersion(_updateInfo!.latestVersion);
+    }
+    if (mounted) {
+      setState(() {
+        _dismissed = true;
+      });
+    }
+  }
+
   void _handleUpdateClick() {
     if (_updateInfo == null) return;
 
@@ -161,7 +204,7 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               SizedBox(height: 8),
-              Text('2. When complete, open your Downloads or tap the notification to install.'),
+              Text('2. When complete, tap the completed download notification or open your device Downloads folder to install.'),
               SizedBox(height: 12),
               Divider(),
               SizedBox(height: 8),
@@ -171,13 +214,20 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
               ),
               SizedBox(height: 4),
               Text(
-                'If you previously installed the app via terminal (flutter run debug mode), Android will block the update due to signature mismatch.\n\nPlease uninstall the debug app first if installation fails.',
+                'If you previously installed a debug build via USB/Flutter CLI, Android may require uninstalling the previous build first due to signature mismatch.',
                 style: TextStyle(fontSize: 13, color: Colors.black87),
               ),
             ],
           ),
           actions: [
             TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                _dismissBanner();
+              },
+              child: const Text('Dismiss Notice'),
+            ),
+            ElevatedButton(
               onPressed: () => Navigator.of(ctx).pop(),
               child: const Text('OK, Got It'),
             ),
@@ -232,10 +282,11 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
             icon: const Icon(Icons.close, color: Colors.white70, size: 18),
             constraints: const BoxConstraints(),
             padding: EdgeInsets.zero,
-            onPressed: () => setState(() => _dismissed = true),
+            onPressed: _dismissBanner,
           ),
         ],
       ),
     );
   }
 }
+

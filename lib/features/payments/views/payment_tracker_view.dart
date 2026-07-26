@@ -1,5 +1,7 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import '../../students/models/enrollment_model.dart';
 import '../controllers/payment_controller.dart';
 import '../models/payment_model.dart';
@@ -342,28 +344,75 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 12,
+                              runSpacing: 4,
                               children: [
                                 Text(
-                                    'Due: ${_formatAmount(payment.amountDue, currency)}'),
+                                  'Due: ${_formatAmount(payment.amountDue, currency)}',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                                ),
                                 Text(
-                                    'Paid: ${_formatAmount(payment.amountPaid, currency)}',
-                                    style:
-                                        const TextStyle(color: Colors.green)),
+                                  'Paid: ${_formatAmount(payment.amountPaid, currency)}',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              'Due Date: $dateStr',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color:
-                                        Theme.of(context).colorScheme.outline,
+                            Row(
+                              children: [
+                                Text(
+                                  'Due Date: $dateStr',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .outline,
+                                      ),
+                                ),
+                                if (payment.isReceiptSigned) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.shade50,
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                          color: Colors.green.shade300),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.verified,
+                                            size: 11,
+                                            color: Colors.green.shade700),
+                                        const SizedBox(width: 3),
+                                        Text(
+                                          'Receipt Signed',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.green.shade800,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
+                                ],
+                              ],
                             ),
                             if (payment.paymentMethod != null &&
                                 payment.paymentMethod!.isNotEmpty) ...[
@@ -386,9 +435,16 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                           children: [
                             if (payment.amountPaid > 0)
                               IconButton(
-                                icon: const Icon(Icons.receipt_long,
-                                    size: 20, color: Colors.indigo),
-                                tooltip: 'Chitanță / Generate Receipt PDF',
+                                icon: Icon(
+                                  Icons.receipt_long,
+                                  size: 20,
+                                  color: payment.isReceiptSigned
+                                      ? Colors.green.shade700
+                                      : Colors.indigo,
+                                ),
+                                tooltip: payment.isReceiptSigned
+                                    ? 'View Signed Receipt'
+                                    : 'Chitanță / Generate Receipt PDF',
                                 onPressed: () => _generateAndShowReceipt(
                                     context, payment, index + 1, payments.length),
                               ),
@@ -890,37 +946,57 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
     );
 
     try {
-      final now = DateTime.now();
-      final pdfBytes = await ReceiptGeneratorService().generateReceiptPdf(
-        receiptNumber: receiptNumber,
-        paymentDate: now,
-        studentName: student?.name ?? 'Cursant',
-        studentEmail: student?.email ?? 'N/A',
-        programName: program?.name ?? 'Program Mentorat',
-        installmentNumber: installmentIndex,
-        totalInstallments: totalInstallments,
-        amountPaid: payment.amountPaid > 0 ? payment.amountPaid : payment.amountDue,
-        currency: currency,
-        paymentMethod: payment.paymentMethod ?? 'Bank Transfer',
-        transactionReference: payment.id,
-      );
+      Uint8List? pdfBytes;
 
-      // Persist receipt PDF to Supabase Storage and database record
-      try {
-        await ref.read(paymentRepositoryProvider).uploadReceiptPdf(
-              paymentId: payment.id,
-              enrollmentId: widget.enrollment.id,
-              pdfBytes: pdfBytes,
-            );
-      } catch (_) {}
+      // 1. Fetch existing stored PDF if available to retain signature & layout
+      if (payment.receiptUrl != null && payment.receiptUrl!.isNotEmpty) {
+        try {
+          final res = await http.get(Uri.parse(payment.receiptUrl!));
+          if (res.statusCode == 200 && res.bodyBytes.isNotEmpty) {
+            pdfBytes = res.bodyBytes;
+          }
+        } catch (e) {
+          debugPrint('Failed to download existing receipt PDF: $e');
+        }
+      }
+
+      // 2. Generate a new PDF if no existing PDF was retrieved
+      if (pdfBytes == null) {
+        final now = DateTime.now();
+        pdfBytes = await ReceiptGeneratorService().generateReceiptPdf(
+          receiptNumber: receiptNumber,
+          paymentDate: now,
+          studentName: student?.name ?? 'Cursant',
+          studentEmail: student?.email ?? 'N/A',
+          programName: program?.name ?? 'Program Mentorat',
+          installmentNumber: installmentIndex,
+          totalInstallments: totalInstallments,
+          amountPaid: payment.amountPaid > 0 ? payment.amountPaid : payment.amountDue,
+          currency: currency,
+          paymentMethod: payment.paymentMethod ?? 'Bank Transfer',
+          transactionReference: payment.id,
+        );
+
+        // Persist receipt PDF to Supabase Storage and database record
+        try {
+          await ref.read(paymentRepositoryProvider).uploadReceiptPdf(
+                paymentId: payment.id,
+                enrollmentId: widget.enrollment.id,
+                pdfBytes: pdfBytes,
+                isSigned: payment.isReceiptSigned,
+              );
+        } catch (_) {}
+      }
 
       if (context.mounted) {
-        Navigator.of(context).pop(); // dismiss loading dialog
+        Navigator.of(context, rootNavigator: true).pop(); // dismiss loading dialog cleanly
+
         showDialog(
           context: context,
           builder: (context) => ReceiptPreviewDialog(
-            pdfBytes: pdfBytes,
+            pdfBytes: pdfBytes!,
             filename: 'Chitanta_$receiptNumber.pdf',
+            isSigned: payment.isReceiptSigned,
             onSignReceipt: (signatureBytes) async {
               final signedPdfBytes = await ReceiptGeneratorService().generateReceiptPdf(
                 receiptNumber: receiptNumber,
@@ -942,7 +1018,11 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                       paymentId: payment.id,
                       enrollmentId: widget.enrollment.id,
                       pdfBytes: signedPdfBytes,
+                      isSigned: true,
                     );
+
+                // Refresh payments state so the tile updates to show Receipt Signed badge
+                ref.invalidate(enrollmentPaymentsControllerProvider(widget.enrollment.id));
               } catch (_) {}
 
               return signedPdfBytes;
@@ -952,7 +1032,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
       }
     } catch (e) {
       if (context.mounted) {
-        Navigator.of(context).pop();
+        Navigator.of(context, rootNavigator: true).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to generate receipt: $e'),
