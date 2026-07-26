@@ -265,7 +265,7 @@ void main() {
         id: 'cnt-placeholder',
         enrollmentId: enrollmentId,
         contractNumber: 101,
-        status: 'PendingClientSignature',
+        status: 'PendingClient',
       );
 
       when(() => mockContractRepo.fetchContractForEnrollment(enrollmentId))
@@ -291,7 +291,7 @@ void main() {
 
       when(() => mockContractRepo.updateStatus(
             contractId: 'cnt-placeholder',
-            status: 'PendingClientSignature',
+            status: 'PendingClient',
             mentorSignatureUrl: 'https://storage/mentor.png',
             priceRon: 5000.0,
           )).thenAnswer((_) async => mockFinalContract);
@@ -353,7 +353,7 @@ void main() {
 
       verify(() => mockContractRepo.updateStatus(
             contractId: 'cnt-placeholder',
-            status: 'PendingClientSignature',
+            status: 'PendingClient',
             mentorSignatureUrl: 'https://storage/mentor.png',
             priceRon: 5000.0,
           )).called(1);
