@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.8 Release Notes
+# 🚀 Agreemint v1.0.9 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -17,10 +17,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.8
+## 🎨 What's New in Version 1.0.9
 
-- 🔒 **Student Deletion Protection & Confirmation**: Added explicit confirmation modal for unsigned student deletion while locking deletion for students with signed contracts (`canBeDeleted`).
+- 🔧 **Fixed Production Supabase Credential Fallback**: Resolved the web portal `Missing Configuration` screen by gracefully falling back to production Supabase credentials when `--dart-define` secrets are empty during CI build.
+- 🔒 **Student Deletion Protection & Confirmation**: Explicit confirmation modal for unsigned student deletion while locking deletion for students with signed contracts (`canBeDeleted`).
 - 🔐 **Enhanced Access Control & Mentor Auth**: Refined access control views and mentor authentication state handling.
 - 📊 **Advanced Analytics & Financial Dashboard**: Enhanced financial metrics, currency summaries, and installment performance tracking.
 - 🖋️ **Web Signature & Public Contract Verification**: Improved client web signature flow and contract signature validation.
-- 📦 **Dynamic Version Alignment**: Bumped app version to `v1.0.8` (`1.0.8+8`) with automated GitHub Release and FTP deployment workflows.
+- 📦 **Dynamic Version Alignment**: Bumped app version to `v1.0.9` (`1.0.9+9`) with automated GitHub Release and FTP deployment workflows.

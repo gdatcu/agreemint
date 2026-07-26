@@ -25,7 +25,7 @@ class AppUpdateInfo {
 }
 
 class AppUpdateService {
-  static const String _defaultVersion = '1.0.8';
+  static const String _defaultVersion = '1.0.9';
   static const String _githubApiUrl =
       'https://api.github.com/repos/gdatcu/agreemint/releases/latest';
 
