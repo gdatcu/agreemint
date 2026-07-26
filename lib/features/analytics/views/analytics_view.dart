@@ -12,6 +12,14 @@ class AnalyticsView extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Analytics Summary'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Refresh Metrics',
+            onPressed: () =>
+                ref.refresh(analyticsSummaryControllerProvider.future),
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () =>
@@ -22,29 +30,51 @@ class AnalyticsView extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               physics: const AlwaysScrollableScrollPhysics(),
               children: [
+                // 1. Total Enrolled Students Card
                 _buildMetricCard(
                   context,
                   title: 'Total Enrolled Students',
                   value: '${summary.totalStudents}',
-                  icon: Icons.people,
-                  color: Colors.blue,
+                  subtitle: 'Active enrollments across all program cohorts',
+                  icon: Icons.people_alt_rounded,
+                  color: Colors.indigo,
                 ),
                 const SizedBox(height: 16),
+
+                // 2. Expected Revenue Card
                 _buildMetricCard(
                   context,
                   title: 'Total Expected Revenue',
-                  value: '\$${summary.expectedRevenue.toStringAsFixed(2)}',
-                  icon: Icons.trending_up,
-                  color: Colors.orange,
+                  value: summary.formattedExpectedRevenue,
+                  subtitle: summary.hasMultipleCurrenciesOrEur
+                      ? '~${formatCurrencyAmount(summary.totalExpectedInRon, 'RON')} estimated total'
+                      : null,
+                  icon: Icons.trending_up_rounded,
+                  color: Colors.amber.shade800,
                 ),
                 const SizedBox(height: 16),
+
+                // 3. Collected Revenue Card
                 _buildMetricCard(
                   context,
                   title: 'Total Revenue Collected',
-                  value: '\$${summary.revenueCollected.toStringAsFixed(2)}',
-                  icon: Icons.account_balance_wallet,
-                  color: Colors.green,
+                  value: summary.formattedCollectedRevenue,
+                  subtitle: summary.hasMultipleCurrenciesOrEur
+                      ? '~${formatCurrencyAmount(summary.totalCollectedInRon, 'RON')} estimated collected'
+                      : null,
+                  icon: Icons.account_balance_wallet_rounded,
+                  color: Colors.teal,
                 ),
+                const SizedBox(height: 16),
+
+                // 4. Collection Progress Card
+                _buildCollectionProgressCard(context, summary),
+
+                // 5. Exchange Rate Banner if EUR is present
+                if (summary.hasMultipleCurrenciesOrEur) ...[
+                  const SizedBox(height: 16),
+                  _buildExchangeRateBanner(context, summary.liveEurRate),
+                ],
               ],
             );
           },
@@ -62,7 +92,7 @@ class AnalyticsView extends ConsumerWidget {
                 const SizedBox(height: 16),
                 const Center(
                   child: Text(
-                    'Something went wrong',
+                    'Failed to load analytics',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                 ),
@@ -76,10 +106,11 @@ class AnalyticsView extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 Center(
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Retry'),
                     onPressed: () =>
                         ref.invalidate(analyticsSummaryControllerProvider),
-                    child: const Text('Retry'),
                   ),
                 ),
               ],
@@ -94,28 +125,35 @@ class AnalyticsView extends ConsumerWidget {
     BuildContext context, {
     required String title,
     required String value,
+    String? subtitle,
     required IconData icon,
     required Color color,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: Theme.of(context).colorScheme.outlineVariant,
+          color: Theme.of(context).colorScheme.outlineVariant.withAlpha(100),
           width: 0.5,
         ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CircleAvatar(
-              radius: 28,
-              backgroundColor: color.withAlpha(25),
-              child: Icon(icon, color: color, size: 28),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: color.withAlpha(isDark ? 40 : 25),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: color, size: 30),
             ),
-            const SizedBox(width: 20),
+            const SizedBox(width: 18),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,22 +162,152 @@ class AnalyticsView extends ConsumerWidget {
                     title,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
+                  SelectableText(
                     value,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
                   ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.outline,
+                            fontStyle: FontStyle.italic,
+                          ),
+                    ),
+                  ],
                 ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCollectionProgressCard(
+    BuildContext context,
+    AnalyticsSummary summary,
+  ) {
+    final percent = (summary.collectionProgress * 100).toStringAsFixed(1);
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.outlineVariant.withAlpha(100),
+          width: 0.5,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.pie_chart_rounded,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Payment Collection Rate',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                  ],
+                ),
+                Text(
+                  '$percent%',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: summary.collectionProgress,
+                minHeight: 10,
+                backgroundColor:
+                    Theme.of(context).colorScheme.surfaceContainerHighest,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  summary.collectionProgress >= 0.8
+                      ? Colors.green
+                      : summary.collectionProgress >= 0.5
+                          ? Colors.amber.shade800
+                          : Colors.deepOrange,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Outstanding Balance:',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+                Text(
+                  formatCurrencyAmount(summary.pendingBalanceInRon, 'RON'),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: summary.pendingBalanceInRon > 0
+                            ? Colors.deepOrange
+                            : Colors.green,
+                      ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExchangeRateBanner(BuildContext context, double rate) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outlineVariant,
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.currency_exchange, size: 20, color: Colors.blueAccent),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Live Frankfurter Rate: 1 EUR = ${rate.toStringAsFixed(4)} RON',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ),
+        ],
       ),
     );
   }

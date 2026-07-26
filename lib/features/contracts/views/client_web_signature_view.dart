@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signature/signature.dart';
@@ -26,6 +25,13 @@ class _ClientWebSignatureViewState
   bool _isLoading = true;
   String? _errorMessage;
 
+  // Email verification gate
+  bool _isEmailVerified = false;
+  final _emailVerifyController = TextEditingController();
+  String? _emailVerifyError;
+  int _emailVerifyAttempts = 0;
+  static const int _maxEmailAttempts = 5;
+
   @override
   void initState() {
     super.initState();
@@ -40,7 +46,51 @@ class _ClientWebSignatureViewState
   @override
   void dispose() {
     _signatureController.dispose();
+    _emailVerifyController.dispose();
     super.dispose();
+  }
+
+  void _verifyEmail() {
+    if (_emailVerifyAttempts >= _maxEmailAttempts) {
+      setState(() {
+        _emailVerifyError =
+            'Too many failed attempts. Please contact your mentor for assistance.';
+      });
+      return;
+    }
+
+    final enteredEmail = _emailVerifyController.text.trim().toLowerCase();
+    final studentEmail = _contract?.enrollment?.student?.email
+        .trim()
+        .toLowerCase();
+
+    if (enteredEmail.isEmpty) {
+      setState(() {
+        _emailVerifyError = 'Please enter your email address.';
+      });
+      return;
+    }
+
+    if (studentEmail == null || studentEmail.isEmpty) {
+      // No student email on record — allow access (graceful fallback)
+      setState(() {
+        _isEmailVerified = true;
+      });
+      return;
+    }
+
+    if (enteredEmail == studentEmail) {
+      setState(() {
+        _isEmailVerified = true;
+        _emailVerifyError = null;
+      });
+    } else {
+      _emailVerifyAttempts++;
+      setState(() {
+        _emailVerifyError =
+            'Email does not match our records. ${_maxEmailAttempts - _emailVerifyAttempts} attempts remaining.';
+      });
+    }
   }
 
   Future<void> _loadContract() async {
@@ -246,7 +296,9 @@ class _ClientWebSignatureViewState
                     ),
                   ),
                 )
-              : SingleChildScrollView(
+              : _contract != null && !_isEmailVerified
+                  ? _buildEmailVerificationGate(theme)
+                  : SingleChildScrollView(
                   padding: const EdgeInsets.all(24),
                   child: Center(
                     child: Container(
@@ -474,6 +526,85 @@ class _ClientWebSignatureViewState
                     ),
                   ),
                 ),
+    );
+  }
+
+  Widget _buildEmailVerificationGate(ThemeData theme) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: Card(
+            elevation: 4,
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.verified_user_outlined,
+                      size: 48,
+                      color: Colors.blue.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Identity Verification',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'To view and sign this contract, please confirm your identity by entering the email address associated with your enrollment.',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey.shade700,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: _emailVerifyController,
+                    keyboardType: TextInputType.emailAddress,
+                    autofillHints: const [AutofillHints.email],
+                    decoration: InputDecoration(
+                      labelText: 'Your Email Address',
+                      prefixIcon: const Icon(Icons.email_outlined),
+                      border: const OutlineInputBorder(),
+                      errorText: _emailVerifyError,
+                    ),
+                    onSubmitted: (_) => _verifyEmail(),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _emailVerifyAttempts >= _maxEmailAttempts
+                          ? null
+                          : _verifyEmail,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue.shade800,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      icon: const Icon(Icons.check_circle_outline),
+                      label: const Text('Verify & View Contract'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

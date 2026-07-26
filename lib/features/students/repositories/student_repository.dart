@@ -10,13 +10,13 @@ class StudentRepository {
 
   StudentRepository(this._client);
 
-  /// Fetches all enrollments for a specific program, joining student details.
+  /// Fetches all enrollments for a specific program, joining student, program, and contract details.
   Future<List<EnrollmentModel>> fetchEnrollmentsForProgram(
       String programId) async {
     try {
       final response = await _client
           .from('enrollments')
-          .select('*, students(*), programs(*)')
+          .select('*, students(*), programs(*), contracts(*)')
           .eq('program_id', programId)
           .order('enrollment_date', ascending: false);
 
@@ -63,6 +63,50 @@ class StudentRepository {
       });
     } catch (e) {
       throw Exception('Failed to enroll student: $e');
+    }
+  }
+
+  /// Deletes an enrollment (and associated unsigned contracts/payments) for a student.
+  /// If the student has no other active enrollments, cleans up the student record.
+  Future<void> deleteEnrollment({
+    required String enrollmentId,
+    required String studentId,
+  }) async {
+    try {
+      // 1. Delete associated payments for this enrollment
+      await _client
+          .from('payments')
+          .delete()
+          .eq('enrollment_id', enrollmentId);
+
+      // 2. Delete associated contracts for this enrollment
+      await _client
+          .from('contracts')
+          .delete()
+          .eq('enrollment_id', enrollmentId);
+
+      // 3. Delete the enrollment record
+      await _client
+          .from('enrollments')
+          .delete()
+          .eq('id', enrollmentId);
+
+      // 4. Check if student has any other remaining enrollments
+      if (studentId.isNotEmpty) {
+        final remaining = await _client
+            .from('enrollments')
+            .select('id')
+            .eq('student_id', studentId);
+
+        if ((remaining as List).isEmpty) {
+          await _client
+              .from('students')
+              .delete()
+              .eq('id', studentId);
+        }
+      }
+    } catch (e) {
+      throw Exception('Failed to delete student enrollment: $e');
     }
   }
 }

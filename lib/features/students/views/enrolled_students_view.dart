@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../programs/models/program_model.dart';
 import '../controllers/student_controller.dart';
-import 'package:go_router/go_router.dart';
+import '../models/enrollment_model.dart';
+import '../models/student_model.dart';
 
 class EnrolledStudentsView extends ConsumerWidget {
   final ProgramModel program;
@@ -11,27 +13,14 @@ class EnrolledStudentsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final enrollmentsState =
+    final enrollmentsAsync =
         ref.watch(programEnrollmentsControllerProvider(program.id));
-
-    // Listen for state changes to display SnackBars for errors
-    ref.listen(programEnrollmentsControllerProvider(program.id),
-        (previous, next) {
-      if (next is AsyncError && !next.isLoading) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.error.toString()),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
-    });
 
     return Scaffold(
       appBar: AppBar(
         title: Text('${program.name} - Students'),
       ),
-      body: enrollmentsState.when(
+      body: enrollmentsAsync.when(
         data: (enrollments) {
           if (enrollments.isEmpty) {
             return Center(
@@ -46,13 +35,15 @@ class EnrolledStudentsView extends ConsumerWidget {
                   const SizedBox(height: 16),
                   Text(
                     'No students enrolled yet',
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Tap the button below to enroll a student!',
+                    'Click the + button below to enroll a student.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: Theme.of(context).colorScheme.outline,
                         ),
                   ),
                 ],
@@ -67,32 +58,21 @@ class EnrolledStudentsView extends ConsumerWidget {
               final enrollment = enrollments[index];
               final student = enrollment.student;
 
-              if (student == null) {
-                return const SizedBox.shrink();
-              }
+              if (student == null) return const SizedBox.shrink();
 
-              final dateStr = enrollment.enrollmentDate != null
-                  ? enrollment.enrollmentDate!
-                      .toLocal()
-                      .toString()
-                      .split(' ')[0]
+              final d = enrollment.enrollmentDate;
+              final dateStr = d != null
+                  ? '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}'
                   : 'N/A';
+
+              final canDelete = enrollment.canBeDeleted;
 
               return Card(
                 elevation: 1,
                 margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color: Theme.of(context).colorScheme.outlineVariant,
-                    width: 0.5,
-                  ),
-                ),
                 child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   leading: CircleAvatar(
                     backgroundColor:
                         Theme.of(context).colorScheme.primaryContainer,
@@ -147,11 +127,43 @@ class EnrolledStudentsView extends ConsumerWidget {
                         ),
                       ],
                       const SizedBox(height: 4),
-                      Text(
-                        'Enrolled: $dateStr',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: Theme.of(context).colorScheme.secondary,
+                      Row(
+                        children: [
+                          Text(
+                            'Enrolled: $dateStr',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: Theme.of(context).colorScheme.secondary,
+                                ),
+                          ),
+                          if (!canDelete) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade50,
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: Colors.green.shade200),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.verified,
+                                      size: 11, color: Colors.green.shade700),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    'Signed',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.green.shade800,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
+                          ],
+                        ],
                       ),
                     ],
                   ),
@@ -176,6 +188,29 @@ class EnrolledStudentsView extends ConsumerWidget {
                               extra: enrollment);
                         },
                       ),
+                      if (canDelete)
+                        IconButton(
+                          icon: Icon(Icons.delete_outline,
+                              color: Colors.red.shade400),
+                          tooltip: 'Delete Student',
+                          onPressed: () => _showDeleteConfirmationDialog(
+                              context, ref, enrollment, student),
+                        )
+                      else
+                        IconButton(
+                          icon: Icon(Icons.lock_outline,
+                              color: Colors.grey.shade400),
+                          tooltip: 'Cannot delete: Contract signed by beneficiary',
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'Cannot delete student after contract is signed by beneficiary.'),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                          },
+                        ),
                     ],
                   ),
                 ),
@@ -224,6 +259,63 @@ class EnrolledStudentsView extends ConsumerWidget {
         tooltip: 'Enroll New Student',
         child: const Icon(Icons.person_add_alt_1),
       ),
+    );
+  }
+
+  void _showDeleteConfirmationDialog(
+    BuildContext context,
+    WidgetRef ref,
+    EnrollmentModel enrollment,
+    StudentModel student,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.red.shade700),
+              const SizedBox(width: 10),
+              const Text('Delete Student'),
+            ],
+          ),
+          content: Text(
+            'Are you sure you want to delete ${student.name} (${student.email}) from ${program.name}?\n\nThis will remove their enrollment and any unsigned contract.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade700,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await ref
+                    .read(programEnrollmentsControllerProvider(program.id)
+                        .notifier)
+                    .removeStudentEnrollment(
+                      enrollmentId: enrollment.id,
+                      studentId: student.id,
+                    );
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Student ${student.name} deleted.'),
+                      backgroundColor: Colors.red.shade800,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Delete Student'),
+            ),
+          ],
+        );
+      },
     );
   }
 

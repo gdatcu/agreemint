@@ -7,7 +7,7 @@ part of 'mentor_auth_controller.dart';
 // **************************************************************************
 
 String _$mentorAuthControllerHash() =>
-    r'c94bb3ada57db5145a70d9ee4f570c038e68313e';
+    r'530dbb66e1c8790fca5010f3fb07f8e8e6fadf25';
 
 /// See also [MentorAuthController].
 @ProviderFor(MentorAuthController)

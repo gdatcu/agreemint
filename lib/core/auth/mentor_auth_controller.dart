@@ -1,35 +1,64 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'mentor_auth_controller.g.dart';
 
 @riverpod
 class MentorAuthController extends _$MentorAuthController {
-  static const String _authKey = 'is_mentor_authenticated';
+  StreamSubscription<AuthState>? _authSubscription;
 
   @override
   Future<bool> build() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_authKey) ?? false;
+    final client = Supabase.instance.client;
+    final session = client.auth.currentSession;
+
+    // Listen for auth state changes (login, logout, token refresh)
+    _authSubscription?.cancel();
+    _authSubscription = client.auth.onAuthStateChange.listen((data) {
+      final isAuthenticated = data.session != null;
+      state = AsyncValue.data(isAuthenticated);
+    });
+
+    // Clean up subscription when provider is disposed
+    ref.onDispose(() {
+      _authSubscription?.cancel();
+    });
+
+    return session != null;
   }
 
-  /// Authenticates the mentor with a passcode/PIN.
-  Future<bool> login(String passcode) async {
-    // Accepts 'qualiadept' or '1234' or mentor master passcode
-    final isValid = passcode.trim() == 'qualiadept' || passcode.trim() == '1234';
-    if (isValid) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_authKey, true);
-      state = const AsyncValue.data(true);
-      return true;
+  /// Authenticates the mentor with email and password via Supabase Auth.
+  Future<String?> login(String email, String password) async {
+    try {
+      final response = await Supabase.instance.client.auth.signInWithPassword(
+        email: email.trim(),
+        password: password.trim(),
+      );
+
+      if (response.session != null) {
+        state = const AsyncValue.data(true);
+        return null; // Success, no error
+      }
+      return 'Authentication failed. Please check your credentials.';
+    } on AuthException catch (e) {
+      debugPrint('Auth error: ${e.message}');
+      return e.message;
+    } catch (e) {
+      debugPrint('Login error: $e');
+      return 'An unexpected error occurred. Please try again.';
     }
-    return false;
   }
 
-  /// Logs out the mentor and revokes access to management routes.
+  /// Logs out the mentor and revokes the Supabase session.
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_authKey, false);
-    state = const AsyncValue.data(false);
+    try {
+      await Supabase.instance.client.auth.signOut();
+      state = const AsyncValue.data(false);
+    } catch (e) {
+      debugPrint('Logout error: $e');
+      state = const AsyncValue.data(false);
+    }
   }
 }

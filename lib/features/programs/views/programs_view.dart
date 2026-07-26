@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../controllers/program_controller.dart';
 import '../models/program_model.dart';
+import '../../analytics/controllers/analytics_controller.dart';
 
 class ProgramsView extends ConsumerWidget {
   const ProgramsView({super.key});
@@ -110,7 +111,7 @@ class ProgramsView extends ConsumerWidget {
                       ],
                       const SizedBox(height: 8),
                       Text(
-                        'Total Price: ${program.totalPrice.toStringAsFixed(2)} ${program.currency}',
+                        'Total Price: ${formatCurrencyAmount(program.totalPrice, program.currency)}',
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
                               color: Theme.of(context).colorScheme.primary,
                               fontWeight: FontWeight.w600,

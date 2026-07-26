@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AppUpdateInfo {
@@ -11,6 +12,7 @@ class AppUpdateInfo {
   final String apkDownloadUrl;
   final String releaseUrl;
   final bool hasUpdate;
+  final String currentVersion;
 
   AppUpdateInfo({
     required this.latestVersion,
@@ -18,17 +20,32 @@ class AppUpdateInfo {
     required this.apkDownloadUrl,
     required this.releaseUrl,
     required this.hasUpdate,
+    required this.currentVersion,
   });
 }
 
 class AppUpdateService {
-  static const String currentVersion = '1.0.0';
+  static const String _defaultVersion = '1.0.8';
   static const String _githubApiUrl =
       'https://api.github.com/repos/gdatcu/agreemint/releases/latest';
+
+  /// Gets current installed app version dynamically.
+  static Future<String> getCurrentVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (info.version.isNotEmpty && info.version != '0.0.0') {
+        return info.version;
+      }
+    } catch (e) {
+      debugPrint('Error reading package info: $e');
+    }
+    return _defaultVersion;
+  }
 
   /// Checks GitHub Releases API for new version availability.
   static Future<AppUpdateInfo?> checkForUpdates() async {
     try {
+      final currentVer = await getCurrentVersion();
       final response = await http.get(
         Uri.parse(_githubApiUrl),
         headers: {'Accept': 'application/vnd.github+json'},
@@ -52,7 +69,7 @@ class AppUpdateService {
           }
         }
 
-        final hasUpdate = _isVersionHigher(tagName, currentVersion);
+        final hasUpdate = _isVersionHigher(tagName, currentVer);
 
         return AppUpdateInfo(
           latestVersion: data['tag_name'] as String? ?? 'v$tagName',
@@ -60,6 +77,7 @@ class AppUpdateService {
           apkDownloadUrl: apkUrl,
           releaseUrl: htmlUrl,
           hasUpdate: hasUpdate,
+          currentVersion: currentVer,
         );
       }
     } catch (e) {
@@ -119,11 +137,63 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
     }
   }
 
+  void _handleUpdateClick() {
+    if (_updateInfo == null) return;
+
+    if (kIsWeb) {
+      AppUpdateService.launchUpdate(_updateInfo!.releaseUrl);
+    } else {
+      AppUpdateService.launchUpdate(_updateInfo!.apkDownloadUrl);
+
+      // Show clear guidance dialog for Android installation
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          icon: const Icon(Icons.download_for_offline, size: 40, color: Colors.deepPurple),
+          title: Text('Updating to ${_updateInfo!.latestVersion}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text(
+                '1. The APK is downloading in your mobile browser.',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              SizedBox(height: 8),
+              Text('2. When complete, open your Downloads or tap the notification to install.'),
+              SizedBox(height: 12),
+              Divider(),
+              SizedBox(height: 8),
+              Text(
+                '⚠️ Debug Build Note:',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepOrange),
+              ),
+              SizedBox(height: 4),
+              Text(
+                'If you previously installed the app via terminal (flutter run debug mode), Android will block the update due to signature mismatch.\n\nPlease uninstall the debug app first if installation fails.',
+                style: TextStyle(fontSize: 13, color: Colors.black87),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('OK, Got It'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_dismissed || _updateInfo == null || !_updateInfo!.hasUpdate) {
       return const SizedBox.shrink();
     }
+
+    final isWeb = kIsWeb;
+    final buttonLabel = isWeb ? 'View Release' : 'Update APK';
 
     return Container(
       width: double.infinity,
@@ -150,10 +220,11 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            onPressed: () =>
-                AppUpdateService.launchUpdate(_updateInfo!.apkDownloadUrl),
-            child: const Text('Update APK',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+            onPressed: _handleUpdateClick,
+            child: Text(
+              buttonLabel,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
           ),
           const SizedBox(width: 8),
           IconButton(

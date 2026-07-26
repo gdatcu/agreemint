@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,18 +12,50 @@ class AccessDeniedView extends ConsumerStatefulWidget {
 }
 
 class _AccessDeniedViewState extends ConsumerState<AccessDeniedView> {
-  final _passcodeController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _isLoggingIn = false;
   String? _errorMessage;
+  bool _obscurePassword = true;
+
+  // Rate limiting
+  int _failedAttempts = 0;
+  int _lockoutSecondsRemaining = 0;
+  Timer? _lockoutTimer;
+  static const int _maxAttempts = 5;
+  static const int _lockoutDurationSeconds = 60;
 
   @override
   void dispose() {
-    _passcodeController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _lockoutTimer?.cancel();
     super.dispose();
   }
 
+  bool get _isLockedOut => _lockoutSecondsRemaining > 0;
+
+  void _startLockout() {
+    _lockoutSecondsRemaining = _lockoutDurationSeconds;
+    _lockoutTimer?.cancel();
+    _lockoutTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      setState(() {
+        _lockoutSecondsRemaining--;
+        if (_lockoutSecondsRemaining <= 0) {
+          _failedAttempts = 0;
+          timer.cancel();
+        }
+      });
+    });
+  }
+
   Future<void> _showLoginDialog() async {
-    _passcodeController.clear();
+    _emailController.clear();
+    _passwordController.clear();
     _errorMessage = null;
 
     showDialog(
@@ -35,7 +68,7 @@ class _AccessDeniedViewState extends ConsumerState<AccessDeniedView> {
                 children: [
                   Icon(Icons.shield_outlined, color: Colors.blue),
                   SizedBox(width: 10),
-                  Text('Mentor Authentication'),
+                  Text('Mentor Login'),
                 ],
               ),
               content: Column(
@@ -43,22 +76,102 @@ class _AccessDeniedViewState extends ConsumerState<AccessDeniedView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Enter your security passcode to unlock management features:',
+                    'Sign in with your mentor account credentials:',
                   ),
                   const SizedBox(height: 16),
                   TextField(
-                    controller: _passcodeController,
-                    obscureText: true,
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    autofillHints: const [AutofillHints.email],
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: Icon(Icons.email_outlined),
+                      border: OutlineInputBorder(),
+                    ),
+                    onSubmitted: (_) =>
+                        FocusScope.of(context).nextFocus(),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _passwordController,
+                    obscureText: _obscurePassword,
+                    autofillHints: const [AutofillHints.password],
                     decoration: InputDecoration(
-                      labelText: 'Mentor Security Passcode',
-                      hintText: 'ex: qualiadept',
-                      errorText: _errorMessage,
+                      labelText: 'Password',
+                      prefixIcon: const Icon(Icons.lock_outlined),
                       border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+                        onPressed: () {
+                          setDialogState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
                     ),
                     onSubmitted: (_) async {
-                      await _handleLogin(setDialogState);
+                      if (!_isLockedOut) {
+                        await _handleLogin(setDialogState);
+                      }
                     },
                   ),
+                  if (_errorMessage != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.error_outline,
+                              color: Colors.red.shade700, size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: TextStyle(
+                                color: Colors.red.shade900,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  if (_isLockedOut) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.orange.shade300),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.timer,
+                              color: Colors.orange.shade800, size: 18),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Too many failed attempts. Try again in ${_lockoutSecondsRemaining}s.',
+                            style: TextStyle(
+                              color: Colors.orange.shade900,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
               actions: [
@@ -67,7 +180,7 @@ class _AccessDeniedViewState extends ConsumerState<AccessDeniedView> {
                   child: const Text('Cancel'),
                 ),
                 ElevatedButton(
-                  onPressed: _isLoggingIn
+                  onPressed: (_isLoggingIn || _isLockedOut)
                       ? null
                       : () async {
                           await _handleLogin(setDialogState);
@@ -78,7 +191,7 @@ class _AccessDeniedViewState extends ConsumerState<AccessDeniedView> {
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Unlock Dashboard'),
+                      : const Text('Sign In'),
                 ),
               ],
             );
@@ -90,24 +203,41 @@ class _AccessDeniedViewState extends ConsumerState<AccessDeniedView> {
 
   Future<void> _handleLogin(
       void Function(void Function()) setDialogState) async {
+    if (_isLockedOut) return;
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      setDialogState(() {
+        _errorMessage = 'Please enter both email and password.';
+      });
+      return;
+    }
+
     setDialogState(() {
       _isLoggingIn = true;
       _errorMessage = null;
     });
 
-    final success = await ref
+    final error = await ref
         .read(mentorAuthControllerProvider.notifier)
-        .login(_passcodeController.text);
+        .login(email, password);
 
-    if (success) {
+    if (error == null) {
+      // Success
       if (mounted) {
         Navigator.of(context).pop();
         context.go('/programs');
       }
     } else {
+      _failedAttempts++;
+      if (_failedAttempts >= _maxAttempts) {
+        _startLockout();
+      }
       setDialogState(() {
         _isLoggingIn = false;
-        _errorMessage = 'Invalid passcode. Please try again.';
+        _errorMessage = error;
       });
     }
   }
@@ -129,7 +259,8 @@ class _AccessDeniedViewState extends ConsumerState<AccessDeniedView> {
                 ref.read(mentorAuthControllerProvider.notifier).logout();
               },
               icon: const Icon(Icons.logout, color: Colors.white70),
-              label: const Text('Sign Out', style: TextStyle(color: Colors.white70)),
+              label: const Text('Sign Out',
+                  style: TextStyle(color: Colors.white70)),
             ),
         ],
       ),
@@ -176,8 +307,10 @@ class _AccessDeniedViewState extends ConsumerState<AccessDeniedView> {
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 32),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 12,
+                            alignment: WrapAlignment.center,
                             children: [
                               ElevatedButton.icon(
                                 onPressed: () => context.go('/programs'),
@@ -188,14 +321,14 @@ class _AccessDeniedViewState extends ConsumerState<AccessDeniedView> {
                                       horizontal: 24, vertical: 14),
                                 ),
                                 icon: const Icon(Icons.dashboard),
-                                label: const Text('Go to Programs Dashboard'),
+                                label:
+                                    const Text('Go to Programs Dashboard'),
                               ),
-                              const SizedBox(width: 12),
                               OutlinedButton.icon(
                                 onPressed: () {
                                   ref
-                                      .read(
-                                          mentorAuthControllerProvider.notifier)
+                                      .read(mentorAuthControllerProvider
+                                          .notifier)
                                       .logout();
                                 },
                                 icon: const Icon(Icons.logout),
@@ -247,11 +380,12 @@ class _AccessDeniedViewState extends ConsumerState<AccessDeniedView> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.school, color: Colors.blue),
+                                const Icon(Icons.school,
+                                    color: Colors.blue),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    'Are you a Student?\nPlease open the direct contract signing link provided by your mentor (e.g. apps.qualiadept.eu/agreemint/#/sign/<contract_id>).',
+                                    'Are you a Student?\nPlease open the direct contract signing link provided by your mentor.',
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: Colors.blue.shade900,
@@ -265,7 +399,7 @@ class _AccessDeniedViewState extends ConsumerState<AccessDeniedView> {
 
                           // Section 2: For Mentors/Admins
                           Text(
-                            'Are you the Program Creator / Mentor?',
+                            'Are you a Program Creator / Mentor?',
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -279,8 +413,8 @@ class _AccessDeniedViewState extends ConsumerState<AccessDeniedView> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 28, vertical: 14),
                             ),
-                            icon: const Icon(Icons.key),
-                            label: const Text('Mentor Passcode Login'),
+                            icon: const Icon(Icons.login),
+                            label: const Text('Mentor Sign In'),
                           ),
                         ],
                       ),

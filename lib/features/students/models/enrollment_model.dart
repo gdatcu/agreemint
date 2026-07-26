@@ -1,5 +1,6 @@
 import 'student_model.dart';
 import '../../programs/models/program_model.dart';
+import '../../contracts/models/contract_model.dart';
 
 class EnrollmentModel {
   final String id;
@@ -8,6 +9,7 @@ class EnrollmentModel {
   final DateTime? enrollmentDate;
   final StudentModel? student;
   final ProgramModel? program;
+  final ContractModel? contract;
 
   const EnrollmentModel({
     required this.id,
@@ -16,11 +18,22 @@ class EnrollmentModel {
     this.enrollmentDate,
     this.student,
     this.program,
+    this.contract,
   });
 
+  /// True if the contract has been signed by the student / beneficiary.
+  bool get isSignedByBeneficiary {
+    if (contract == null) return false;
+    return contract!.status == 'FullySigned' ||
+        contract!.clientSignatureUrl != null ||
+        contract!.clientSignedDate != null;
+  }
+
+  /// A student can be deleted if the contract has NOT been signed by the beneficiary yet.
+  bool get canBeDeleted => !isSignedByBeneficiary;
+
   /// Factory constructor to parse PostgreSQL json results cleanly and defensively.
-  /// Handles nested `students` and `programs` objects returned from relational joins,
-  /// whether returned as a Map or a List from PostgREST.
+  /// Handles nested `students`, `programs`, and `contracts` objects from relational joins.
   factory EnrollmentModel.fromJson(Map<String, dynamic> json) {
     final studentRaw = json['students'];
     Map<String, dynamic>? studentJson;
@@ -38,6 +51,14 @@ class EnrollmentModel {
       programJson = programRaw.first as Map<String, dynamic>?;
     }
 
+    final contractRaw = json['contracts'];
+    Map<String, dynamic>? contractJson;
+    if (contractRaw is Map<String, dynamic>) {
+      contractJson = contractRaw;
+    } else if (contractRaw is List && contractRaw.isNotEmpty) {
+      contractJson = contractRaw.first as Map<String, dynamic>?;
+    }
+
     return EnrollmentModel(
       id: json['id'] as String? ?? '',
       programId: json['program_id'] as String? ?? '',
@@ -47,6 +68,7 @@ class EnrollmentModel {
           : null,
       student: studentJson != null ? StudentModel.fromJson(studentJson) : null,
       program: programJson != null ? ProgramModel.fromJson(programJson) : null,
+      contract: contractJson != null ? ContractModel.fromJson(contractJson) : null,
     );
   }
 
@@ -60,6 +82,7 @@ class EnrollmentModel {
         'enrollment_date': enrollmentDate?.toIso8601String(),
       if (student != null) 'students': student?.toJson(),
       if (program != null) 'programs': program?.toJson(),
+      if (contract != null) 'contracts': contract?.toJson(),
     };
   }
 }

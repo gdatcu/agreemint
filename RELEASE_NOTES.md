@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.5 Release Notes
+# 🚀 Agreemint v1.0.8 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -17,10 +17,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 New in Version 1.0.5
+## 🎨 What's New in Version 1.0.8
 
-- 💎 **Brand Identity & Favicon**: Added custom Agreemint app icon, launcher mipmaps, and web favicons.
-- 📝 **Automated Release Notes**: Integrated `RELEASE_NOTES.md` directly into GitHub Actions release workflows.
-- 📱 **Android Network Fix**: Enabled `INTERNET` and `ACCESS_NETWORK_STATE` permissions in `AndroidManifest.xml`.
-- 🌐 **Direct Server FTP Deploy**: Direct deployment to `apps.qualiadept.eu/agreemint/`.
-- 📦 **APK & Web Zips**: Streamlined standalone Android APK (`app-release.apk`) and Web Release bundle (`web-release.zip`).
+- 🔒 **Student Deletion Protection & Confirmation**: Added explicit confirmation modal for unsigned student deletion while locking deletion for students with signed contracts (`canBeDeleted`).
+- 🔐 **Enhanced Access Control & Mentor Auth**: Refined access control views and mentor authentication state handling.
+- 📊 **Advanced Analytics & Financial Dashboard**: Enhanced financial metrics, currency summaries, and installment performance tracking.
+- 🖋️ **Web Signature & Public Contract Verification**: Improved client web signature flow and contract signature validation.
+- 📦 **Dynamic Version Alignment**: Bumped app version to `v1.0.8` (`1.0.8+8`) with automated GitHub Release and FTP deployment workflows.

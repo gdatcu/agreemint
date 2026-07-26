@@ -33,10 +33,16 @@ jobs:
         run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Build Android APK
-        run: flutter build apk --release
+        run: |
+          flutter build apk --release \
+            --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
+            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
 
       - name: Build Web Release
-        run: flutter build web --base-href "/agreemint/" --release
+        run: |
+          flutter build web --base-href "/agreemint/" --release \
+            --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
+            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
 
       - name: Zip Web Release
         run: |
