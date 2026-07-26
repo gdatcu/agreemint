@@ -8,6 +8,8 @@ class PaymentModel {
   final DateTime dueDate;
   final String status;
   final String? paymentMethod;
+  final String? receiptUrl;
+  final DateTime? receiptGeneratedAt;
   final EnrollmentModel? enrollment;
 
   const PaymentModel({
@@ -18,6 +20,8 @@ class PaymentModel {
     required this.dueDate,
     required this.status,
     this.paymentMethod,
+    this.receiptUrl,
+    this.receiptGeneratedAt,
     this.enrollment,
   });
 
@@ -41,6 +45,10 @@ class PaymentModel {
           : DateTime.now(),
       status: json['status'] as String? ?? 'Pending',
       paymentMethod: json['payment_method'] as String?,
+      receiptUrl: json['receipt_url'] as String?,
+      receiptGeneratedAt: json['receipt_generated_at'] != null
+          ? DateTime.tryParse(json['receipt_generated_at'] as String)
+          : null,
       enrollment: enrollmentJson != null
           ? EnrollmentModel.fromJson(enrollmentJson)
           : null,
@@ -56,6 +64,8 @@ class PaymentModel {
       'due_date': dueDate.toIso8601String(),
       'status': status,
       'payment_method': paymentMethod,
+      'receipt_url': receiptUrl,
+      'receipt_generated_at': receiptGeneratedAt?.toIso8601String(),
       if (enrollment != null) 'enrollments': enrollment?.toJson(),
     };
   }

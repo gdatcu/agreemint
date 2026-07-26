@@ -86,12 +86,12 @@ class ReceiptGeneratorService {
                         ),
                       pw.SizedBox(height: 4),
                       pw.Text(
-                        'QualiAdept Mentorship Platform',
+                        'QualiAdept (George-Cristian Datcu PFA)',
                         style: const pw.TextStyle(
                             fontSize: 10, color: PdfColors.grey700),
                       ),
                       pw.Text(
-                        'Bucuresti, Romania | CIF: RO123456',
+                        'Bucuresti, Romania',
                         style: const pw.TextStyle(
                             fontSize: 9, color: PdfColors.grey600),
                       ),
@@ -349,9 +349,9 @@ class ReceiptGeneratorService {
                         ),
                       pw.SizedBox(height: 4),
                       pw.Text(
-                        'QualiAdept SRL',
+                        'George-Cristian Datcu PFA',
                         style: const pw.TextStyle(
-                            fontSize: 8, color: PdfColors.grey500),
+                            fontSize: 8, color: PdfColors.grey600),
                       ),
                     ],
                   ),
@@ -364,7 +364,7 @@ class ReceiptGeneratorService {
               // Footer Note
               pw.Center(
                 child: pw.Text(
-                  'Agreemint (c) ${DateTime.now().year} QualiAdept. Generat automat / Automatically generated.',
+                  'Agreemint (c) ${DateTime.now().year} George-Cristian Datcu PFA. Generat automat / Automatically generated.',
                   style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
                 ),
               ),

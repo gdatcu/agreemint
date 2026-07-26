@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -148,6 +149,40 @@ class PaymentRepository {
       await _client.from('payments').delete().eq('id', paymentId);
     } catch (e) {
       throw Exception('Failed to delete installment: $e');
+    }
+  }
+
+  /// Uploads a generated PDF receipt to Supabase Storage bucket 'contracts' (under receipts/)
+  /// and updates the database row with the public URL and generation timestamp.
+  Future<String> uploadReceiptPdf({
+    required String paymentId,
+    required String enrollmentId,
+    required Uint8List pdfBytes,
+  }) async {
+    try {
+      final fileName = 'receipts/${enrollmentId}_${paymentId}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      await _client.storage.from('contracts').uploadBinary(
+            fileName,
+            pdfBytes,
+            fileOptions: const FileOptions(
+              contentType: 'application/pdf',
+              upsert: true,
+            ),
+          );
+
+      final publicUrl = _client.storage.from('contracts').getPublicUrl(fileName);
+      final now = DateTime.now();
+
+      try {
+        await _client.from('payments').update({
+          'receipt_url': publicUrl,
+          'receipt_generated_at': now.toIso8601String(),
+        }).eq('id', paymentId);
+      } catch (_) {}
+
+      return publicUrl;
+    } catch (e) {
+      throw Exception('Failed to upload receipt PDF: $e');
     }
   }
 }

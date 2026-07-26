@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -51,6 +52,7 @@ void main() {
       expect(() => repo.createPaymentPlan(enrollmentId: 'e1', totalAmount: 100, numberOfInstallments: 0), throwsA(anything));
       expect(() => repo.recordPayment(paymentId: 'p1', amountPaid: 100, status: 'Paid', paymentMethod: 'Cash'), throwsA(anything));
       expect(() => repo.addInstallment(enrollmentId: 'e1', amountDue: 100, dueDate: DateTime.now()), throwsA(anything));
+      expect(() => repo.uploadReceiptPdf(paymentId: 'p1', enrollmentId: 'e1', pdfBytes: Uint8List.fromList([])), throwsA(anything));
     });
   });
 }

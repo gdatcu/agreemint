@@ -167,6 +167,8 @@ void main() {
         'due_date': now.toIso8601String(),
         'status': 'Paid',
         'payment_method': 'Bank Transfer',
+        'receipt_url': 'https://storage/receipts/pay-1.pdf',
+        'receipt_generated_at': now.toIso8601String(),
         'enrollments': [
           {
             'id': 'enr-1',
@@ -184,6 +186,8 @@ void main() {
       expect(payment.amountPaid, 500.0);
       expect(payment.status, 'Paid');
       expect(payment.paymentMethod, 'Bank Transfer');
+      expect(payment.receiptUrl, 'https://storage/receipts/pay-1.pdf');
+      expect(payment.receiptGeneratedAt, isNotNull);
       expect(payment.enrollment, isNotNull);
 
       final serialized = payment.toJson();
@@ -192,6 +196,7 @@ void main() {
       expect(serialized['amount_paid'], 500.0);
       expect(serialized['status'], 'Paid');
       expect(serialized['payment_method'], 'Bank Transfer');
+      expect(serialized['receipt_url'], 'https://storage/receipts/pay-1.pdf');
     });
   });
 }

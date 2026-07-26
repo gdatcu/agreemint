@@ -890,9 +890,10 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
     );
 
     try {
+      final now = DateTime.now();
       final pdfBytes = await ReceiptGeneratorService().generateReceiptPdf(
         receiptNumber: receiptNumber,
-        paymentDate: payment.dueDate,
+        paymentDate: now,
         studentName: student?.name ?? 'Cursant',
         studentEmail: student?.email ?? 'N/A',
         programName: program?.name ?? 'Program Mentorat',
@@ -904,6 +905,15 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
         transactionReference: payment.id,
       );
 
+      // Persist receipt PDF to Supabase Storage and database record
+      try {
+        await ref.read(paymentRepositoryProvider).uploadReceiptPdf(
+              paymentId: payment.id,
+              enrollmentId: widget.enrollment.id,
+              pdfBytes: pdfBytes,
+            );
+      } catch (_) {}
+
       if (context.mounted) {
         Navigator.of(context).pop(); // dismiss loading dialog
         showDialog(
@@ -912,9 +922,9 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
             pdfBytes: pdfBytes,
             filename: 'Chitanta_$receiptNumber.pdf',
             onSignReceipt: (signatureBytes) async {
-              return await ReceiptGeneratorService().generateReceiptPdf(
+              final signedPdfBytes = await ReceiptGeneratorService().generateReceiptPdf(
                 receiptNumber: receiptNumber,
-                paymentDate: payment.dueDate,
+                paymentDate: DateTime.now(),
                 studentName: student?.name ?? 'Cursant',
                 studentEmail: student?.email ?? 'N/A',
                 programName: program?.name ?? 'Program Mentorat',
@@ -926,6 +936,16 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                 transactionReference: payment.id,
                 mentorSignatureBytes: signatureBytes,
               );
+
+              try {
+                await ref.read(paymentRepositoryProvider).uploadReceiptPdf(
+                      paymentId: payment.id,
+                      enrollmentId: widget.enrollment.id,
+                      pdfBytes: signedPdfBytes,
+                    );
+              } catch (_) {}
+
+              return signedPdfBytes;
             },
           ),
         );
