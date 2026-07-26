@@ -25,7 +25,7 @@ class AppUpdateInfo {
 }
 
 class AppUpdateService {
-  static const String _defaultVersion = '1.0.9';
+  static const String _defaultVersion = '1.0.10';
   static const String _githubApiUrl =
       'https://api.github.com/repos/gdatcu/agreemint/releases/latest';
 
@@ -69,7 +69,7 @@ class AppUpdateService {
           }
         }
 
-        final hasUpdate = _isVersionHigher(tagName, currentVer);
+        final hasUpdate = isVersionHigher(tagName, currentVer);
 
         return AppUpdateInfo(
           latestVersion: data['tag_name'] as String? ?? 'v$tagName',
@@ -86,7 +86,8 @@ class AppUpdateService {
     return null;
   }
 
-  static bool _isVersionHigher(String latest, String current) {
+  @visibleForTesting
+  static bool isVersionHigher(String latest, String current) {
     try {
       final lParts = latest.split('.').map((e) => int.tryParse(e) ?? 0).toList();
       final cParts = current.split('.').map((e) => int.tryParse(e) ?? 0).toList();
