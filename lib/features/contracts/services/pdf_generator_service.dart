@@ -43,9 +43,14 @@ class PdfGeneratorService {
     Uint8List? clientSignatureBytes,
   }) async {
     // Load Unicode fonts supporting Romanian diacritics
-    final baseFont = await PdfGoogleFonts.robotoRegular();
-    final boldFont = await PdfGoogleFonts.robotoBold();
-    final italicFont = await PdfGoogleFonts.robotoItalic();
+    pw.Font baseFont = pw.Font.helvetica();
+    pw.Font boldFont = pw.Font.helveticaBold();
+    pw.Font italicFont = pw.Font.helveticaOblique();
+    try {
+      baseFont = await PdfGoogleFonts.robotoRegular();
+      boldFont = await PdfGoogleFonts.robotoBold();
+      italicFont = await PdfGoogleFonts.robotoItalic();
+    } catch (_) {}
 
     // Load QualiAdept logo asset
     pw.MemoryImage? logoImage;
@@ -61,6 +66,7 @@ class PdfGeneratorService {
         base: baseFont,
         bold: boldFont,
         italic: italicFont,
+        fontFallback: [baseFont],
       ),
     );
     final formattedDate = date.toLocal().toString().split(' ')[0];
@@ -111,7 +117,7 @@ class PdfGeneratorService {
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
                   children: [
                     pw.Text(
-                      'CONTRACT DE PRESTĂRI SERVICII DE MENTORAT TEHNIC',
+                      'CONTRACT DE PRESTARI SERVICII DE MENTORAT TEHNIC',
                       style: pw.TextStyle(
                           fontSize: 9, fontWeight: pw.FontWeight.bold),
                     ),
@@ -135,9 +141,9 @@ class PdfGeneratorService {
             pw.Divider(thickness: 0.5, color: PdfColors.grey400),
             pw.SizedBox(height: 12),
 
-            // 1. PĂRȚILE CONTRACTANTE / THE CONTRACTING PARTIES
+            // 1. PARTILE CONTRACTANTE / THE CONTRACTING PARTIES
             pw.Text(
-              '1. PĂRȚILE CONTRACTANTE / THE CONTRACTING PARTIES',
+              '1. PARTILE CONTRACTANTE / THE CONTRACTING PARTIES',
               style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold),
             ),
             pw.SizedBox(height: 4),
@@ -151,22 +157,22 @@ class PdfGeneratorService {
                   ),
                   pw.TextSpan(
                     text:
-                        '$prestatorNume, sediu profesional în $prestatorSediu, Reg. Com. nr. $prestatorRegCom, EUID: $prestatorEuid, CUI/CIF: $prestatorCif, reprezentată legal prin Datcu George-Cristian, IBAN: $prestatorIban ($prestatorBanca), denumită "Prestator" / hereinafter "Provider".\n\n'
-                        'și / and\n\n',
+                        '$prestatorNume, sediu profesional in $prestatorSediu, Reg. Com. nr. $prestatorRegCom, EUID: $prestatorEuid, CUI/CIF: $prestatorCif, reprezentata legal prin Datcu George-Cristian, IBAN: $prestatorIban ($prestatorBanca), denumita "Prestator" / hereinafter "Provider".\n\n'
+                        'si / and\n\n',
                   ),
                   pw.TextSpan(
                     text: '1.2. BENEFICIARUL / BENEFICIARY:\n',
                     style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                   ),
                   pw.TextSpan(
-                    text: '• Nume și Prenume / Full Name: $studentName\n'
-                        '• Adresă / Address: $adresaCursant\n'
-                        '• CNP: $cnpCursant | Serie & Nr. CI / IC Series & No: $serieNrCi (eliberat de / issued by $eliberatorCi la / on $dataEliberariiCi)\n'
-                        '• Email: $emailCursant | Telefon / Phone: $telefonCursant\n\n',
+                    text: '- Nume si Prenume / Full Name: $studentName\n'
+                        '- Adresa / Address: $adresaCursant\n'
+                        '- CNP: $cnpCursant | Serie & Nr. CI / IC Series & No: $serieNrCi (eliberat de / issued by $eliberatorCi la / on $dataEliberariiCi)\n'
+                        '- Email: $emailCursant | Telefon / Phone: $telefonCursant\n\n',
                   ),
                   const pw.TextSpan(
                     text:
-                        'Denumit în continuare "Beneficiar" sau "Cursant" / hereinafter "Beneficiary" or "Student". Părțile au convenit încheierea prezentului contract / The parties agreed to conclude this contract:',
+                        'Denumit in continuare "Beneficiar" sau "Cursant" / hereinafter "Beneficiary" or "Student". Partile au convenit incheierea prezentului contract / The parties agreed to conclude this contract:',
                   ),
                 ],
               ),
@@ -180,122 +186,122 @@ class PdfGeneratorService {
             ),
             pw.SizedBox(height: 4),
             pw.Text(
-              '2.1. Obiectul prezentului Contract îl reprezintă prestarea serviciilor de mentorat tehnic, consultanță practică și îndrumare educațională în domeniul testării software (QA Automation), denumit „$programName”.\n'
+              '2.1. Obiectul prezentului Contract il reprezinta prestarea serviciilor de mentorat tehnic, consultanta practica si indrumare educationala in domeniul testarii software (QA Automation), denumit "$programName".\n'
               'The subject of this Contract is technical mentoring, practical consulting, and educational guidance services in QA Automation, hereinafter referred to as "$programName".\n\n'
-              '2.2. $programName constă în $editionName a modulului bazat pe $techCurriculum, desfășurat exclusiv pentru $benEntity.\n'
+              '2.2. $programName consta in $editionName a modulului bazat pe $techCurriculum, desfasurat exclusiv pentru $benEntity.\n'
               '$programName consists of $editionName of the learning module based on $techCurriculum, developed exclusively for $benEntity.\n\n'
-              '2.3. Serviciile vor fi prestate sub formă de $svcDesc. Durata estimată: $durataOre ore ($nrSesiuni sesiuni). Data începerii: $dataIncepere ($frecventa).\n'
+              '2.3. Serviciile vor fi prestate sub forma de $svcDesc. Durata estimata: $durataOre ore ($nrSesiuni sesiuni). Data inceperii: $dataIncepere ($frecventa).\n'
               'Services will be provided as $svcDesc. Estimated duration: $durataOre hours ($nrSesiuni sessions). Start date: $dataIncepere ($frecventa).',
               style: const pw.TextStyle(fontSize: 8),
             ),
             pw.SizedBox(height: 10),
 
-            // 3. PREȚUL ȘI MODALITATEA DE PLATĂ / PRICE AND PAYMENT METHOD
+            // 3. PRETUL SI MODALITATEA DE PLATA / PRICE AND PAYMENT METHOD
             pw.Text(
-              '3. PREȚUL ȘI MODALITATEA DE PLATĂ / PRICE AND PAYMENT METHOD',
+              '3. PRETUL SI MODALITATEA DE PLATA / PRICE AND PAYMENT METHOD',
               style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold),
             ),
             pw.SizedBox(height: 4),
             pw.Text(
-              '3.1. Prețul total este de ${priceRon.toStringAsFixed(2)} RON ($priceLitere lei), reprezentând un preț preferențial acordat exclusiv Beneficiarului.\n'
+              '3.1. Pretul total este de ${priceRon.toStringAsFixed(2)} RON ($priceLitere lei), reprezentand un pret preferential acordat exclusiv Beneficiarului.\n'
               'The total price is ${priceRon.toStringAsFixed(2)} RON ($priceLitere), representing a preferential price granted exclusively to the Beneficiary.\n\n'
-              '3.2. Plata se va efectua $modalitatePlata în contul Prestatorului menționat la Art. 1.1., în termen de maxim $payTerm de la data emiterii facturii.\n'
+              '3.2. Plata se va efectua $modalitatePlata in contul Prestatorului mentionat la Art. 1.1., in termen de maxim $payTerm de la data emiterii facturii.\n'
               'Payment shall be made $modalitatePlata to the Provider\'s account within $payTerm from invoice issuance.\n\n'
-              '3.3. Factura fiscală va fi transmisă pe adresa de email furnizată imediat după semnarea contractului.\n'
+              '3.3. Factura fiscala va fi transmisa pe adresa de email furnizata imediat dupa semnarea contractului.\n'
               'The tax invoice will be sent to the provided email immediately after contract signing.',
               style: const pw.TextStyle(fontSize: 8),
             ),
             pw.SizedBox(height: 10),
 
-            // 4. OBLIGAȚIILE PĂRȚILOR / OBLIGATIONS OF THE PARTIES
+            // 4. OBLIGATIILE PARTILOR / OBLIGATIONS OF THE PARTIES
             pw.Text(
-              '4. OBLIGAȚIILE PĂRȚILOR / OBLIGATIONS OF THE PARTIES',
+              '4. OBLIGATIILE PARTILOR / OBLIGATIONS OF THE PARTIES',
               style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold),
             ),
             pw.SizedBox(height: 4),
             pw.Text(
-              '4.1. Obligațiile Prestatorului / Provider\'s Obligations:\n'
-              '• a) Să livreze sesiunile la standarde profesionale înalte / Deliver sessions to high professional standards.\n'
-              '• b) Să stabilească data de începere de comun acord / Establish course start date by mutual agreement.\n'
-              '• c) Să pună la dispoziție înregistrările sesiunilor live (pentru vizionare personală) / Provide recordings for personal viewing.\n'
-              '• d) Declară pe proprie răspundere că materialele predate sunt originale / Declares taught materials represent original work.\n\n'
-              '4.2. Obligațiile Beneficiarului / Beneficiary\'s Obligations:\n'
-              '• a) Să achite prețul integral la termenul stabilit / Pay full price by the agreed deadline.\n'
-              '• b) Să participe activ la sesiunile live (prezență recomandată 75%) / Actively participate (target 75% attendance).\n'
-              '• c) Să ofere feedback constructiv / Provide constructive feedback.\n'
-              '• d) Să ofere o recenzie (testimonial video sau scris) la finalizarea Programului / Provide a review/testimonial upon completion.',
+              '4.1. Obligatiile Prestatorului / Provider\'s Obligations:\n'
+              '- a) Sa livreze sesiunile la standarde profesionale inalte / Deliver sessions to high professional standards.\n'
+              '- b) Sa stabileasca data de incepere de comun acord / Establish course start date by mutual agreement.\n'
+              '- c) Sa puna la dispozitie inregistrarile sesiunilor live (pentru vizionare personala) / Provide recordings for personal viewing.\n'
+              '- d) Declara pe proprie raspundere ca materialele predate sunt originale / Declares taught materials represent original work.\n\n'
+              '4.2. Obligatiile Beneficiarului / Beneficiary\'s Obligations:\n'
+              '- a) Sa achite pretul integral la termenul stabilit / Pay full price by the agreed deadline.\n'
+              '- b) Sa participe activ la sesiunile live (prezenta recomandata 75%) / Actively participate (target 75% attendance).\n'
+              '- c) Sa ofere feedback constructiv / Provide constructive feedback.\n'
+              '- d) Sa ofere o recenzie (testimonial video sau scris) la finalizarea Programului / Provide a review/testimonial upon completion.',
               style: const pw.TextStyle(fontSize: 8),
             ),
             pw.SizedBox(height: 10),
 
-            // 5. DREPTURI DE PROPRIETATE INTELECTUALĂ / INTELLECTUAL PROPERTY RIGHTS
+            // 5. DREPTURI DE PROPRIETATE INTELECTUALA / INTELLECTUAL PROPERTY RIGHTS
             pw.Text(
-              '5. DREPTURI DE PROPRIETATE INTELECTUALĂ / INTELLECTUAL PROPERTY RIGHTS',
+              '5. DREPTURI DE PROPRIETATE INTELECTUALA / INTELLECTUAL PROPERTY RIGHTS',
               style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold),
             ),
             pw.SizedBox(height: 4),
             pw.Text(
-              '5.1. Materialele puse la dispoziție reprezintă proprietatea intelectuală exclusivă a Prestatorului.\n'
+              '5.1. Materialele puse la dispozitie reprezinta proprietatea intelectuala exclusiva a Prestatorului.\n'
               'All materials provided represent the exclusive intellectual property of the Provider.\n'
-              '5.2. Beneficiarul le folosește strict în scop personal și educațional / Strictly for personal and educational use.\n'
-              '5.3. Este interzisă copierea, distribuirea sau publicarea materialelor / Reproduction, copying, or distribution is prohibited.',
+              '5.2. Beneficiarul le foloseste strict in scop personal si educational / Strictly for personal and educational use.\n'
+              '5.3. Este interzisa copierea, distribuirea sau publicarea materialelor / Reproduction, copying, or distribution is prohibited.',
               style: const pw.TextStyle(fontSize: 8),
             ),
             pw.SizedBox(height: 10),
 
             // 6. GDPR & AUDIO-VIDEO RECORDINGS
             pw.Text(
-              '6. GDPR ȘI ÎNREGISTRĂRI AUDIO-VIDEO / GDPR AND AUDIO-VIDEO RECORDINGS',
+              '6. GDPR SI INREGISTRARI AUDIO-VIDEO / GDPR AND AUDIO-VIDEO RECORDINGS',
               style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold),
             ),
             pw.SizedBox(height: 4),
             pw.Text(
-              '6.1. Beneficiarul este de acord cu prelucrarea datelor personale în scopul executării contractului.\n'
+              '6.1. Beneficiarul este de acord cu prelucrarea datelor personale in scopul executarii contractului.\n'
               'The Beneficiary consents to personal data processing for contract execution.\n'
-              '6.2. Consimțământ explicit pentru înregistrare audio-video în timpul sesiunilor live (scop educațional intern).\n'
+              '6.2. Simultan consimtamant explicit pentru inregistrare audio-video in timpul sesiunilor live (scop educational intern).\n'
               'Explicit consent to audio-video recording during live sessions for internal educational purposes.',
               style: const pw.TextStyle(fontSize: 8),
             ),
             pw.SizedBox(height: 10),
 
-            // 7. POLITICA DE ANULARE ȘI RAMBURSARE / CANCELLATION AND REFUND POLICY
+            // 7. POLITICA DE ANULARE SI RAMBURSARE / CANCELLATION AND REFUND POLICY
             pw.Text(
-              '7. POLITICA DE ANULARE ȘI RAMBURSARE / CANCELLATION AND REFUND POLICY',
+              '7. POLITICA DE ANULARE SI RAMBURSARE / CANCELLATION AND REFUND POLICY',
               style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold),
             ),
             pw.SizedBox(height: 4),
             pw.Text(
-              '7.1. Retragere și rambursare integrală cu până la $refDeadline înainte de prima sesiune live.\n'
+              '7.1. Retragere si rambursare integrala cu pana la $refDeadline inainte de prima sesiune live.\n'
               'Withdrawal and full refund up to $refDeadline before the first live session.\n'
-              '7.2. După începerea Programului nu se efectuează rambursări / No refunds are granted after Program start.',
+              '7.2. Dupa inceperea Programului nu se efectueaza rambursari / No refunds are granted after Program start.',
               style: const pw.TextStyle(fontSize: 8),
             ),
             pw.SizedBox(height: 10),
 
-            // 8. ÎNCETAREA CONTRACTULUI ȘI FORȚA MAJORĂ / TERMINATION AND FORCE MAJEURE
+            // 8. INCETAREA CONTRACTULUI SI FORTA MAJORA / TERMINATION AND FORCE MAJEURE
             pw.Text(
-              '8. ÎNCETAREA CONTRACTULUI ȘI FORȚA MAJORĂ / TERMINATION AND FORCE MAJEURE',
+              '8. INCETAREA CONTRACTULUI SI FORTA MAJORA / TERMINATION AND FORCE MAJEURE',
               style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold),
             ),
             pw.SizedBox(height: 4),
             pw.Text(
-              '8.1. Contractul încetează la finalizarea orelor de mentorat / Contract terminates upon mentoring completion.\n'
-              '8.2. Reziliere unilaterală în caz de neplată sau încălcare GDPR/Proprietate Intelectuală / Unilateral termination on non-payment or IP breach.\n'
-              '8.3. Forța majoră apără de răspundere conform legii / Force majeure releases liability under the law.',
+              '8.1. Contractul inceteaza la finalizarea orelor de mentorat / Contract terminates upon mentoring completion.\n'
+              '8.2. Reziliere unilaterala in caz de neplata sau incalcare GDPR/Proprietate Intelectuala / Unilateral termination on non-payment or IP breach.\n'
+              '8.3. Forta majora apara de raspundere conform legii / Force majeure releases liability under the law.',
               style: const pw.TextStyle(fontSize: 8),
             ),
             pw.SizedBox(height: 10),
 
-            // 9. DISPOZIȚII FINALE / FINAL PROVISIONS
+            // 9. DISPOZITII FINALE / FINAL PROVISIONS
             pw.Text(
-              '9. DISPOZIȚII FINALE / FINAL PROVISIONS',
+              '9. DISPOZITII FINALE / FINAL PROVISIONS',
               style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold),
             ),
             pw.SizedBox(height: 4),
             pw.Text(
-              '9.1. Prezentul contract a fost agreat la distanță. Transmiterea semnată reprezintă acceptarea integrală.\n'
+              '9.1. Prezentul contract a fost agreat la distanta. Transmiterea semnata reprezinta acceptarea integrala.\n'
               'Agreed via distance communication. Signed transmission represents full acceptance.\n'
-              '9.2. Neînțelegerile se rezolvă pe cale amiabilă / Disagreements will be resolved amicably.',
+              '9.2. Neintelegerile se rezolva pe cale amiabila / Disagreements will be resolved amicably.',
               style: const pw.TextStyle(fontSize: 8),
             ),
             pw.SizedBox(height: 16),
@@ -339,7 +345,7 @@ class PdfGeneratorService {
                       ),
                     pw.SizedBox(height: 4),
                     pw.Text(
-                      'Semnătură / Signature',
+                      'Semnatura / Signature',
                       style: const pw.TextStyle(fontSize: 7.5),
                     ),
                   ],
@@ -381,7 +387,7 @@ class PdfGeneratorService {
                       ),
                     pw.SizedBox(height: 4),
                     pw.Text(
-                      'Semnătură & Data / Signature & Date',
+                      'Semnatura & Data / Signature & Date',
                       style: const pw.TextStyle(fontSize: 7.5),
                     ),
                   ],

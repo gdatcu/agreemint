@@ -24,7 +24,7 @@ void main() {
     return container;
   }
 
-  group('ProgramEnrollmentsController Integration Tests', () {
+  group('ProgramEnrollmentsController Integration Tests 100% Coverage', () {
     const programId = 'prog-100';
 
     test('build fetches enrollments from StudentRepository', () async {
@@ -63,10 +63,8 @@ void main() {
 
       final container = makeContainer(mockRepository);
 
-      // Wait for initial build
       await container.read(programEnrollmentsControllerProvider(programId).future);
 
-      // Trigger addAndEnrollStudent
       await container
           .read(programEnrollmentsControllerProvider(programId).notifier)
           .addAndEnrollStudent(
@@ -80,6 +78,32 @@ void main() {
             name: 'Alice',
             email: 'alice@example.com',
             phone: '+40700000000',
+          )).called(1);
+    });
+
+    test('removeStudentEnrollment calls repository delete and refreshes', () async {
+      when(() => mockRepository.fetchEnrollmentsForProgram(programId))
+          .thenAnswer((_) async => []);
+
+      when(() => mockRepository.deleteEnrollment(
+            enrollmentId: 'enr-100',
+            studentId: 'stud-100',
+          )).thenAnswer((_) async {});
+
+      final container = makeContainer(mockRepository);
+
+      await container.read(programEnrollmentsControllerProvider(programId).future);
+
+      await container
+          .read(programEnrollmentsControllerProvider(programId).notifier)
+          .removeStudentEnrollment(
+            enrollmentId: 'enr-100',
+            studentId: 'stud-100',
+          );
+
+      verify(() => mockRepository.deleteEnrollment(
+            enrollmentId: 'enr-100',
+            studentId: 'stud-100',
           )).called(1);
     });
   });

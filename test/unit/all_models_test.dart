@@ -48,6 +48,25 @@ void main() {
       expect(serialized['price_ron'], 4500.0);
     });
 
+    test('ContractModel.fromJson with total_price fallback and null fields', () {
+      final json = {
+        'id': 'cnt-fallback',
+        'enrollment_id': 'enr-1',
+        'contract_number': 10,
+        'total_price': 2500.5,
+      };
+
+      final contract = ContractModel.fromJson(json);
+
+      expect(contract.id, 'cnt-fallback');
+      expect(contract.contractNumber, 10);
+      expect(contract.priceRon, 2500.5);
+      expect(contract.pdfUrl, isNull);
+      expect(contract.signedPdfUrl, isNull);
+      expect(contract.signedDate, isNull);
+      expect(contract.status, 'Draft');
+    });
+
     test('ContractModel.printMigration executes without error', () {
       const contract = ContractModel(
         id: 'cnt-1',
@@ -55,6 +74,85 @@ void main() {
         contractNumber: 1,
       );
       expect(() => contract.printMigration(), returnsNormally);
+    });
+  });
+
+  group('StudentModel Complete 100% Coverage Unit Tests', () {
+    test('StudentModel fromJson and toJson with all fields', () {
+      final now = DateTime.now();
+      final json = {
+        'id': 'stud-full',
+        'name': 'Maria Ionescu',
+        'email': 'maria@example.com',
+        'phone': '+40722123456',
+        'created_at': now.toIso8601String(),
+      };
+
+      final student = StudentModel.fromJson(json);
+
+      expect(student.id, 'stud-full');
+      expect(student.name, 'Maria Ionescu');
+      expect(student.email, 'maria@example.com');
+      expect(student.phone, '+40722123456');
+      expect(student.createdAt, isNotNull);
+
+      final serialized = student.toJson();
+      expect(serialized['id'], 'stud-full');
+      expect(serialized['phone'], '+40722123456');
+      expect(serialized['created_at'], isNotNull);
+    });
+
+    test('StudentModel fromJson and toJson with null phone and createdAt', () {
+      final json = {
+        'id': 'stud-minimal',
+        'name': 'Dan Radu',
+        'email': 'dan@example.com',
+      };
+
+      final student = StudentModel.fromJson(json);
+
+      expect(student.id, 'stud-minimal');
+      expect(student.phone, isNull);
+      expect(student.createdAt, isNull);
+
+      final serialized = student.toJson();
+      expect(serialized['id'], 'stud-minimal');
+      expect(serialized.containsKey('created_at'), false);
+    });
+  });
+
+  group('EnrollmentModel Complete 100% Coverage Unit Tests', () {
+    test('EnrollmentModel parses List representation for relational joins', () {
+      final now = DateTime.now();
+      final json = {
+        'id': 'enr-list',
+        'program_id': 'prog-list',
+        'student_id': 'stud-list',
+        'enrollment_date': now.toIso8601String(),
+        'students': [
+          {'id': 'stud-list', 'name': 'List Student', 'email': 'list@example.com'}
+        ],
+        'programs': [
+          {'id': 'prog-list', 'name': 'List Program', 'total_price': 999.0}
+        ],
+        'contracts': [
+          {'id': 'cnt-list', 'enrollment_id': 'enr-list', 'contract_number': 5, 'status': 'Draft'}
+        ],
+      };
+
+      final enrollment = EnrollmentModel.fromJson(json);
+
+      expect(enrollment.id, 'enr-list');
+      expect(enrollment.student?.name, 'List Student');
+      expect(enrollment.program?.name, 'List Program');
+      expect(enrollment.contract?.contractNumber, 5);
+      expect(enrollment.canBeDeleted, true);
+
+      final serialized = enrollment.toJson();
+      expect(serialized['id'], 'enr-list');
+      expect(serialized['students'], isNotNull);
+      expect(serialized['programs'], isNotNull);
+      expect(serialized['contracts'], isNotNull);
     });
   });
 

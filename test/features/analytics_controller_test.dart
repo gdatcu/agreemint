@@ -14,6 +14,10 @@ void main() {
     test('formats USD currency with prefix', () {
       expect(formatCurrencyAmount(99.99, 'USD'), '\$99.99');
     });
+
+    test('formats default currency fallback', () {
+      expect(formatCurrencyAmount(100.00, 'GBP'), '100.00 GBP');
+    });
   });
 
   group('AnalyticsSummary Formatting Tests', () {
