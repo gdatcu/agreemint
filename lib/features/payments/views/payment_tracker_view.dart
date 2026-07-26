@@ -5,6 +5,8 @@ import '../controllers/payment_controller.dart';
 import '../models/payment_model.dart';
 import '../repositories/payment_repository.dart';
 import '../../../core/services/frankfurter_service.dart';
+import '../services/receipt_generator_service.dart';
+import 'receipt_preview_dialog.dart';
 
 class PaymentTrackerView extends ConsumerStatefulWidget {
   final EnrollmentModel enrollment;
@@ -382,6 +384,14 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            if (payment.amountPaid > 0)
+                              IconButton(
+                                icon: const Icon(Icons.receipt_long,
+                                    size: 20, color: Colors.indigo),
+                                tooltip: 'Chitanță / Generate Receipt PDF',
+                                onPressed: () => _generateAndShowReceipt(
+                                    context, payment, index + 1, payments.length),
+                              ),
                             IconButton(
                               icon: const Icon(Icons.edit_outlined, size: 20),
                               tooltip: 'Edit / Record Payment',
@@ -859,5 +869,61 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
         );
       },
     );
+  }
+
+  Future<void> _generateAndShowReceipt(
+    BuildContext context,
+    PaymentModel payment,
+    int installmentIndex,
+    int totalInstallments,
+  ) async {
+    final student = widget.enrollment.student;
+    final program = widget.enrollment.program;
+    final currency = program?.currency ?? 'EUR';
+    final shortId = payment.id.length > 6 ? payment.id.substring(0, 6).toUpperCase() : payment.id.toUpperCase();
+    final receiptNumber = 'REC-${DateTime.now().year}-$shortId';
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final pdfBytes = await ReceiptGeneratorService().generateReceiptPdf(
+        receiptNumber: receiptNumber,
+        paymentDate: payment.dueDate,
+        studentName: student?.name ?? 'Cursant',
+        studentEmail: student?.email ?? 'N/A',
+        programName: program?.name ?? 'Program Mentorat',
+        installmentNumber: installmentIndex,
+        totalInstallments: totalInstallments,
+        amountPaid: payment.amountPaid > 0 ? payment.amountPaid : payment.amountDue,
+        currency: currency,
+        paymentMethod: payment.paymentMethod ?? 'Bank Transfer',
+        transactionReference: payment.id,
+      );
+
+      if (context.mounted) {
+        Navigator.of(context).pop(); // dismiss loading dialog
+        showDialog(
+          context: context,
+          builder: (context) => ReceiptPreviewDialog(
+            pdfBytes: pdfBytes,
+            filename: 'Chitanta_$receiptNumber.pdf',
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to generate receipt: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
