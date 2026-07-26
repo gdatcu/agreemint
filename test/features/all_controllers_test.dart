@@ -19,6 +19,10 @@ class MockContractRepository extends Mock implements ContractRepository {}
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  setUpAll(() {
+    registerFallbackValue(Uint8List(0));
+  });
+
   late MockProgramRepository mockProgramRepo;
   late MockPaymentRepository mockPaymentRepo;
   late MockContractRepository mockContractRepo;
@@ -116,10 +120,38 @@ void main() {
     });
   });
 
-  group('EnrollmentPaymentsController Unit Tests 100% Coverage', () {
+  group('EnrollmentPaymentsController & GlobalPendingPaymentsController Unit Tests 100% Coverage', () {
     const enrollmentId = 'enr-999';
 
-    test('build, generatePlan, logPayment, and addExtraInstallment execute cleanly', () async {
+    test('GlobalPendingPaymentsController build fetches global pending payments', () async {
+      final List<PaymentModel> mockGlobalPayments = [
+        PaymentModel(
+          id: 'pay-global-1',
+          enrollmentId: 'enr-global',
+          amountDue: 300,
+          amountPaid: 0,
+          dueDate: DateTime.now(),
+          status: 'Pending',
+        ),
+      ];
+
+      when(() => mockPaymentRepo.fetchGlobalPendingPayments())
+          .thenAnswer((_) async => mockGlobalPayments);
+
+      final container = ProviderContainer(
+        overrides: [
+          paymentRepositoryProvider.overrideWithValue(mockPaymentRepo),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container
+          .read(globalPendingPaymentsControllerProvider.future);
+      expect(result, mockGlobalPayments);
+      verify(() => mockPaymentRepo.fetchGlobalPendingPayments()).called(1);
+    });
+
+    test('build, generatePlan, logPayment, and deleteInstallment execute cleanly', () async {
       final mockPayments = [
         PaymentModel(
           id: 'pay-1',
@@ -134,6 +166,9 @@ void main() {
       when(() => mockPaymentRepo.fetchPaymentsForEnrollment(enrollmentId))
           .thenAnswer((_) async => mockPayments);
 
+      when(() => mockPaymentRepo.fetchGlobalPendingPayments())
+          .thenAnswer((_) async => []);
+
       when(() => mockPaymentRepo.createPaymentPlan(
             enrollmentId: enrollmentId,
             totalAmount: 1000,
@@ -147,13 +182,8 @@ void main() {
             paymentMethod: 'Bank Transfer',
           )).thenAnswer((_) async {});
 
-      final now = DateTime.now();
-      when(() => mockPaymentRepo.addSingleInstallment(
-            enrollmentId: enrollmentId,
-            amountDue: 250,
-            dueDate: now,
-            paymentMethod: 'Cash',
-          )).thenAnswer((_) async {});
+      when(() => mockPaymentRepo.deleteInstallment('pay-1'))
+          .thenAnswer((_) async {});
 
       final container = ProviderContainer(
         overrides: [
@@ -176,11 +206,7 @@ void main() {
         status: 'Paid',
         paymentMethod: 'Bank Transfer',
       );
-      await notifier.addExtraInstallment(
-        amountDue: 250,
-        dueDate: now,
-        paymentMethod: 'Cash',
-      );
+      await notifier.deleteInstallment('pay-1');
 
       verify(() => mockPaymentRepo.createPaymentPlan(
             enrollmentId: enrollmentId,
@@ -195,12 +221,7 @@ void main() {
             paymentMethod: 'Bank Transfer',
           )).called(1);
 
-      verify(() => mockPaymentRepo.addSingleInstallment(
-            enrollmentId: enrollmentId,
-            amountDue: 250,
-            dueDate: now,
-            paymentMethod: 'Cash',
-          )).called(1);
+      verify(() => mockPaymentRepo.deleteInstallment('pay-1')).called(1);
     });
   });
 
@@ -266,7 +287,7 @@ void main() {
             contractId: 'cnt-placeholder',
             enrollmentId: enrollmentId,
             pdfBytes: any(named: 'pdfBytes'),
-          )).thenAnswer((_) async => 'https://storage/contract.pdf');
+          )).thenAnswer((_) async => mockFinalContract);
 
       when(() => mockContractRepo.updateStatus(
             contractId: 'cnt-placeholder',

@@ -8,6 +8,8 @@ import 'package:agreemint/features/programs/controllers/program_controller.dart'
 import 'package:agreemint/features/analytics/views/analytics_view.dart';
 import 'package:agreemint/core/auth/mentor_auth_controller.dart';
 import 'package:agreemint/features/payments/views/pending_dashboard_view.dart';
+import 'package:agreemint/features/payments/controllers/payment_controller.dart';
+import 'package:agreemint/features/payments/models/payment_model.dart';
 
 void main() {
   group('AccessDeniedView Widget Tests', () {
@@ -64,8 +66,12 @@ void main() {
   group('AnalyticsView & PendingDashboardView Widget Tests', () {
     testWidgets('AnalyticsView renders summary cards', (WidgetTester tester) async {
       await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(
+        ProviderScope(
+          overrides: [
+            programControllerProvider.overrideWith(() => MockProgramController([])),
+            globalPendingPaymentsControllerProvider.overrideWith(() => MockGlobalPaymentsController([])),
+          ],
+          child: const MaterialApp(
             home: Scaffold(
               body: AnalyticsView(),
             ),
@@ -79,8 +85,11 @@ void main() {
 
     testWidgets('PendingDashboardView renders tab structure', (WidgetTester tester) async {
       await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(
+        ProviderScope(
+          overrides: [
+            globalPendingPaymentsControllerProvider.overrideWith(() => MockGlobalPaymentsController([])),
+          ],
+          child: const MaterialApp(
             home: Scaffold(
               body: PendingDashboardView(),
             ),
@@ -100,6 +109,16 @@ class MockProgramController extends ProgramController {
 
   @override
   Future<List<ProgramModel>> build() async {
+    return data;
+  }
+}
+
+class MockGlobalPaymentsController extends GlobalPendingPaymentsController {
+  final List<PaymentModel> data;
+  MockGlobalPaymentsController(this.data);
+
+  @override
+  Future<List<PaymentModel>> build() async {
     return data;
   }
 }

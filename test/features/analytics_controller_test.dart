@@ -20,7 +20,7 @@ void main() {
     });
   });
 
-  group('AnalyticsSummary Formatting Tests', () {
+  group('AnalyticsSummary Comprehensive Unit Tests', () {
     test('formattedExpectedRevenue joins multiple currencies with +', () {
       const summary = AnalyticsSummary(
         totalStudents: 10,
@@ -38,9 +38,12 @@ void main() {
 
       expect(summary.formattedExpectedRevenue, '1,000.00 EUR + 2,500.00 RON');
       expect(summary.formattedCollectedRevenue, '1,500.00 RON');
+      expect(summary.hasMultipleCurrenciesOrEur, isTrue);
+      expect(summary.collectionProgress, closeTo(0.20, 0.01));
+      expect(summary.pendingBalanceInRon, equals(5975.0));
     });
 
-    test('returns 0.00 RON for empty expected revenue', () {
+    test('returns 0.00 RON for empty expected revenue and zero progress', () {
       const summary = AnalyticsSummary(
         totalStudents: 0,
         expectedRevenueByCurrency: {},
@@ -52,6 +55,23 @@ void main() {
 
       expect(summary.formattedExpectedRevenue, '0.00 RON');
       expect(summary.formattedCollectedRevenue, '0.00 RON');
+      expect(summary.hasMultipleCurrenciesOrEur, isFalse);
+      expect(summary.collectionProgress, equals(0.0));
+      expect(summary.pendingBalanceInRon, equals(0.0));
+    });
+
+    test('pendingBalanceInRon returns 0 when collected exceeds expected', () {
+      const summary = AnalyticsSummary(
+        totalStudents: 5,
+        expectedRevenueByCurrency: {'RON': 1000.0},
+        revenueCollectedByCurrency: {'RON': 1200.0},
+        totalExpectedInRon: 1000.0,
+        totalCollectedInRon: 1200.0,
+        liveEurRate: 4.975,
+      );
+
+      expect(summary.collectionProgress, equals(1.0));
+      expect(summary.pendingBalanceInRon, equals(0.0));
     });
   });
 }

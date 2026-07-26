@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:agreemint/core/constants.dart';
-import 'package:agreemint/core/views/app_shell_view.dart';
+import 'package:agreemint/core/services/app_update_service.dart';
 import 'package:agreemint/features/programs/models/program_model.dart';
 import 'package:agreemint/features/students/models/student_model.dart';
 import 'package:agreemint/features/students/models/enrollment_model.dart';
@@ -48,6 +48,23 @@ void main() {
       expect(AppConstants.supabaseUrl, isNotEmpty);
       expect(AppConstants.supabaseAnonKey, isNotEmpty);
       expect(AppConstants.clientPortalBaseUrl, contains('https://apps.qualiadept.eu/'));
+    });
+  });
+
+  group('UpdateCheckBanner Widget Tests', () {
+    testWidgets('UpdateCheckBanner renders cleanly without error', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: UpdateCheckBanner(),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      expect(find.byType(UpdateCheckBanner), findsOneWidget);
     });
   });
 
