@@ -115,12 +115,49 @@ class EnrollmentContractController extends _$EnrollmentContractController {
         pdfBytes: pdfBytes,
       );
 
-      // 5. Set contract status to PendingClient and update mentor signature url
+      // 5. Build contract details map snapshot to preserve contract terms
+      final contractDetails = {
+        'contract_number': placeholder.contractNumber,
+        'student_name': studentName,
+        'adresa_cursant': adresaCursant,
+        'cnp_cursant': cnpCursant,
+        'serie_nr_ci': serieNrCi,
+        'eliberator_ci': eliberatorCi,
+        'data_eliberarii_ci': dataEliberariiCi,
+        'email_cursant': emailCursant,
+        'telefon_cursant': telefonCursant,
+        'program_name': programName,
+        'edition_name': editionName,
+        'durata_ore': durataOre,
+        'nr_sesiuni': nrSesiuni,
+        'data_incepere': dataIncepere,
+        'frecventa': frecventa,
+        'price_ron': priceRon,
+        'price_litere': priceLitere,
+        'modalitate_plata': modalitatePlata,
+        'prestator_nume': prestatorNume,
+        'prestator_sediu': prestatorSediu,
+        'prestator_reg_com': prestatorRegCom,
+        'prestator_cif': prestatorCif,
+        'prestator_euid': prestatorEuid,
+        'prestator_iban': prestatorIban,
+        'prestator_banca': prestatorBanca,
+        if (technologiesCurriculum != null)
+          'technologies_curriculum': technologiesCurriculum,
+        if (beneficiaryEntity != null) 'beneficiary_entity': beneficiaryEntity,
+        if (serviceDescription != null)
+          'service_description': serviceDescription,
+        if (paymentTerm != null) 'payment_term': paymentTerm,
+        if (refundDeadline != null) 'refund_deadline': refundDeadline,
+      };
+
+      // 6. Set contract status to PendingClient, save details snapshot, and update mentor signature url
       final finalContract = await repository.updateStatus(
         contractId: placeholder.id,
         status: 'PendingClient',
         mentorSignatureUrl: mentorSigUrl,
         priceRon: priceRon,
+        details: contractDetails,
       );
 
       return finalContract;
@@ -146,33 +183,45 @@ class EnrollmentContractController extends _$EnrollmentContractController {
         signatureBytes: clientSignatureBytes,
       );
 
+      final d = contract.details ?? {};
+      final mentorSigBytes =
+          await repository.fetchMentorSignatureBytes(enrollmentId);
+      final student = contract.enrollment?.student;
+      final program = contract.enrollment?.program;
+
       final pdfBytes = await _pdfService.generateContractPdf(
-        contractNumber: contract.contractNumber.toString(),
+        contractNumber: (d['contract_number'] ?? contract.contractNumber).toString(),
         date: contract.signedDate ?? DateTime.now(),
-        studentName: '',
-        adresaCursant: '',
-        cnpCursant: '',
-        serieNrCi: '',
-        eliberatorCi: '',
-        dataEliberariiCi: '',
-        emailCursant: '',
-        telefonCursant: '',
-        programName: '',
-        editionName: '',
-        durataOre: 0,
-        nrSesiuni: 0,
-        dataIncepere: '',
-        frecventa: '',
-        priceRon: 0.0,
-        priceLitere: '',
-        modalitatePlata: '',
-        prestatorNume: '',
-        prestatorSediu: '',
-        prestatorRegCom: '',
-        prestatorCif: '',
-        prestatorIban: '',
-        prestatorBanca: '',
-        mentorSignatureBytes: Uint8List(0),
+        studentName: d['student_name'] as String? ?? student?.name ?? 'Beneficiar Program Mentorat',
+        adresaCursant: d['adresa_cursant'] as String? ?? '',
+        cnpCursant: d['cnp_cursant'] as String? ?? '',
+        serieNrCi: d['serie_nr_ci'] as String? ?? '',
+        eliberatorCi: d['eliberator_ci'] as String? ?? '',
+        dataEliberariiCi: d['data_eliberarii_ci'] as String? ?? '',
+        emailCursant: d['email_cursant'] as String? ?? student?.email ?? '',
+        telefonCursant: d['telefon_cursant'] as String? ?? student?.phone ?? '',
+        programName: d['program_name'] as String? ?? program?.name ?? 'Program Mentorat Tehnic',
+        editionName: d['edition_name'] as String? ?? 'Ediția Curentă',
+        durataOre: (d['durata_ore'] as num?)?.toInt() ?? 40,
+        nrSesiuni: (d['nr_sesiuni'] as num?)?.toInt() ?? 20,
+        dataIncepere: d['data_incepere'] as String? ?? DateTime.now().toIso8601String().split('T')[0],
+        frecventa: d['frecventa'] as String? ?? '1 sesiune pe săptămână',
+        priceRon: (d['price_ron'] as num?)?.toDouble() ?? contract.priceRon ?? program?.totalPrice ?? 0.0,
+        priceLitere: d['price_litere'] as String? ?? '',
+        modalitatePlata: d['modalitate_plata'] as String? ?? 'Conform înțelegerii',
+        prestatorNume: d['prestator_nume'] as String? ?? 'DATCU GEORGE-CRISTIAN PERSOANA FIZICĂ AUTORIZATĂ',
+        prestatorSediu: d['prestator_sediu'] as String? ?? 'Bucureşti Sectorul 1, Bulevardul BUCUREŞTII NOI, Nr. 136, Etaj PARTER, Ap. 5',
+        prestatorRegCom: d['prestator_reg_com'] as String? ?? 'F2026003426005',
+        prestatorCif: d['prestator_cif'] as String? ?? '53430793',
+        prestatorEuid: d['prestator_euid'] as String? ?? 'ROONRC.F2026003426005',
+        prestatorIban: d['prestator_iban'] as String? ?? 'RO54ROIN4021Q3YWTH1KTUTH',
+        prestatorBanca: d['prestator_banca'] as String? ?? 'Salt Bank',
+        technologiesCurriculum: d['technologies_curriculum'] as String?,
+        beneficiaryEntity: d['beneficiary_entity'] as String?,
+        serviceDescription: d['service_description'] as String?,
+        paymentTerm: d['payment_term'] as String?,
+        refundDeadline: d['refund_deadline'] as String?,
+        mentorSignatureBytes: mentorSigBytes,
         clientSignatureBytes: clientSignatureBytes,
       );
 

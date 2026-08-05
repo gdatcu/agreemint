@@ -13,6 +13,7 @@ class ContractModel {
   final String? clientSignatureUrl;
   final DateTime? clientSignedDate;
   final double? priceRon;
+  final Map<String, dynamic>? details;
   final EnrollmentModel? enrollment;
 
   const ContractModel({
@@ -28,6 +29,7 @@ class ContractModel {
     this.clientSignatureUrl,
     this.clientSignedDate,
     this.priceRon,
+    this.details,
     this.enrollment,
   });
 
@@ -55,6 +57,12 @@ class ContractModel {
       enrollmentJson = enrollmentRaw.first as Map<String, dynamic>?;
     }
 
+    final rawDetails = json['details'] ?? json['contract_details'];
+    Map<String, dynamic>? detailsJson;
+    if (rawDetails is Map<String, dynamic>) {
+      detailsJson = rawDetails;
+    }
+
     return ContractModel(
       id: json['id'] as String? ?? '',
       enrollmentId: json['enrollment_id'] as String? ?? '',
@@ -75,6 +83,7 @@ class ContractModel {
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'] as String)
           : null,
+      details: detailsJson,
       enrollment: enrollmentJson != null
           ? EnrollmentModel.fromJson(enrollmentJson)
           : null,
@@ -98,6 +107,7 @@ class ContractModel {
       if (clientSignedDate != null)
         'client_signed_date': clientSignedDate?.toIso8601String(),
       if (priceRon != null) 'price_ron': priceRon,
+      if (details != null) 'details': details,
       if (createdAt != null) 'created_at': createdAt?.toIso8601String(),
       if (enrollment != null) 'enrollments': enrollment?.toJson(),
     };
@@ -105,6 +115,6 @@ class ContractModel {
 
   void printMigration() {
     print(
-        'ALTER TABLE contracts\n      ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT \'Draft\',\n      ADD COLUMN IF NOT EXISTS mentor_signature_url TEXT,\n      ADD COLUMN IF NOT EXISTS client_signature_url TEXT,\n      ADD COLUMN IF NOT EXISTS client_signed_date TIMESTAMP WITH TIME ZONE,\n      ADD COLUMN IF NOT EXISTS price_ron NUMERIC,\n      ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE;');
+        'ALTER TABLE contracts\n      ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT \'Draft\',\n      ADD COLUMN IF NOT EXISTS mentor_signature_url TEXT,\n      ADD COLUMN IF NOT EXISTS client_signature_url TEXT,\n      ADD COLUMN IF NOT EXISTS client_signed_date TIMESTAMP WITH TIME ZONE,\n      ADD COLUMN IF NOT EXISTS price_ron NUMERIC,\n      ADD COLUMN IF NOT EXISTS details JSONB,\n      ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE;');
   }
 }

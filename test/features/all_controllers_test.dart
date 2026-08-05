@@ -294,6 +294,7 @@ void main() {
             status: 'PendingClient',
             mentorSignatureUrl: 'https://storage/mentor.png',
             priceRon: 5000.0,
+            details: any(named: 'details'),
           )).thenAnswer((_) async => mockFinalContract);
 
       final container = ProviderContainer(
@@ -356,6 +357,7 @@ void main() {
             status: 'PendingClient',
             mentorSignatureUrl: 'https://storage/mentor.png',
             priceRon: 5000.0,
+            details: any(named: 'details'),
           )).called(1);
     });
   });

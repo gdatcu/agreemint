@@ -95,6 +95,7 @@ CREATE POLICY "Anon can read enrollments for contract signing" ON enrollments
 -- 4. CONTRACTS TABLE
 -- ============================================================================
 ALTER TABLE contracts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS details JSONB;
 
 DROP POLICY IF EXISTS "Authenticated users full access to contracts" ON contracts;
 DROP POLICY IF EXISTS "Anon can read contracts for signing" ON contracts;

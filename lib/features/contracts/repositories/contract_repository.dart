@@ -290,7 +290,7 @@ class ContractRepository {
     }
   }
 
-  /// Updates contract status column and price.
+  /// Updates contract status column, price, and contract details snapshot.
   Future<ContractModel> updateStatus({
     required String contractId,
     required String status,
@@ -298,6 +298,7 @@ class ContractRepository {
     String? clientSignatureUrl,
     DateTime? clientSignedDate,
     double? priceRon,
+    Map<String, dynamic>? details,
   }) async {
     try {
       final Map<String, dynamic> updates = {'status': status};
@@ -312,6 +313,9 @@ class ContractRepository {
       }
       if (priceRon != null) {
         updates['price_ron'] = priceRon;
+      }
+      if (details != null) {
+        updates['details'] = details;
       }
 
       final response = await _client

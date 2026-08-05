@@ -21,6 +21,11 @@ void main() {
         'client_signed_date': '2026-07-01T12:00:00Z',
         'price_ron': 4500.0,
         'created_at': '2026-07-01T10:00:00Z',
+        'details': {
+          'prestator_iban': 'RO54ROIN4021Q3YWTH1KTUTH',
+          'durata_ore': 50,
+          'modalitate_plata': 'în 2 tranșe egale',
+        },
         'enrollments': {
           'id': 'enr-100',
           'program_id': 'prog-1',
@@ -38,6 +43,9 @@ void main() {
       expect(contract.signedDate, isNotNull);
       expect(contract.status, 'FullySigned');
       expect(contract.priceRon, 4500.0);
+      expect(contract.details, isNotNull);
+      expect(contract.details?['prestator_iban'], 'RO54ROIN4021Q3YWTH1KTUTH');
+      expect(contract.details?['durata_ore'], 50);
       expect(contract.enrollment, isNotNull);
       expect(contract.enrollment?.id, 'enr-100');
 
@@ -46,6 +54,8 @@ void main() {
       expect(serialized['contract_number'], 42);
       expect(serialized['status'], 'FullySigned');
       expect(serialized['price_ron'], 4500.0);
+      expect(serialized['details'], isNotNull);
+      expect(serialized['details']['prestator_iban'], 'RO54ROIN4021Q3YWTH1KTUTH');
     });
 
     test('ContractModel.fromJson with total_price fallback and null fields', () {

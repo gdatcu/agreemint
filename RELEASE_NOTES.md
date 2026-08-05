@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.18 Release Notes
+# 🚀 Agreemint v1.0.19 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -17,9 +17,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.18
+## 🎨 What's New in Version 1.0.19
 
-- 🔒 **Permanent Contract & Signature Storage URLs**: Replaced 1-hour expiring signed storage URLs (`createSignedUrl`) with permanent public URLs (`getPublicUrl`), fixing HTTP 400 `InvalidJWT` errors on contract access.
-- 🔄 **Retroactive URL Normalization**: Added automatic conversion in `ContractModel.fromJson` to transform any legacy expiring signed URLs (`/object/sign/` with `?token=...`) into permanent public URLs (`/object/public/`), restoring access to all previously signed contracts.
-- 🧪 **Unit Test Coverage**: Added tests for contract URL normalization and public URL generation.
-- 📦 **Dynamic Version Alignment**: Updated app version to `v1.0.18` (`1.0.18+18`).
+- 📜 **Contract Terms Preservation Snapshot**: Added a `details` JSON snapshot column to the `contracts` table and model. Stores all specific form parameters (IBAN, PFA address, student CNP, student address, CI details, course duration, curriculum technologies, payment arrangements, refund deadline, etc.) upon initial contract creation.
+- ✒️ **100% PDF Fidelity Upon Client Signature**: Updated `ClientWebSignatureView` and `EnrollmentContractController` so that generating the final signed contract PDF reuses 100% of the exact draft terms snapshot from `contract.details`, ensuring the client signature is the ONLY change in the executed document.
+- 🗄️ **Supabase SQL Schema Update**: Added `ALTER TABLE contracts ADD COLUMN IF NOT EXISTS details JSONB;` to `supabase_rls_policies.sql`.
+- 🧪 **Unit Test Coverage**: Added comprehensive unit tests for `ContractModel.details` JSON serialization/deserialization and controller update mocks.
+- 📦 **Dynamic Version Alignment**: Updated app version to `v1.0.19` (`1.0.19+19`).
