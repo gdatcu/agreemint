@@ -20,17 +20,14 @@ class ContractRepository {
 
   ContractRepository(this._client);
 
-  /// Creates a time-limited signed URL for a storage path.
-  /// Falls back to the storage path string on error.
-  Future<String> _getSignedUrl(String storagePath) async {
+  /// Retrieves the permanent public URL for a storage path in the 'contracts' bucket.
+  String _getPublicUrl(String storagePath) {
     try {
-      final signedUrl = await _client.storage
-          .from('contracts')
-          .createSignedUrl(storagePath, _signedUrlExpirySeconds);
-      return signedUrl;
+      final publicUrl =
+          _client.storage.from('contracts').getPublicUrl(storagePath);
+      return publicUrl;
     } catch (e) {
-      debugPrint('Signed URL error for $storagePath: $e');
-      // Fallback: return the path so caller can attempt download directly
+      debugPrint('Public URL error for $storagePath: $e');
       return storagePath;
     }
   }
@@ -188,7 +185,7 @@ class ContractRepository {
                 upsert: true, contentType: 'application/pdf'),
           );
 
-      final pdfUrl = await _getSignedUrl(path);
+      final pdfUrl = _getPublicUrl(path);
 
       final response = await _client
           .from('contracts')
@@ -222,7 +219,7 @@ class ContractRepository {
                 upsert: true, contentType: 'application/pdf'),
           );
 
-      final signedPdfUrl = await _getSignedUrl(path);
+      final signedPdfUrl = _getPublicUrl(path);
 
       final response = await _client
           .from('contracts')
@@ -256,7 +253,7 @@ class ContractRepository {
             fileOptions: const FileOptions(
                 upsert: true, contentType: 'image/png'),
           );
-      return await _getSignedUrl(path);
+      return _getPublicUrl(path);
     } catch (e) {
       throw Exception('Failed to upload mentor signature: $e');
     }
@@ -287,7 +284,7 @@ class ContractRepository {
             fileOptions: const FileOptions(
                 upsert: true, contentType: 'image/png'),
           );
-      return await _getSignedUrl(path);
+      return _getPublicUrl(path);
     } catch (e) {
       throw Exception('Failed to upload client signature: $e');
     }

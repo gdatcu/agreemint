@@ -66,7 +66,27 @@ void main() {
       expect(contract.signedDate, isNull);
       expect(contract.status, 'Draft');
     });
+    test('ContractModel.normalizeUrl converts expiring signed URLs to permanent public URLs', () {
+      const expiringSignedUrl =
+          'https://jkbouvnzft.supabase.co/storage/v1/object/sign/contracts/signed_contract_123.pdf?token=eyJhbGciOi...';
+      final normalized = ContractModel.normalizeUrl(expiringSignedUrl);
 
+      expect(
+        normalized,
+        'https://jkbouvnzft.supabase.co/storage/v1/object/public/contracts/signed_contract_123.pdf',
+      );
+
+      final json = {
+        'id': 'cnt-signed',
+        'enrollment_id': 'enr-1',
+        'signed_pdf_url': expiringSignedUrl,
+      };
+      final contract = ContractModel.fromJson(json);
+      expect(
+        contract.signedPdfUrl,
+        'https://jkbouvnzft.supabase.co/storage/v1/object/public/contracts/signed_contract_123.pdf',
+      );
+    });
     test('ContractModel.printMigration executes without error', () {
       const contract = ContractModel(
         id: 'cnt-1',

@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.17 Release Notes
+# 🚀 Agreemint v1.0.18 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -17,11 +17,9 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.17
+## 🎨 What's New in Version 1.0.18
 
-- ✍️ **Receipt Signature Retention**: Stored signed receipt PDFs are retained and fetched directly from Supabase Storage so mentor signatures are permanently displayed when re-opening receipts.
-- 🔒 **Receipt Immutability & Status Tracking**: Signed receipts display a green `✓ Semnat / Signed` badge and disable re-signing or editing once executed.
-- 📱 **Persistent App Update Dismissal**: Update notice dismissals are remembered per release tag via `SharedPreferences`, preventing repetitive update banners across app relaunches.
-- 🎨 **Overlapping UI Layout Fix**: Redesigned payment installment list tiles to prevent text collision over action buttons.
-- ⚡ **Dialog Lifecycle & Progress Overlay**: Replaced double-dialog patterns with root navigator dismissal and inline modal progress overlays during receipt signing.
-- 📦 **Dynamic Version Alignment**: Updated app version to `v1.0.17` (`1.0.17+17`).
+- 🔒 **Permanent Contract & Signature Storage URLs**: Replaced 1-hour expiring signed storage URLs (`createSignedUrl`) with permanent public URLs (`getPublicUrl`), fixing HTTP 400 `InvalidJWT` errors on contract access.
+- 🔄 **Retroactive URL Normalization**: Added automatic conversion in `ContractModel.fromJson` to transform any legacy expiring signed URLs (`/object/sign/` with `?token=...`) into permanent public URLs (`/object/public/`), restoring access to all previously signed contracts.
+- 🧪 **Unit Test Coverage**: Added tests for contract URL normalization and public URL generation.
+- 📦 **Dynamic Version Alignment**: Updated app version to `v1.0.18` (`1.0.18+18`).

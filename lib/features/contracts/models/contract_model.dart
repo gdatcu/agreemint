@@ -31,6 +31,19 @@ class ContractModel {
     this.enrollment,
   });
 
+  /// Sanitizes signed/expiring Supabase storage URLs into permanent public URLs.
+  static String? normalizeUrl(String? url) {
+    if (url == null || url.isEmpty) return null;
+    if (url.contains('/object/sign/')) {
+      final publicUrl = url.replaceAll('/object/sign/', '/object/public/');
+      return publicUrl.split('?')[0];
+    }
+    if (url.contains('?token=')) {
+      return url.split('?')[0];
+    }
+    return url;
+  }
+
   /// Factory constructor to parse PostgreSQL json results cleanly and defensively.
   /// Maps the auto-incrementing SERIAL `contract_number` sequence.
   factory ContractModel.fromJson(Map<String, dynamic> json) {
@@ -46,14 +59,14 @@ class ContractModel {
       id: json['id'] as String? ?? '',
       enrollmentId: json['enrollment_id'] as String? ?? '',
       contractNumber: json['contract_number'] as int? ?? 0,
-      pdfUrl: json['pdf_url'] as String?,
-      signedPdfUrl: json['signed_pdf_url'] as String?,
+      pdfUrl: normalizeUrl(json['pdf_url'] as String?),
+      signedPdfUrl: normalizeUrl(json['signed_pdf_url'] as String?),
       signedDate: json['signed_date'] != null
           ? DateTime.tryParse(json['signed_date'] as String)
           : null,
       status: json['status'] as String? ?? 'Draft',
-      mentorSignatureUrl: json['mentor_signature_url'] as String?,
-      clientSignatureUrl: json['client_signature_url'] as String?,
+      mentorSignatureUrl: normalizeUrl(json['mentor_signature_url'] as String?),
+      clientSignatureUrl: normalizeUrl(json['client_signature_url'] as String?),
       clientSignedDate: json['client_signed_date'] != null
           ? DateTime.tryParse(json['client_signed_date'] as String)
           : null,
