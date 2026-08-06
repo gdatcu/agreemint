@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.19 Release Notes
+# 🚀 Agreemint v1.0.20 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -17,10 +17,9 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.19
+## 🎨 What's New in Version 1.0.20
 
+- 🛠️ **GitHub Actions Deployment Fix**: Corrected protocol (`ftps`) and default port (`21`) for `SamKirkland/FTP-Deploy-Action@v4.3.5` in `.github/workflows/release.yml`.
 - 📜 **Contract Terms Preservation Snapshot**: Added a `details` JSON snapshot column to the `contracts` table and model. Stores all specific form parameters (IBAN, PFA address, student CNP, student address, CI details, course duration, curriculum technologies, payment arrangements, refund deadline, etc.) upon initial contract creation.
-- ✒️ **100% PDF Fidelity Upon Client Signature**: Updated `ClientWebSignatureView` and `EnrollmentContractController` so that generating the final signed contract PDF reuses 100% of the exact draft terms snapshot from `contract.details`, ensuring the client signature is the ONLY change in the executed document.
-- 🗄️ **Supabase SQL Schema Update**: Added `ALTER TABLE contracts ADD COLUMN IF NOT EXISTS details JSONB;` to `supabase_rls_policies.sql`.
-- 🧪 **Unit Test Coverage**: Added comprehensive unit tests for `ContractModel.details` JSON serialization/deserialization and controller update mocks.
-- 📦 **Dynamic Version Alignment**: Updated app version to `v1.0.19` (`1.0.19+19`).
+- ✒️ **100% PDF Fidelity Upon Client Signature**: Reuses draft terms snapshot from `contract.details` to preserve exact contract terms upon signing.
+- 📦 **Dynamic Version Alignment**: Updated app version to `v1.0.20` (`1.0.20+20`).

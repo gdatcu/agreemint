@@ -64,14 +64,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Deploy Web Build to Server via FTP / SFTP
+      - name: Deploy Web Build to Server via FTP / FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
-          port: ${{ secrets.SERVER_PORT || 22 }}
-          protocol: ${{ secrets.SERVER_PROTOCOL || 'sftp' }}
+          port: ${{ secrets.SERVER_PORT || 21 }}
+          protocol: ${{ secrets.SERVER_PROTOCOL || 'ftps' }}
           local-dir: './build/web/'
           server-dir: './'
         continue-on-error: true
