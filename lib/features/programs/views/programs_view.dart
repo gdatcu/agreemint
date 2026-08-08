@@ -69,6 +69,7 @@ class ProgramsView extends ConsumerWidget {
             itemCount: programs.length,
             itemBuilder: (context, index) {
               final program = programs[index];
+              final canDelete = program.canBeDeleted;
               return Card(
                 elevation: 1,
                 margin: const EdgeInsets.only(bottom: 12),
@@ -129,13 +130,31 @@ class ProgramsView extends ConsumerWidget {
                           _showProgramFormDialog(context, ref, program: program);
                         },
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                        tooltip: 'Delete Program',
-                        onPressed: () {
-                          _showDeleteConfirmDialog(context, ref, program);
-                        },
-                      ),
+                      if (canDelete)
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline,
+                              color: Colors.redAccent),
+                          tooltip: 'Delete Program',
+                          onPressed: () {
+                            _showDeleteConfirmDialog(context, ref, program);
+                          },
+                        )
+                      else
+                        IconButton(
+                          icon: Icon(Icons.lock_outline,
+                              color: Colors.grey.shade400),
+                          tooltip:
+                              'Cannot delete: Program contains signed contracts or payment records',
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'Cannot delete program with signed contracts or payment records.'),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                          },
+                        ),
                       const SizedBox(width: 4),
                       Icon(
                         Icons.chevron_right,

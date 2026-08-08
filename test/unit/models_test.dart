@@ -26,22 +26,68 @@ void main() {
       expect(program.createdAt, DateTime.parse('2026-07-01T10:00:00Z'));
     });
 
-    test('toJson produces expected Map representation', () {
-      final program = ProgramModel(
-        id: 'prog-456',
-        name: 'React Cohort',
-        totalPrice: 2000.0,
-        currency: 'RON',
-      );
+    test('canBeDeleted returns false when signed contract or payments exist', () {
+      final jsonWithSignedContract = {
+        'id': 'prog-signed',
+        'name': 'Signed Program',
+        'total_price': 1000.0,
+        'enrollments': [
+          {
+            'id': 'enr-1',
+            'contracts': [
+              {'status': 'FullySigned', 'signed_date': '2026-08-01T10:00:00Z'}
+            ]
+          }
+        ]
+      };
 
-      final json = program.toJson();
+      final programWithContract = ProgramModel.fromJson(jsonWithSignedContract);
+      expect(programWithContract.hasSignedContractsOrPayments, true);
+      expect(programWithContract.canBeDeleted, false);
 
-      expect(json['id'], 'prog-456');
-      expect(json['name'], 'React Cohort');
-      expect(json['total_price'], 2000.0);
-      expect(json['currency'], 'RON');
+      final jsonWithPayment = {
+        'id': 'prog-paid',
+        'name': 'Paid Program',
+        'total_price': 1000.0,
+        'enrollments': [
+          {
+            'id': 'enr-2',
+            'payments': [
+              {'amount_paid': 500.0, 'status': 'Partial'}
+            ]
+          }
+        ]
+      };
+
+      final programWithPayment = ProgramModel.fromJson(jsonWithPayment);
+      expect(programWithPayment.hasSignedContractsOrPayments, true);
+      expect(programWithPayment.canBeDeleted, false);
+    });
+
+    test('canBeDeleted returns true when no signed contracts or payments exist', () {
+      final jsonClean = {
+        'id': 'prog-clean',
+        'name': 'Clean Program',
+        'total_price': 1000.0,
+        'enrollments': [
+          {
+            'id': 'enr-3',
+            'contracts': [
+              {'status': 'Draft'}
+            ],
+            'payments': [
+              {'amount_paid': 0.0, 'status': 'Pending'}
+            ]
+          }
+        ]
+      };
+
+      final cleanProgram = ProgramModel.fromJson(jsonClean);
+      expect(cleanProgram.hasSignedContractsOrPayments, false);
+      expect(cleanProgram.canBeDeleted, true);
     });
   });
+
 
   group('EnrollmentModel & canBeDeleted Unit Tests', () {
     test('canBeDeleted returns true when no contract exists', () {

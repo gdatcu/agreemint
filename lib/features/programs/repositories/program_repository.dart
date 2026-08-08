@@ -15,7 +15,7 @@ class ProgramRepository {
     try {
       final response = await _client
           .from('programs')
-          .select()
+          .select('*, enrollments(*, contracts(*), payments(*))')
           .order('created_at', ascending: false);
 
       final data = response as List<dynamic>;
@@ -32,7 +32,7 @@ class ProgramRepository {
     try {
       final response = await _client
           .from('programs')
-          .select()
+          .select('*, enrollments(*, contracts(*), payments(*))')
           .eq('id', programId)
           .maybeSingle();
 
@@ -98,6 +98,21 @@ class ProgramRepository {
   /// Moves program, enrollments, contracts, and payments to history tables and deletes from active list.
   Future<void> deleteProgram(String id) async {
     try {
+      // Safety check: verify program has no signed contracts or payment records
+      final checkRes = await _client
+          .from('programs')
+          .select('*, enrollments(*, contracts(*), payments(*))')
+          .eq('id', id)
+          .maybeSingle();
+
+      if (checkRes != null) {
+        final prog = ProgramModel.fromJson(checkRes);
+        if (!prog.canBeDeleted) {
+          throw Exception(
+              'Cannot delete program with signed contracts or payment records.');
+        }
+      }
+
       // 1. Try calling PostgreSQL RPC function archive_program
       try {
         await _client.rpc('archive_program', params: {'p_id': id});
@@ -110,6 +125,7 @@ class ProgramRepository {
       throw Exception('Failed to delete and archive program: $e');
     }
   }
+
 
   Future<void> _archiveProgramClientSide(String programId) async {
     final studentIdsToCheck = <String>{};
