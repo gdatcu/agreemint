@@ -86,11 +86,35 @@ class EnrolledStudentsView extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  title: Text(
-                    student.name,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
+                  title: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          student.name,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
+                      ),
+                      if (student.clientType != 'PF')
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: Colors.blue.shade200),
+                          ),
+                          child: Text(
+                            student.clientType,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue.shade900,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,6 +146,21 @@ class EnrolledStudentsView extends ConsumerWidget {
                             Text(
                               student.phone!,
                               style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      ],
+                      if (student.cui != null && student.cui!.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Icon(Icons.business_outlined,
+                                size: 14,
+                                color: Theme.of(context).colorScheme.outline),
+                            const SizedBox(width: 6),
+                            Text(
+                              'CUI: ${student.cui}',
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ],
                         ),
@@ -324,105 +363,182 @@ class EnrolledStudentsView extends ConsumerWidget {
     final nameController = TextEditingController();
     final emailController = TextEditingController();
     final phoneController = TextEditingController();
+    final cuiController = TextEditingController();
+    final regComController = TextEditingController();
+    final billingAddressController = TextEditingController();
+    String clientType = 'PF';
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Enroll New Student'),
-          content: SingleChildScrollView(
-            child: Form(
-              key: formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    controller: nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Full Name',
-                      hintText: 'e.g., Jane Doe',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter name';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email Address',
-                      hintText: 'e.g., jane.doe@example.com',
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter email';
-                      }
-                      final emailRegExp =
-                          RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                      if (!emailRegExp.hasMatch(value.trim())) {
-                        return 'Please enter a valid email address';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: phoneController,
-                    decoration: const InputDecoration(
-                      labelText: 'Phone Number (Optional)',
-                      hintText: 'e.g., +15551234567',
-                    ),
-                    keyboardType: TextInputType.phone,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (formKey.currentState?.validate() ?? false) {
-                  final navigator = Navigator.of(context);
-                  final name = nameController.text.trim();
-                  final email = emailController.text.trim();
-                  final phone = phoneController.text.trim();
-
-                  await ref
-                      .read(programEnrollmentsControllerProvider(program.id)
-                          .notifier)
-                      .addAndEnrollStudent(
-                        name: name,
-                        email: email,
-                        phone: phone.isNotEmpty ? phone : null,
-                      );
-
-                  // Show success snackbar
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Student enrolled successfully!'),
-                        backgroundColor: Colors.green,
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: const Text('Enroll New Student'),
+              content: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: SegmentedButton<String>(
+                          segments: const [
+                            ButtonSegment<String>(
+                              value: 'PF',
+                              label: Text('PF (Individual)'),
+                              icon: Icon(Icons.person_outline),
+                            ),
+                            ButtonSegment<String>(
+                              value: 'PFA',
+                              label: Text('PFA / Company'),
+                              icon: Icon(Icons.business_outlined),
+                            ),
+                          ],
+                          selected: {clientType},
+                          onSelectionChanged: (Set<String> newSelection) {
+                            setStateDialog(() {
+                              clientType = newSelection.first;
+                            });
+                          },
+                        ),
                       ),
-                    );
-                  }
+                      TextFormField(
+                        controller: nameController,
+                        decoration: InputDecoration(
+                          labelText: clientType == 'PF'
+                              ? 'Full Name'
+                              : 'Company / PFA Name',
+                          hintText: clientType == 'PF'
+                              ? 'e.g., Jane Doe'
+                              : 'e.g., Acme Tech PFA / SRL',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter name';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: emailController,
+                        decoration: const InputDecoration(
+                          labelText: 'Email Address',
+                          hintText: 'e.g., jane.doe@example.com',
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter email';
+                          }
+                          final emailRegExp =
+                              RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                          if (!emailRegExp.hasMatch(value.trim())) {
+                            return 'Please enter a valid email address';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: phoneController,
+                        decoration: const InputDecoration(
+                          labelText: 'Phone Number (Optional)',
+                          hintText: 'e.g., +15551234567',
+                        ),
+                        keyboardType: TextInputType.phone,
+                      ),
+                      if (clientType != 'PF') ...[
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: cuiController,
+                          decoration: const InputDecoration(
+                            labelText: 'CUI / CIF',
+                            hintText: 'e.g., RO12345678',
+                          ),
+                          validator: (value) {
+                            if (clientType != 'PF' &&
+                                (value == null || value.trim().isEmpty)) {
+                              return 'Please enter CUI / CIF for PFA / Company';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: regComController,
+                          decoration: const InputDecoration(
+                            labelText: 'Reg. Com. (Optional)',
+                            hintText: 'e.g., F40/123/2026 or J40/1234/2025',
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: billingAddressController,
+                          decoration: const InputDecoration(
+                            labelText: 'Billing Address (Optional)',
+                            hintText: 'e.g., Str. Exemplu Nr. 10, Bucuresti',
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (formKey.currentState?.validate() ?? false) {
+                      final navigator = Navigator.of(context);
+                      final name = nameController.text.trim();
+                      final email = emailController.text.trim();
+                      final phone = phoneController.text.trim();
+                      final cui = cuiController.text.trim();
+                      final regCom = regComController.text.trim();
+                      final billingAddress = billingAddressController.text.trim();
 
-                  navigator.pop();
-                }
-              },
-              child: const Text('Enroll'),
-            ),
-          ],
+                      await ref
+                          .read(programEnrollmentsControllerProvider(program.id)
+                              .notifier)
+                          .addAndEnrollStudent(
+                            name: name,
+                            email: email,
+                            phone: phone.isNotEmpty ? phone : null,
+                            clientType: clientType,
+                            cui: cui.isNotEmpty ? cui : null,
+                            regCom: regCom.isNotEmpty ? regCom : null,
+                            billingAddress:
+                                billingAddress.isNotEmpty ? billingAddress : null,
+                          );
+
+                      // Show success snackbar
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Student enrolled successfully!'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      }
+
+                      navigator.pop();
+                    }
+                  },
+                  child: const Text('Enroll'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
   }
+
 }

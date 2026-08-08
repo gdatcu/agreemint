@@ -112,27 +112,39 @@ void main() {
       final now = DateTime.now();
       final json = {
         'id': 'stud-full',
-        'name': 'Maria Ionescu',
+        'name': 'Maria Ionescu SRL',
         'email': 'maria@example.com',
         'phone': '+40722123456',
+        'client_type': 'SRL',
+        'cui': 'RO99887766',
+        'reg_com': 'J40/999/2025',
+        'billing_address': 'Bd. Unirii 1, Bucuresti',
         'created_at': now.toIso8601String(),
       };
 
       final student = StudentModel.fromJson(json);
 
       expect(student.id, 'stud-full');
-      expect(student.name, 'Maria Ionescu');
+      expect(student.name, 'Maria Ionescu SRL');
       expect(student.email, 'maria@example.com');
       expect(student.phone, '+40722123456');
+      expect(student.clientType, 'SRL');
+      expect(student.cui, 'RO99887766');
+      expect(student.regCom, 'J40/999/2025');
+      expect(student.billingAddress, 'Bd. Unirii 1, Bucuresti');
       expect(student.createdAt, isNotNull);
 
       final serialized = student.toJson();
       expect(serialized['id'], 'stud-full');
       expect(serialized['phone'], '+40722123456');
+      expect(serialized['client_type'], 'SRL');
+      expect(serialized['cui'], 'RO99887766');
+      expect(serialized['reg_com'], 'J40/999/2025');
+      expect(serialized['billing_address'], 'Bd. Unirii 1, Bucuresti');
       expect(serialized['created_at'], isNotNull);
     });
 
-    test('StudentModel fromJson and toJson with null phone and createdAt', () {
+    test('StudentModel fromJson and toJson with null phone, B2B fields defaults', () {
       final json = {
         'id': 'stud-minimal',
         'name': 'Dan Radu',
@@ -142,14 +154,20 @@ void main() {
       final student = StudentModel.fromJson(json);
 
       expect(student.id, 'stud-minimal');
+      expect(student.clientType, 'PF');
+      expect(student.cui, isNull);
+      expect(student.regCom, isNull);
+      expect(student.billingAddress, isNull);
       expect(student.phone, isNull);
       expect(student.createdAt, isNull);
 
       final serialized = student.toJson();
       expect(serialized['id'], 'stud-minimal');
+      expect(serialized['client_type'], 'PF');
       expect(serialized.containsKey('created_at'), false);
     });
   });
+
 
   group('EnrollmentModel Complete 100% Coverage Unit Tests', () {
     test('EnrollmentModel parses List representation for relational joins', () {

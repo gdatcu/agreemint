@@ -35,6 +35,10 @@ class StudentRepository {
     required String name,
     required String email,
     String? phone,
+    String clientType = 'PF',
+    String? cui,
+    String? regCom,
+    String? billingAddress,
   }) async {
     try {
       // 1. Insert/upsert the student by email to retrieve the student ID
@@ -45,6 +49,10 @@ class StudentRepository {
               'name': name,
               'email': email,
               'phone': phone,
+              'client_type': clientType,
+              'cui': cui,
+              'reg_com': regCom,
+              'billing_address': billingAddress,
             },
             onConflict: 'email',
           )
@@ -65,6 +73,7 @@ class StudentRepository {
       throw Exception('Failed to enroll student: $e');
     }
   }
+
 
   /// Deletes an enrollment (and associated unsigned contracts/payments) for a student.
   /// If the student has no other active enrollments, cleans up the student record.

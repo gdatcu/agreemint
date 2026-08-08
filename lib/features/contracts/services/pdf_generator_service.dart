@@ -34,6 +34,10 @@ class PdfGeneratorService {
     String prestatorEuid = 'ROONRC.F2026003426005',
     required String prestatorIban,
     required String prestatorBanca,
+    String clientType = 'PF',
+    String? cuiCursant,
+    String? regComCursant,
+    String? billingAddressCursant,
     String? technologiesCurriculum,
     String? beneficiaryEntity,
     String? serviceDescription,
@@ -87,6 +91,8 @@ class PdfGeneratorService {
         'sesiuni live online, feedback pe cod (code review) și consultanță / live online sessions, code reviews and consulting';
     final payTerm = paymentTerm ?? '3 (trei) zile calendaristice / 3 calendar days';
     final refDeadline = refundDeadline ?? '5 zile calendaristice / 5 calendar days';
+
+    final isB2bClient = clientType == 'PFA' || clientType == 'SRL';
 
     pdf.addPage(
       pw.MultiPage(
@@ -165,10 +171,16 @@ class PdfGeneratorService {
                     style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                   ),
                   pw.TextSpan(
-                    text: '- Nume si Prenume / Full Name: $studentName\n'
-                        '- Adresa / Address: $adresaCursant\n'
-                        '- CNP: $cnpCursant | Serie & Nr. CI / IC Series & No: $serieNrCi (eliberat de / issued by $eliberatorCi la / on $dataEliberariiCi)\n'
-                        '- Email: $emailCursant | Telefon / Phone: $telefonCursant\n\n',
+                    text: isB2bClient
+                        ? '- Denumire / Entity Name: $studentName\n'
+                          '- CUI/CIF: ${cuiCursant ?? "N/A"}\n'
+                          '- Reg. Com. / Reg. Com. No.: ${regComCursant ?? "N/A"}\n'
+                          '- Adresa / Address: ${(billingAddressCursant != null && billingAddressCursant.isNotEmpty) ? billingAddressCursant : adresaCursant}\n'
+                          '- Email: $emailCursant | Telefon / Phone: $telefonCursant\n\n'
+                        : '- Nume si Prenume / Full Name: $studentName\n'
+                          '- Adresa / Address: $adresaCursant\n'
+                          '- CNP: $cnpCursant | Serie & Nr. CI / IC Series & No: $serieNrCi (eliberat de / issued by $eliberatorCi la / on $dataEliberariiCi)\n'
+                          '- Email: $emailCursant | Telefon / Phone: $telefonCursant\n\n',
                   ),
                   const pw.TextSpan(
                     text:
@@ -177,6 +189,7 @@ class PdfGeneratorService {
                 ],
               ),
             ),
+
             pw.SizedBox(height: 10),
 
             // 2. OBIECTUL CONTRACTULUI / SUBJECT OF THE CONTRACT

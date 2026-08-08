@@ -259,6 +259,10 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
         dataEliberariiCi: _dataEliberariiCiController.text.trim(),
         emailCursant: student.email,
         telefonCursant: student.phone ?? '',
+        clientType: student.clientType,
+        cuiCursant: student.cui,
+        regComCursant: student.regCom,
+        billingAddressCursant: student.billingAddress,
         programName: program.name,
         editionName: _editionNameController.text.trim(),
         durataOre: int.parse(_durataOreController.text.trim()),
@@ -748,7 +752,9 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
 
           // PART 2: BENEFICIAR
           Text(
-            'Required Cursant/Student Information:',
+            student?.clientType != 'PF'
+                ? 'Required Cursant/Student Information (PFA / Company):'
+                : 'Required Cursant/Student Information:',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -756,23 +762,31 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
           const SizedBox(height: 12),
           TextFormField(
             controller: _adresaController,
-            decoration: const InputDecoration(
-              labelText: 'Adresă completă din CI',
+            decoration: InputDecoration(
+              labelText: student?.clientType != 'PF'
+                  ? 'Adresă sediu / Billing Address'
+                  : 'Adresă completă din CI',
               hintText: 'ex: Jud. Ilfov, Loc. Chiajna, Str. Tineretului Nr. 12',
             ),
-            validator: (val) => val == null || val.trim().isEmpty
-                ? 'Vă rugăm să introduceți adresa'
-                : null,
+            validator: (val) {
+              if (student?.clientType != 'PF') return null;
+              return val == null || val.trim().isEmpty
+                  ? 'Vă rugăm să introduceți adresa'
+                  : null;
+            },
           ),
           const SizedBox(height: 12),
           TextFormField(
             controller: _cnpController,
-            decoration: const InputDecoration(
-              labelText: 'CNP Cursant',
+            decoration: InputDecoration(
+              labelText: student?.clientType != 'PF'
+                  ? 'CNP / Code (Optional for PFA/Company)'
+                  : 'CNP Cursant',
               hintText: 'ex: 5010203xxxxxx',
             ),
             keyboardType: TextInputType.number,
             validator: (val) {
+              if (student?.clientType != 'PF') return null;
               if (val == null || val.trim().isEmpty) {
                 return 'Vă rugăm să introduceți CNP-ul';
               }
@@ -788,26 +802,36 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
               Expanded(
                 child: TextFormField(
                   controller: _serieNrCiController,
-                  decoration: const InputDecoration(
-                    labelText: 'Serie și Nr. CI',
+                  decoration: InputDecoration(
+                    labelText: student?.clientType != 'PF'
+                        ? 'Serie & Nr. CI (Optional)'
+                        : 'Serie și Nr. CI',
                     hintText: 'ex: RX 123456',
                   ),
-                  validator: (val) => val == null || val.trim().isEmpty
-                      ? 'Introduceți seria CI'
-                      : null,
+                  validator: (val) {
+                    if (student?.clientType != 'PF') return null;
+                    return val == null || val.trim().isEmpty
+                        ? 'Introduceți seria CI'
+                        : null;
+                  },
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: TextFormField(
                   controller: _eliberatorCiController,
-                  decoration: const InputDecoration(
-                    labelText: 'Eliberat de',
+                  decoration: InputDecoration(
+                    labelText: student?.clientType != 'PF'
+                        ? 'Eliberat de (Optional)'
+                        : 'Eliberat de',
                     hintText: 'ex: SPCLEP Sector 1',
                   ),
-                  validator: (val) => val == null || val.trim().isEmpty
-                      ? 'Introduceți emitentul CI'
-                      : null,
+                  validator: (val) {
+                    if (student?.clientType != 'PF') return null;
+                    return val == null || val.trim().isEmpty
+                        ? 'Introduceți emitentul CI'
+                        : null;
+                  },
                 ),
               ),
             ],
@@ -815,14 +839,20 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
           const SizedBox(height: 12),
           TextFormField(
             controller: _dataEliberariiCiController,
-            decoration: const InputDecoration(
-              labelText: 'Data eliberării CI',
+            decoration: InputDecoration(
+              labelText: student?.clientType != 'PF'
+                  ? 'Data eliberării CI (Optional)'
+                  : 'Data eliberării CI',
               hintText: 'ex: 12.05.2023',
             ),
-            validator: (val) => val == null || val.trim().isEmpty
-                ? 'Introduceți data eliberării CI'
-                : null,
+            validator: (val) {
+              if (student?.clientType != 'PF') return null;
+              return val == null || val.trim().isEmpty
+                  ? 'Introduceți data eliberării CI'
+                  : null;
+            },
           ),
+
           const SizedBox(height: 24),
 
           // PART 3: PROGRAM DETAILS

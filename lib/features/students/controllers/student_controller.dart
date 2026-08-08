@@ -17,6 +17,10 @@ class ProgramEnrollmentsController extends _$ProgramEnrollmentsController {
     required String name,
     required String email,
     String? phone,
+    String clientType = 'PF',
+    String? cui,
+    String? regCom,
+    String? billingAddress,
   }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
@@ -26,10 +30,15 @@ class ProgramEnrollmentsController extends _$ProgramEnrollmentsController {
         name: name,
         email: email,
         phone: phone,
+        clientType: clientType,
+        cui: cui,
+        regCom: regCom,
+        billingAddress: billingAddress,
       );
       return repository.fetchEnrollmentsForProgram(programId);
     });
   }
+
 
   /// Deletes a student enrollment if the contract has not been signed by the beneficiary.
   Future<void> removeStudentEnrollment({

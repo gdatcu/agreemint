@@ -100,23 +100,36 @@ void main() {
   });
 
   group('StudentModel & ContractModel Serialization Tests', () {
-    test('StudentModel json roundtrip', () {
+    test('StudentModel json roundtrip with PFA fields', () {
       final json = {
         'id': 'stud-99',
-        'name': 'Jane Doe',
+        'name': 'Jane Doe PFA',
         'email': 'jane@example.com',
         'phone': '+40712345678',
+        'client_type': 'PFA',
+        'cui': 'RO12345678',
+        'reg_com': 'F40/123/2026',
+        'billing_address': 'Str. Test 10, Bucuresti',
       };
 
       final student = StudentModel.fromJson(json);
       expect(student.id, 'stud-99');
-      expect(student.name, 'Jane Doe');
+      expect(student.name, 'Jane Doe PFA');
       expect(student.email, 'jane@example.com');
       expect(student.phone, '+40712345678');
+      expect(student.clientType, 'PFA');
+      expect(student.cui, 'RO12345678');
+      expect(student.regCom, 'F40/123/2026');
+      expect(student.billingAddress, 'Str. Test 10, Bucuresti');
 
       final serialized = student.toJson();
       expect(serialized['id'], 'stud-99');
-      expect(serialized['name'], 'Jane Doe');
+      expect(serialized['name'], 'Jane Doe PFA');
+      expect(serialized['client_type'], 'PFA');
+      expect(serialized['cui'], 'RO12345678');
+      expect(serialized['reg_com'], 'F40/123/2026');
+      expect(serialized['billing_address'], 'Str. Test 10, Bucuresti');
     });
   });
 }
+
