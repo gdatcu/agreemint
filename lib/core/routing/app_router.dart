@@ -15,6 +15,7 @@ import '../../features/contracts/views/client_web_signature_view.dart';
 import '../../features/payments/views/pending_dashboard_view.dart';
 import '../../features/payments/views/payment_tracker_view.dart';
 import '../../features/analytics/views/analytics_view.dart';
+import '../../features/prospects/views/prospects_view.dart';
 
 part 'app_router.g.dart';
 
@@ -193,6 +194,15 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: '/analytics',
                 builder: (context, state) => const AnalyticsView(),
+              ),
+            ],
+          ),
+          // Branch 4: Prospects / Follow-ups
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/prospects',
+                builder: (context, state) => const ProspectsView(),
               ),
             ],
           ),

@@ -24,6 +24,41 @@ class WhatsAppReminderService {
     return 'Salut $studentName! Îți reamintesc că plata tranșei de ${amount.toStringAsFixed(2)} $currency pentru $programName a fost scadentă pe data de $dueDateStr. Te rog să efectuezi transferul când ai timp. Mulțumesc!';
   }
 
+  /// Builds a polite prospect follow-up text in Romanian.
+  static String buildProspectFollowUpMessage({
+    required String prospectName,
+    String? programName,
+  }) {
+    final progInfo = (programName != null && programName.isNotEmpty)
+        ? ' privind discuția noastră despre programul $programName'
+        : '';
+    return 'Salut $prospectName! Revin cu un mesaj scurt$progInfo. Ai reușit să te gândești? Sunteți pregătit(ă) să facem pasul următor? Mulțumesc!';
+  }
+
+  /// Launches WhatsApp with the pre-filled prospect follow-up message.
+  static Future<void> sendProspectFollowUp({
+    required BuildContext context,
+    required String? phone,
+    required String prospectName,
+    String? programName,
+  }) async {
+    final rawPhone = phone?.trim() ?? '';
+    final messageText = buildProspectFollowUpMessage(
+      prospectName: prospectName,
+      programName: programName,
+    );
+
+    if (rawPhone.isEmpty) {
+      _showMissingPhoneDialog(context, messageText, (enteredPhone) async {
+        await _launchWhatsApp(context, enteredPhone, messageText);
+      });
+      return;
+    }
+
+    final cleaned = cleanPhoneNumber(rawPhone);
+    await _launchWhatsApp(context, cleaned, messageText);
+  }
+
   /// Launches WhatsApp with the pre-filled message, or prompts for phone number if missing.
   static Future<void> sendReminder({
     required BuildContext context,

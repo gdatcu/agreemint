@@ -1,5 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../features/payments/models/payment_model.dart';
+import '../../features/prospects/models/prospect_model.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
@@ -75,6 +76,30 @@ class NotificationService {
         : '$studentCount students have payments past their due date.';
 
     await showOverdueNotification(id: 101, title: title, body: body);
+  }
+
+  /// Evaluates prospects list and dispatches an Android notification if follow-ups are due today or overdue.
+  static Future<void> checkAndNotifyProspects(
+      List<ProspectModel> prospects) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    final dueProspects = prospects.where((p) {
+      if (p.status == 'Converted' || p.status == 'Lost') return false;
+      final due = DateTime(
+          p.followUpDate.year, p.followUpDate.month, p.followUpDate.day);
+      return due.isBefore(today) || due.isAtSameMomentAs(today);
+    }).toList();
+
+    if (dueProspects.isEmpty) return;
+
+    final title =
+        '🔔 ${dueProspects.length} Prospect Follow-up${dueProspects.length > 1 ? 's' : ''} Due!';
+    final body = dueProspects.length == 1
+        ? 'Don\'t forget to follow up with ${dueProspects.first.name}.'
+        : '${dueProspects.length} prospects are waiting for a follow-up today.';
+
+    await showOverdueNotification(id: 202, title: title, body: body);
   }
 
   /// Triggers a native heads-up notification banner with high priority, sound, and vibration.

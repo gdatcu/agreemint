@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../services/app_update_service.dart';
 import '../services/notification_service.dart';
 import '../../features/payments/controllers/payment_controller.dart';
+import '../../features/prospects/controllers/prospect_controller.dart';
 
 class AppShellView extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
@@ -13,10 +14,14 @@ class AppShellView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pendingState = ref.watch(globalPendingPaymentsControllerProvider);
+    final prospectsState = ref.watch(prospectsControllerProvider);
 
-    // Trigger Android / local push notification check when pending data arrives
+    // Trigger Android / local push notification checks when data arrives
     pendingState.whenData((payments) {
       NotificationService.checkAndNotifyOverduePayments(payments);
+    });
+    prospectsState.whenData((prospects) {
+      NotificationService.checkAndNotifyProspects(prospects);
     });
 
     final overdueCount = pendingState.maybeWhen(
@@ -26,6 +31,20 @@ class AppShellView extends ConsumerWidget {
         return payments.where((p) {
           final due = DateTime(p.dueDate.year, p.dueDate.month, p.dueDate.day);
           return due.isBefore(today);
+        }).length;
+      },
+      orElse: () => 0,
+    );
+
+    final dueProspectsCount = prospectsState.maybeWhen(
+      data: (prospects) {
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+        return prospects.where((p) {
+          if (p.status == 'Converted' || p.status == 'Lost') return false;
+          final due = DateTime(
+              p.followUpDate.year, p.followUpDate.month, p.followUpDate.day);
+          return due.isBefore(today) || due.isAtSameMomentAs(today);
         }).length;
       },
       orElse: () => 0,
@@ -70,6 +89,23 @@ class AppShellView extends ConsumerWidget {
                   )
                 : const Icon(Icons.payments),
             label: 'Pending',
+          ),
+          NavigationDestination(
+            icon: dueProspectsCount > 0
+                ? Badge(
+                    label: Text('$dueProspectsCount'),
+                    backgroundColor: Colors.orange.shade800,
+                    child: const Icon(Icons.notifications_active_outlined),
+                  )
+                : const Icon(Icons.notifications_active_outlined),
+            selectedIcon: dueProspectsCount > 0
+                ? Badge(
+                    label: Text('$dueProspectsCount'),
+                    backgroundColor: Colors.orange.shade800,
+                    child: const Icon(Icons.notifications_active),
+                  )
+                : const Icon(Icons.notifications_active),
+            label: 'Follow-ups',
           ),
           const NavigationDestination(
             icon: Icon(Icons.insights_outlined),
