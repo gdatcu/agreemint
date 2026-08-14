@@ -88,6 +88,25 @@ class EnrollmentPaymentsController extends _$EnrollmentPaymentsController {
       return repository.fetchPaymentsForEnrollment(enrollmentId);
     });
   }
+
+  /// Saves external SOLO invoice details for an installment.
+  Future<void> saveExternalInvoice({
+    required String paymentId,
+    required String invoiceNumber,
+    String? invoiceUrl,
+  }) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(paymentRepositoryProvider);
+      await repository.updateExternalInvoice(
+        paymentId: paymentId,
+        invoiceNumber: invoiceNumber,
+        invoiceUrl: invoiceUrl,
+      );
+      ref.invalidate(globalPendingPaymentsControllerProvider);
+      return repository.fetchPaymentsForEnrollment(enrollmentId);
+    });
+  }
 }
 
 @riverpod

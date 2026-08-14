@@ -10,6 +10,8 @@ class PaymentModel {
   final String? paymentMethod;
   final String? receiptUrl;
   final DateTime? receiptGeneratedAt;
+  final String? externalInvoiceNumber;
+  final String? externalInvoiceUrl;
   final EnrollmentModel? enrollment;
 
   const PaymentModel({
@@ -22,13 +24,14 @@ class PaymentModel {
     this.paymentMethod,
     this.receiptUrl,
     this.receiptGeneratedAt,
+    this.externalInvoiceNumber,
+    this.externalInvoiceUrl,
     this.enrollment,
   });
 
   /// Helper getter returning true if the receipt has been officially signed and saved.
   bool get isReceiptSigned =>
       receiptUrl != null && receiptUrl!.toLowerCase().contains('signed');
-
 
   /// Factory constructor to parse PostgreSQL json results cleanly and defensively.
   factory PaymentModel.fromJson(Map<String, dynamic> json) {
@@ -54,6 +57,8 @@ class PaymentModel {
       receiptGeneratedAt: json['receipt_generated_at'] != null
           ? DateTime.tryParse(json['receipt_generated_at'] as String)
           : null,
+      externalInvoiceNumber: json['external_invoice_number'] as String?,
+      externalInvoiceUrl: json['external_invoice_url'] as String?,
       enrollment: enrollmentJson != null
           ? EnrollmentModel.fromJson(enrollmentJson)
           : null,
@@ -71,6 +76,8 @@ class PaymentModel {
       'payment_method': paymentMethod,
       'receipt_url': receiptUrl,
       'receipt_generated_at': receiptGeneratedAt?.toIso8601String(),
+      'external_invoice_number': externalInvoiceNumber,
+      'external_invoice_url': externalInvoiceUrl,
       if (enrollment != null) 'enrollments': enrollment?.toJson(),
     };
   }

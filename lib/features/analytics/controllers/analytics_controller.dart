@@ -90,16 +90,14 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
       // Fetch live EUR exchange rate from Frankfurter API
       final liveEurRate = await FrankfurterService.getEurToRonRate();
 
-      // 1. Fetch Total Enrolled Students
-      final studentsResponse = await client.from('students').select('id');
-      final totalStudents = (studentsResponse as List<dynamic>).length;
-
-      // 2. Fetch Expected Revenue per currency from enrollments -> programs (excluding refunded/cancelled contracts)
+      // 1 & 2. Fetch Active Enrollments, Program Total Price & Currency, and Contract Status
       final enrollmentsResponse = await client
           .from('enrollments')
-          .select('programs(total_price, currency), contracts(status)');
+          .select('id, programs(total_price, currency), contracts(status)');
 
+      int totalStudents = 0;
       final Map<String, double> expectedRevenueByCurrency = {};
+
       for (final row in enrollmentsResponse as List<dynamic>) {
         final contractRaw = row['contracts'];
         Map<String, dynamic>? contractJson;
@@ -110,9 +108,15 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
         }
 
         final contractStatus = contractJson?['status'] as String?;
-        if (contractStatus == 'Refunded' || contractStatus == 'Cancelled') {
+        if (contractStatus == 'Refunded' ||
+            contractStatus == 'Cancelled' ||
+            contractStatus == 'Retired' ||
+            contractStatus == 'Withdrawn' ||
+            contractStatus == 'Archived') {
           continue;
         }
+
+        totalStudents++;
 
         final programRaw = row['programs'];
         Map<String, dynamic>? programJson;
@@ -131,17 +135,15 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
         }
       }
 
-      // 3. Fetch Revenue Collected per currency from payments -> enrollments -> programs
+      // 3. Fetch Revenue Collected per currency from payments -> enrollments -> programs (excluding refunded/retired)
       final paymentsResponse = await client
           .from('payments')
-          .select('amount_paid, status, enrollments(programs(currency))')
+          .select(
+              'amount_paid, status, enrollments(programs(currency), contracts(status))')
           .or('status.eq.Paid,status.eq.Partial');
 
       final Map<String, double> revenueCollectedByCurrency = {};
       for (final row in paymentsResponse as List<dynamic>) {
-        final amount = (row['amount_paid'] as num?)?.toDouble() ?? 0.0;
-        
-        String currency = 'RON';
         final enrollmentRaw = row['enrollments'];
         Map<String, dynamic>? enrollmentJson;
         if (enrollmentRaw is Map<String, dynamic>) {
@@ -151,6 +153,24 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
         }
 
         if (enrollmentJson != null) {
+          final contractRaw = enrollmentJson['contracts'];
+          Map<String, dynamic>? contractJson;
+          if (contractRaw is Map<String, dynamic>) {
+            contractJson = contractRaw;
+          } else if (contractRaw is List && contractRaw.isNotEmpty) {
+            contractJson = contractRaw.first as Map<String, dynamic>?;
+          }
+
+          final contractStatus = contractJson?['status'] as String?;
+          if (contractStatus == 'Refunded' ||
+              contractStatus == 'Cancelled' ||
+              contractStatus == 'Retired' ||
+              contractStatus == 'Withdrawn' ||
+              contractStatus == 'Archived') {
+            continue;
+          }
+
+          String currency = 'RON';
           final programRaw = enrollmentJson['programs'];
           Map<String, dynamic>? programJson;
           if (programRaw is Map<String, dynamic>) {
@@ -162,10 +182,11 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
           if (programJson != null && programJson['currency'] != null) {
             currency = (programJson['currency'] as String).toUpperCase();
           }
-        }
 
-        revenueCollectedByCurrency[currency] =
-            (revenueCollectedByCurrency[currency] ?? 0.0) + amount;
+          final amount = (row['amount_paid'] as num?)?.toDouble() ?? 0.0;
+          revenueCollectedByCurrency[currency] =
+              (revenueCollectedByCurrency[currency] ?? 0.0) + amount;
+        }
       }
 
       // 4. Calculate total expected & collected in RON equivalent

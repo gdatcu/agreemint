@@ -188,21 +188,21 @@ GoRouter appRouter(Ref ref) {
               ),
             ],
           ),
-          // Branch 3: Analytics
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/analytics',
-                builder: (context, state) => const AnalyticsView(),
-              ),
-            ],
-          ),
-          // Branch 4: Prospects / Follow-ups
+          // Branch 3: Prospects / Follow-ups (Index 2)
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: '/prospects',
                 builder: (context, state) => const ProspectsView(),
+              ),
+            ],
+          ),
+          // Branch 4: Analytics (Index 3)
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/analytics',
+                builder: (context, state) => const AnalyticsView(),
               ),
             ],
           ),

@@ -16,12 +16,16 @@ class AppShellView extends ConsumerWidget {
     final pendingState = ref.watch(globalPendingPaymentsControllerProvider);
     final prospectsState = ref.watch(prospectsControllerProvider);
 
-    // Trigger Android / local push notification checks when data arrives
-    pendingState.whenData((payments) {
-      NotificationService.checkAndNotifyOverduePayments(payments);
+    ref.listen(globalPendingPaymentsControllerProvider, (previous, next) {
+      next.whenData((payments) {
+        NotificationService.checkAndNotifyOverduePayments(payments);
+      });
     });
-    prospectsState.whenData((prospects) {
-      NotificationService.checkAndNotifyProspects(prospects);
+
+    ref.listen(prospectsControllerProvider, (previous, next) {
+      next.whenData((prospects) {
+        NotificationService.checkAndNotifyProspects(prospects);
+      });
     });
 
     final overdueCount = pendingState.maybeWhen(

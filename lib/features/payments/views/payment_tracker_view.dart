@@ -491,6 +491,41 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                     ),
                                   ),
                                 ],
+                                if (payment.externalInvoiceNumber != null &&
+                                    payment.externalInvoiceNumber!.isNotEmpty) ...[
+                                  const SizedBox(width: 8),
+                                  InkWell(
+                                    onTap: () => _showSoloInvoiceDialog(
+                                        context, ref, payment),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue.shade50,
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(
+                                            color: Colors.blue.shade300),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.description,
+                                              size: 11,
+                                              color: Colors.blue.shade700),
+                                          const SizedBox(width: 3),
+                                          Text(
+                                            'SOLO #${payment.externalInvoiceNumber}',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.blue.shade800,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                             if (payment.paymentMethod != null &&
@@ -512,6 +547,18 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.post_add,
+                                size: 20,
+                                color: payment.externalInvoiceNumber != null
+                                    ? Colors.blue.shade700
+                                    : Colors.grey.shade600,
+                              ),
+                              tooltip: 'SOLO / External Invoice',
+                              onPressed: () => _showSoloInvoiceDialog(
+                                  context, ref, payment),
+                            ),
                             if (payment.amountPaid > 0)
                               IconButton(
                                 icon: Icon(
@@ -822,6 +869,94 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
               ],
             );
           },
+        );
+      },
+    );
+  }
+
+  void _showSoloInvoiceDialog(
+      BuildContext context, WidgetRef ref, PaymentModel payment) {
+    final invoiceNumberController =
+        TextEditingController(text: payment.externalInvoiceNumber ?? '');
+    final invoiceUrlController =
+        TextEditingController(text: payment.externalInvoiceUrl ?? '');
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Row(
+            children: const [
+              Icon(Icons.description_outlined, color: Colors.blue),
+              SizedBox(width: 8),
+              Text('SOLO External Invoice'),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Record invoice number and PDF link generated in SOLO or external billing software.',
+                  style: TextStyle(fontSize: 13, color: Colors.grey),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: invoiceNumberController,
+                  decoration: const InputDecoration(
+                    labelText: 'SOLO Invoice Number (e.g. SOLO-10492)',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.numbers),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: invoiceUrlController,
+                  decoration: const InputDecoration(
+                    labelText: 'Invoice PDF Link / Storage URL (Optional)',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.link),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final number = invoiceNumberController.text.trim();
+                final url = invoiceUrlController.text.trim();
+                if (number.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Please enter an invoice number')),
+                  );
+                  return;
+                }
+                Navigator.of(context).pop();
+                await ref
+                    .read(enrollmentPaymentsControllerProvider(
+                            widget.enrollment.id)
+                        .notifier)
+                    .saveExternalInvoice(
+                      paymentId: payment.id,
+                      invoiceNumber: number,
+                      invoiceUrl: url.isNotEmpty ? url : null,
+                    );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('SOLO Invoice $number saved.')),
+                  );
+                }
+              },
+              child: const Text('Save Invoice'),
+            ),
+          ],
         );
       },
     );

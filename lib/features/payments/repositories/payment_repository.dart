@@ -208,6 +208,22 @@ class PaymentRepository {
       throw Exception('Failed to upload receipt PDF: $e');
     }
   }
+
+  /// Stores external SOLO invoice number and optional invoice PDF URL for a payment installment.
+  Future<void> updateExternalInvoice({
+    required String paymentId,
+    required String invoiceNumber,
+    String? invoiceUrl,
+  }) async {
+    try {
+      await _client.from('payments').update({
+        'external_invoice_number': invoiceNumber,
+        if (invoiceUrl != null) 'external_invoice_url': invoiceUrl,
+      }).eq('id', paymentId);
+    } catch (e) {
+      throw Exception('Failed to update external SOLO invoice: $e');
+    }
+  }
 }
 
 @riverpod

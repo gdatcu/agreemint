@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/payments/models/payment_model.dart';
 import '../../features/prospects/models/prospect_model.dart';
 
@@ -49,11 +50,12 @@ class NotificationService {
     return true;
   }
 
-  /// Evaluates pending payments list and dispatches an Android notification if overdue payments exist.
+  /// Evaluates pending payments list and dispatches an Android notification at most ONCE PER DAY.
   static Future<void> checkAndNotifyOverduePayments(
       List<PaymentModel> payments) async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
+    final todayStr = '${now.year}-${now.month}-${now.day}';
 
     final overduePayments = payments.where((p) {
       final due = DateTime(p.dueDate.year, p.dueDate.month, p.dueDate.day);
@@ -64,25 +66,36 @@ class NotificationService {
 
     if (overduePayments.isEmpty) return;
 
-    final studentCount = overduePayments
-        .map((p) => p.enrollment?.student?.name ?? 'Cursant')
-        .toSet()
-        .length;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final lastNotified = prefs.getString('last_overdue_notified_date');
+      if (lastNotified == todayStr) {
+        // Notification already sent today – skip to prevent loop/spam
+        return;
+      }
 
-    final title =
-        '⚠️ ${overduePayments.length} Overdue Payment${overduePayments.length > 1 ? 's' : ''}!';
-    final body = studentCount == 1
-        ? '${overduePayments.first.enrollment?.student?.name ?? 'Student'} has an overdue payment.'
-        : '$studentCount students have payments past their due date.';
+      final studentCount = overduePayments
+          .map((p) => p.enrollment?.student?.name ?? 'Cursant')
+          .toSet()
+          .length;
 
-    await showOverdueNotification(id: 101, title: title, body: body);
+      final title =
+          '⚠️ ${overduePayments.length} Overdue Payment${overduePayments.length > 1 ? 's' : ''}!';
+      final body = studentCount == 1
+          ? '${overduePayments.first.enrollment?.student?.name ?? 'Student'} has an overdue payment.'
+          : '$studentCount students have payments past their due date.';
+
+      await showOverdueNotification(id: 101, title: title, body: body);
+      await prefs.setString('last_overdue_notified_date', todayStr);
+    } catch (_) {}
   }
 
-  /// Evaluates prospects list and dispatches an Android notification if follow-ups are due today or overdue.
+  /// Evaluates prospects list and dispatches an Android notification at most ONCE PER DAY.
   static Future<void> checkAndNotifyProspects(
       List<ProspectModel> prospects) async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
+    final todayStr = '${now.year}-${now.month}-${now.day}';
 
     final dueProspects = prospects.where((p) {
       if (p.status == 'Converted' || p.status == 'Lost') return false;
@@ -93,13 +106,23 @@ class NotificationService {
 
     if (dueProspects.isEmpty) return;
 
-    final title =
-        '🔔 ${dueProspects.length} Prospect Follow-up${dueProspects.length > 1 ? 's' : ''} Due!';
-    final body = dueProspects.length == 1
-        ? 'Don\'t forget to follow up with ${dueProspects.first.name}.'
-        : '${dueProspects.length} prospects are waiting for a follow-up today.';
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final lastNotified = prefs.getString('last_prospect_notified_date');
+      if (lastNotified == todayStr) {
+        // Notification already sent today – skip to prevent loop/spam
+        return;
+      }
 
-    await showOverdueNotification(id: 202, title: title, body: body);
+      final title =
+          '🔔 ${dueProspects.length} Prospect Follow-up${dueProspects.length > 1 ? 's' : ''} Due!';
+      final body = dueProspects.length == 1
+          ? 'Don\'t forget to follow up with ${dueProspects.first.name}.'
+          : '${dueProspects.length} prospects are waiting for a follow-up today.';
+
+      await showOverdueNotification(id: 202, title: title, body: body);
+      await prefs.setString('last_prospect_notified_date', todayStr);
+    } catch (_) {}
   }
 
   /// Triggers a native heads-up notification banner with high priority, sound, and vibration.
