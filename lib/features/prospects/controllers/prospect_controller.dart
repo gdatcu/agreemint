@@ -1,29 +1,18 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/prospect_model.dart';
 import '../repositories/prospect_repository.dart';
 
-final prospectsControllerProvider =
-    StateNotifierProvider<ProspectsController, AsyncValue<List<ProspectModel>>>(
-        (ref) {
-  final repo = ref.watch(prospectRepositoryProvider);
-  return ProspectsController(repo);
-});
+part 'prospect_controller.g.dart';
 
-class ProspectsController extends StateNotifier<AsyncValue<List<ProspectModel>>> {
-  final ProspectRepository _repository;
-
-  ProspectsController(this._repository) : super(const AsyncValue.loading()) {
-    loadProspects();
+@riverpod
+class ProspectsController extends _$ProspectsController {
+  @override
+  Future<List<ProspectModel>> build() async {
+    return ref.watch(prospectRepositoryProvider).fetchProspects();
   }
 
   Future<void> loadProspects() async {
-    state = const AsyncValue.loading();
-    try {
-      final prospects = await _repository.fetchProspects();
-      state = AsyncValue.data(prospects);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
+    ref.invalidateSelf();
   }
 
   Future<void> addProspect({
@@ -35,8 +24,9 @@ class ProspectsController extends StateNotifier<AsyncValue<List<ProspectModel>>>
     required DateTime followUpDate,
     String status = 'Pending',
   }) async {
-    try {
-      await _repository.createProspect(
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      await ref.read(prospectRepositoryProvider).createProspect(
         name: name,
         phone: phone,
         email: email,
@@ -45,10 +35,8 @@ class ProspectsController extends StateNotifier<AsyncValue<List<ProspectModel>>>
         followUpDate: followUpDate,
         status: status,
       );
-      await loadProspects();
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
+      return ref.read(prospectRepositoryProvider).fetchProspects();
+    });
   }
 
   Future<void> updateProspect({
@@ -61,8 +49,9 @@ class ProspectsController extends StateNotifier<AsyncValue<List<ProspectModel>>>
     required DateTime followUpDate,
     required String status,
   }) async {
-    try {
-      await _repository.updateProspect(
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      await ref.read(prospectRepositoryProvider).updateProspect(
         prospectId: prospectId,
         name: name,
         phone: phone,
@@ -72,33 +61,29 @@ class ProspectsController extends StateNotifier<AsyncValue<List<ProspectModel>>>
         followUpDate: followUpDate,
         status: status,
       );
-      await loadProspects();
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
+      return ref.read(prospectRepositoryProvider).fetchProspects();
+    });
   }
 
   Future<void> deleteProspect(String prospectId) async {
-    try {
-      await _repository.deleteProspect(prospectId);
-      await loadProspects();
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      await ref.read(prospectRepositoryProvider).deleteProspect(prospectId);
+      return ref.read(prospectRepositoryProvider).fetchProspects();
+    });
   }
 
   Future<void> convertToStudent({
     required ProspectModel prospect,
     required String programId,
   }) async {
-    try {
-      await _repository.convertToStudent(
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      await ref.read(prospectRepositoryProvider).convertToStudent(
         prospect: prospect,
         programId: programId,
       );
-      await loadProspects();
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
+      return ref.read(prospectRepositoryProvider).fetchProspects();
+    });
   }
 }

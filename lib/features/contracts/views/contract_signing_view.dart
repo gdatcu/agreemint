@@ -393,7 +393,7 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
   Widget build(BuildContext context) {
     ref.listen(enrollmentContractControllerProvider(widget.enrollment.id),
         (previous, next) {
-      final contract = next.valueOrNull;
+      final contract = next.value;
       if (contract != null) {
         if (contract.priceRon != null) {
           final formattedPrice = contract.priceRon!.toStringAsFixed(2);
@@ -413,11 +413,11 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
         ref.watch(enrollmentPaymentsControllerProvider(widget.enrollment.id));
     final student = widget.enrollment.student;
     final program = widget.enrollment.program;
-    final contract = contractAsync.valueOrNull;
+    final contract = contractAsync.value;
 
     // Calculate total settled payment amount for this enrollment if payments exist
     double? totalPaymentsAmount;
-    final payments = paymentsAsync.valueOrNull;
+    final payments = paymentsAsync.value;
     if (payments != null && payments.isNotEmpty) {
       totalPaymentsAmount = payments.fold<double>(
         0.0,
