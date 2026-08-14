@@ -360,5 +360,57 @@ void main() {
             details: any(named: 'details'),
           )).called(1);
     });
+
+    test('cancelAndRefundContract updates status to Refunded and marks payments as refunded', () async {
+      const mockContract = ContractModel(
+        id: 'cnt-cancel',
+        enrollmentId: enrollmentId,
+        contractNumber: 102,
+        status: 'FullySigned',
+      );
+
+      const mockRefundedContract = ContractModel(
+        id: 'cnt-cancel',
+        enrollmentId: enrollmentId,
+        contractNumber: 102,
+        status: 'Refunded',
+      );
+
+      when(() => mockContractRepo.fetchContractForEnrollment(enrollmentId))
+          .thenAnswer((_) async => mockContract);
+
+      when(() => mockContractRepo.updateStatus(
+            contractId: 'cnt-cancel',
+            status: 'Refunded',
+            details: any(named: 'details'),
+          )).thenAnswer((_) async => mockRefundedContract);
+
+      when(() => mockPaymentRepo.markPaymentsAsRefunded(enrollmentId))
+          .thenAnswer((_) async {});
+
+      final container = ProviderContainer(
+        overrides: [
+          contractRepositoryProvider.overrideWithValue(mockContractRepo),
+          paymentRepositoryProvider.overrideWithValue(mockPaymentRepo),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(enrollmentContractControllerProvider(enrollmentId).future);
+      final notifier = container.read(enrollmentContractControllerProvider(enrollmentId).notifier);
+
+      await notifier.cancelAndRefundContract(
+        refundReason: 'Client withdrawal within guarantee period',
+        refundAmount: 1000.0,
+      );
+
+      verify(() => mockContractRepo.updateStatus(
+            contractId: 'cnt-cancel',
+            status: 'Refunded',
+            details: any(named: 'details'),
+          )).called(1);
+
+      verify(() => mockPaymentRepo.markPaymentsAsRefunded(enrollmentId)).called(1);
+    });
   });
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/payment_controller.dart';
+import '../../../core/services/whatsapp_reminder_service.dart';
 
 class PendingDashboardView extends ConsumerWidget {
   const PendingDashboardView({super.key});
@@ -44,116 +45,180 @@ class PendingDashboardView extends ConsumerWidget {
           }
 
           final now = DateTime.now();
+          final today = DateTime(now.year, now.month, now.day);
+          final overduePayments = payments.where((p) {
+            final due = DateTime(p.dueDate.year, p.dueDate.month, p.dueDate.day);
+            return due.isBefore(today);
+          }).toList();
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: payments.length,
-            itemBuilder: (context, index) {
-              final payment = payments[index];
-              final student = payment.enrollment?.student;
-              final program = payment.enrollment?.program;
-
-              // Calculate relative day differences
-              final dueLocalDate = DateTime(payment.dueDate.year,
-                  payment.dueDate.month, payment.dueDate.day);
-              final todayLocalDate = DateTime(now.year, now.month, now.day);
-              final difference = dueLocalDate.difference(todayLocalDate).inDays;
-
-              final isOverdue = difference < 0;
-              final relativeDaysText = isOverdue
-                  ? '${difference.abs()} days overdue'
-                  : difference == 0
-                      ? 'Due today'
-                      : 'Due in $difference days';
-
-              final badgeColor = isOverdue
-                  ? Colors.red
-                  : difference == 0
-                      ? Colors.orange
-                      : Colors.blue;
-
-              return Card(
-                elevation: 1,
-                margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color: isOverdue
-                        ? Colors.red.withAlpha(128)
-                        : Theme.of(context).colorScheme.outlineVariant,
-                    width: isOverdue ? 1.0 : 0.5,
+          return Column(
+            children: [
+              if (overduePayments.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.red.shade300),
                   ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: ListTile(
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            student?.name ?? 'Unknown Student',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Text(
-                          '\$${(payment.amountDue - payment.amountPaid).toStringAsFixed(2)}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isOverdue
-                                ? Colors.red
-                                : Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 4),
-                        Text(
-                          program?.name ?? 'Unknown Program',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                              ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Row(
+                    children: [
+                      const Icon(Icons.warning_amber_rounded, color: Colors.red),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Due: ${dueLocalDate.toString().split(' ')[0]}',
-                              style: Theme.of(context).textTheme.bodySmall,
+                              '${overduePayments.length} Overdue Payment${overduePayments.length > 1 ? 's' : ''} Requiring Action',
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: badgeColor.withAlpha(25),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                relativeDaysText,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: badgeColor,
-                                ),
-                              ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              'Past due agreed payments. Click the WhatsApp icon to send a friendly reminder.',
+                              style: TextStyle(color: Colors.red, fontSize: 11),
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              );
-            },
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: payments.length,
+                  itemBuilder: (context, index) {
+                    final payment = payments[index];
+                    final student = payment.enrollment?.student;
+                    final program = payment.enrollment?.program;
+                    final currency = program?.currency ?? 'RON';
+
+                    // Calculate relative day differences
+                    final dueLocalDate = DateTime(payment.dueDate.year,
+                        payment.dueDate.month, payment.dueDate.day);
+                    final todayLocalDate = DateTime(now.year, now.month, now.day);
+                    final difference = dueLocalDate.difference(todayLocalDate).inDays;
+
+                    final isOverdue = difference < 0;
+                    final relativeDaysText = isOverdue
+                        ? '${difference.abs()} days overdue'
+                        : difference == 0
+                            ? 'Due today'
+                            : 'Due in $difference days';
+
+                    final badgeColor = isOverdue
+                        ? Colors.red
+                        : difference == 0
+                            ? Colors.orange
+                            : Colors.blue;
+
+                    return Card(
+                      elevation: 1,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: isOverdue
+                              ? Colors.red.withAlpha(128)
+                              : Theme.of(context).colorScheme.outlineVariant,
+                          width: isOverdue ? 1.0 : 0.5,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: ListTile(
+                          title: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  student?.name ?? 'Unknown Student',
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              Text(
+                                '${(payment.amountDue - payment.amountPaid).toStringAsFixed(2)} $currency',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: isOverdue
+                                      ? Colors.red
+                                      : Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Text(
+                                program?.name ?? 'Unknown Program',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                    ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Due: ${dueLocalDate.toString().split(' ')[0]}',
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: badgeColor.withAlpha(25),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      relativeDaysText,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: badgeColor,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          trailing: IconButton(
+                            icon: Icon(Icons.chat_outlined,
+                                color: Colors.green.shade600),
+                            tooltip: 'Send WhatsApp Reminder',
+                            onPressed: () {
+                              WhatsAppReminderService.sendReminder(
+                                context: context,
+                                phone: student?.phone,
+                                studentName: student?.name ?? 'Cursant',
+                                programName: program?.name ?? 'Program Mentorat',
+                                amount: payment.amountDue - payment.amountPaid,
+                                currency: currency,
+                                dueDateStr: dueLocalDate.toString().split(' ')[0],
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),

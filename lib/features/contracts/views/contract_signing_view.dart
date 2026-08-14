@@ -514,6 +514,92 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
       BuildContext context, ContractModel contract) {
     final theme = Theme.of(context);
     final isFullySigned = contract.status == 'FullySigned';
+    final isRefunded =
+        contract.status == 'Refunded' || contract.status == 'Cancelled';
+
+    if (isRefunded) {
+      final refundReason = contract.details?['refund_reason'] as String?;
+      final refundAmount = contract.details?['refund_amount'];
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Card(
+            color: Colors.amber.shade50,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.replay_rounded,
+                          size: 36, color: Colors.amber.shade900),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Contract Refunded / Cancelled',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.amber.shade900,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Client retired from mentorship program.',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: Colors.amber.shade900,
+                              ),
+                            ),
+                            if (refundReason != null && refundReason.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                'Reason: $refundReason',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  fontStyle: FontStyle.italic,
+                                  color: Colors.amber.shade900,
+                                ),
+                              ),
+                            ],
+                            if (refundAmount != null) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                'Amount Refunded: $refundAmount RON',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.amber.shade900,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      if (contract.signedPdfUrl != null ||
+                          contract.pdfUrl != null)
+                        OutlinedButton.icon(
+                          onPressed: () => _viewPdf(contract.signedPdfUrl ??
+                              contract.pdfUrl ??
+                              ''),
+                          icon: const Icon(Icons.open_in_new),
+                          label: const Text('View Archived PDF'),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

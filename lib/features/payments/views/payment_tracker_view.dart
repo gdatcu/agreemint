@@ -7,6 +7,7 @@ import '../controllers/payment_controller.dart';
 import '../models/payment_model.dart';
 import '../repositories/payment_repository.dart';
 import '../../../core/services/frankfurter_service.dart';
+import '../../../core/services/whatsapp_reminder_service.dart';
 import '../services/receipt_generator_service.dart';
 import 'receipt_preview_dialog.dart';
 
@@ -46,6 +47,10 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
         return Colors.green;
       case 'Partial':
         return Colors.orange;
+      case 'Refunded':
+        return Colors.amber.shade800;
+      case 'Overdue':
+        return Colors.red;
       default:
         return Colors.red;
     }
@@ -149,14 +154,68 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
           }
 
           // Calculate summary stats
+          final isContractRefunded = enrollment.contract?.status == 'Refunded' ||
+              enrollment.contract?.status == 'Cancelled';
+
           final totalDue =
               payments.fold<double>(0, (sum, p) => sum + p.amountDue);
-          final totalPaid =
-              payments.fold<double>(0, (sum, p) => sum + p.amountPaid);
-          final remaining = (totalDue - totalPaid) > 0 ? (totalDue - totalPaid) : 0.0;
+          final totalPaid = isContractRefunded
+              ? 0.0
+              : payments.fold<double>(0, (sum, p) => p.status == 'Refunded' ? sum : sum + p.amountPaid);
+          final remaining = isContractRefunded
+              ? 0.0
+              : ((totalDue - totalPaid) > 0 ? (totalDue - totalPaid) : 0.0);
 
           return Column(
             children: [
+              // Refunded Contract Alert Banner
+              if (isContractRefunded) ...[
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.amber.shade300),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.replay_rounded, color: Colors.amber.shade900),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Contract Refunded & Cancelled. Total Paid is set to 0.00 $currency.',
+                            style: TextStyle(
+                              color: Colors.amber.shade900,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        if (payments.any((p) => p.status != 'Refunded')) ...[
+                          TextButton.icon(
+                            onPressed: () async {
+                              await ref
+                                  .read(paymentRepositoryProvider)
+                                  .markPaymentsAsRefunded(enrollment.id);
+                              ref.invalidate(
+                                  enrollmentPaymentsControllerProvider(enrollment.id));
+                            },
+                            icon: const Icon(Icons.sync, size: 16),
+                            label: const Text('Sync Refund'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.amber.shade900,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+
               // EUR Exchange Rate Info Banner
               if (currency == 'EUR') ...[
                 Padding(
@@ -219,8 +278,8 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                           ],
                         ),
                         Container(
+                            height: 30,
                             width: 1,
-                            height: 40,
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSecondaryContainer
@@ -232,17 +291,19 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                             const SizedBox(height: 4),
                             Text(
                               _formatAmount(totalPaid, currency),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.green,
+                                color: isContractRefunded
+                                    ? Colors.amber.shade800
+                                    : Colors.green,
                               ),
                             ),
                           ],
                         ),
                         Container(
+                            height: 30,
                             width: 1,
-                            height: 40,
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSecondaryContainer
@@ -295,9 +356,25 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                     final dateStr =
                         payment.dueDate.toLocal().toString().split(' ')[0];
 
-                    // Determine effective display status
-                    final isFullyPaid = payment.amountPaid >= payment.amountDue && payment.amountDue > 0;
-                    final displayStatus = isFullyPaid ? 'Paid' : payment.status;
+                    // Determine effective display status and paid amount
+                    final isRefundedItem = isContractRefunded || payment.status == 'Refunded';
+                    final isFullyPaid = !isRefundedItem &&
+                        payment.amountPaid >= payment.amountDue &&
+                        payment.amountDue > 0;
+
+                    final now = DateTime.now();
+                    final today = DateTime(now.year, now.month, now.day);
+                    final dueLocalDate = DateTime(payment.dueDate.year, payment.dueDate.month, payment.dueDate.day);
+                    final isOverdue = !isRefundedItem &&
+                        !isFullyPaid &&
+                        dueLocalDate.isBefore(today);
+
+                    final displayStatus = isRefundedItem
+                        ? 'Refunded'
+                        : (isFullyPaid
+                            ? 'Paid'
+                            : (isOverdue ? 'Overdue' : (payment.status.isNotEmpty ? payment.status : 'Pending')));
+                    final effectivePaid = isRefundedItem ? 0.0 : payment.amountPaid;
 
                     return Card(
                       elevation: 1,
@@ -359,10 +436,12 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                   ),
                                 ),
                                 Text(
-                                  'Paid: ${_formatAmount(payment.amountPaid, currency)}',
-                                  style: const TextStyle(
+                                  'Paid: ${_formatAmount(effectivePaid, currency)}',
+                                  style: TextStyle(
                                     fontSize: 13,
-                                    color: Colors.green,
+                                    color: isRefundedItem
+                                        ? Colors.amber.shade800
+                                        : Colors.green,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -448,23 +527,80 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                 onPressed: () => _generateAndShowReceipt(
                                     context, payment, index + 1, payments.length),
                               ),
-                            IconButton(
-                              icon: const Icon(Icons.edit_outlined, size: 20),
-                              tooltip: 'Edit / Record Payment',
-                              onPressed: () =>
-                                  _showRecordPaymentDialog(context, ref, payment),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete_outline,
-                                  size: 20, color: Colors.redAccent),
-                              tooltip: 'Delete Installment',
-                              onPressed: () =>
-                                  _showDeleteInstallmentDialog(context, ref, payment),
-                            ),
+                            if (displayStatus != 'Paid' &&
+                                displayStatus != 'Refunded' &&
+                                !isContractRefunded) ...[
+                              IconButton(
+                                icon: Icon(Icons.chat_outlined,
+                                    size: 20, color: Colors.green.shade600),
+                                tooltip: 'Send WhatsApp Reminder',
+                                onPressed: () {
+                                  WhatsAppReminderService.sendReminder(
+                                    context: context,
+                                    phone: student?.phone,
+                                    studentName: student?.name ?? 'Cursant',
+                                    programName: program?.name ?? 'Program Mentorat',
+                                    amount: payment.amountDue - payment.amountPaid,
+                                    currency: currency,
+                                    dueDateStr: dateStr,
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined, size: 20),
+                                tooltip: 'Edit / Record Payment',
+                                onPressed: () =>
+                                    _showRecordPaymentDialog(context, ref, payment),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline,
+                                    size: 20, color: Colors.redAccent),
+                                tooltip: 'Delete Installment',
+                                onPressed: () =>
+                                    _showDeleteInstallmentDialog(context, ref, payment),
+                              ),
+                            ] else ...[
+                              IconButton(
+                                icon: Icon(Icons.lock_outline,
+                                    size: 20, color: Colors.grey.shade400),
+                                tooltip: displayStatus == 'Refunded' || isContractRefunded
+                                    ? 'Contract / Payment Refunded: Cannot be edited or deleted'
+                                    : 'Payment settled: Paid installments cannot be edited or deleted',
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(displayStatus == 'Refunded' || isContractRefunded
+                                          ? 'Refunded installments cannot be modified or deleted.'
+                                          : 'Paid installments cannot be modified or deleted.'),
+                                      backgroundColor: Colors.orange,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
                           ],
                         ),
-                        onTap: () =>
-                            _showRecordPaymentDialog(context, ref, payment),
+                        onTap: () {
+                          if (displayStatus == 'Paid' ||
+                              displayStatus == 'Refunded' ||
+                              isContractRefunded) {
+                            if (payment.amountPaid > 0) {
+                              _generateAndShowReceipt(
+                                  context, payment, index + 1, payments.length);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(displayStatus == 'Refunded' || isContractRefunded
+                                      ? 'Refunded installments cannot be modified.'
+                                      : 'Paid installments cannot be modified.'),
+                                  backgroundColor: Colors.orange,
+                                ),
+                              );
+                            }
+                          } else {
+                            _showRecordPaymentDialog(context, ref, payment);
+                          }
+                        },
                       ),
                     );
                   },
@@ -562,6 +698,18 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
   }
 
   void _showAddInstallmentDialog(BuildContext context, WidgetRef ref) {
+    final isContractRefunded = widget.enrollment.contract?.status == 'Refunded' ||
+        widget.enrollment.contract?.status == 'Cancelled';
+    if (isContractRefunded) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cannot add installments to a refunded or cancelled contract.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     final currency = widget.enrollment.program?.currency ?? 'RON';
     final formKey = GlobalKey<FormState>();
     final amountController = TextEditingController();
@@ -681,6 +829,23 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
 
   void _showRecordPaymentDialog(
       BuildContext context, WidgetRef ref, PaymentModel payment) {
+    final isContractRefunded = widget.enrollment.contract?.status == 'Refunded' ||
+        widget.enrollment.contract?.status == 'Cancelled';
+    if (payment.status == 'Paid' ||
+        payment.status == 'Refunded' ||
+        isContractRefunded ||
+        (payment.amountPaid >= payment.amountDue && payment.amountDue > 0)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(payment.status == 'Refunded' || isContractRefunded
+              ? 'Refunded installments cannot be modified.'
+              : 'Paid installments cannot be modified after settlement.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     final currency = widget.enrollment.program?.currency ?? 'RON';
     final formKey = GlobalKey<FormState>();
 
@@ -696,6 +861,8 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
         : (payment.status.isNotEmpty ? payment.status : 'Pending');
 
     bool createFollowUp = false;
+
+    DateTime selectedDueDate = payment.dueDate;
 
     showDialog(
       context: context,
@@ -751,6 +918,32 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                           if (p > due) return 'Amount paid cannot exceed amount due';
                           return null;
                         },
+                      ),
+                      const SizedBox(height: 16),
+                      InkWell(
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: selectedDueDate,
+                            firstDate: DateTime(2020),
+                            lastDate: DateTime(2035),
+                          );
+                          if (picked != null) {
+                            setState(() {
+                              selectedDueDate = picked;
+                            });
+                          }
+                        },
+                        child: InputDecorator(
+                          decoration: const InputDecoration(
+                            labelText: 'Due Date',
+                            prefixIcon: Icon(Icons.calendar_today),
+                          ),
+                          child: Text(
+                            '${selectedDueDate.year}-${selectedDueDate.month.toString().padLeft(2, '0')}-${selectedDueDate.day.toString().padLeft(2, '0')}',
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
@@ -846,6 +1039,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                         amountPaid: newPaid,
                         status: finalStatus,
                         paymentMethod: selectedMethod,
+                        dueDate: selectedDueDate,
                       );
 
                   // If user selected to create a follow-up installment for the difference
@@ -889,6 +1083,21 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
 
   void _showDeleteInstallmentDialog(
       BuildContext context, WidgetRef ref, PaymentModel payment) {
+    final isContractRefunded = widget.enrollment.contract?.status == 'Refunded' ||
+        widget.enrollment.contract?.status == 'Cancelled';
+    if (payment.status == 'Paid' ||
+        payment.status == 'Refunded' ||
+        isContractRefunded) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(payment.status == 'Refunded' || isContractRefunded
+              ? 'Refunded installments cannot be deleted.'
+              : 'Paid installments cannot be deleted.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
     showDialog(
       context: context,
       builder: (context) {

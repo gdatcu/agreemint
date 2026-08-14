@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.22 Release Notes
+# 🚀 Agreemint v1.0.23 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,12 +19,22 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.22
+## 🎨 What's New in Version 1.0.23
 
-- 🛡️ **Program Deletion Protection**:
-  - Restricts removing/deleting any program that has signed contracts or payment history attached to its enrollments.
-  - Replaces the trash icon on protected program cards with a disabled lock icon (`Icons.lock_outline`) and explanatory tooltip/SnackBar guidance.
-  - Adds a backend guard in `ProgramRepository.deleteProgram` that throws an Exception if deletion of a program with active contracts or payments is attempted.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.22` (`1.0.22+22`).
+- 📱 **Android Native Push Notifications**:
+  - `flutter_local_notifications` integration with high-importance Android Notification Channel (`Overdue Payment Alerts`).
+  - Native heads-up notification banners in the Android status bar when past due payments exist.
+  - Automatic prompt for Android 13+ (`POST_NOTIFICATIONS`) permission.
+- 💬 **1-Click WhatsApp Payment Reminders**:
+  - Green WhatsApp action button on `PaymentTrackerView` and `PendingDashboardView` items.
+  - Automatically formats student phone numbers and opens WhatsApp with polite prefilled Romanian reminder text.
+- ⚠️ **Overdue Payment Alerts & Visual Highlighting**:
+  - Prominent red **Overdue** status badges on installments past their due date.
+  - Top **Overdue Alert Banner** on `PendingDashboardView`.
+  - Overdue counter badge on the "Pending" bottom navigation bar icon.
+- 📅 **Due Date Control & Settlement Locking**:
+  - Interactive Date Picker added to the Record / Edit Payment dialog.
+  - Settled `Paid` and `Refunded` installments locked against accidental editing or deletion.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.23` (`1.0.23+23`).
 
 

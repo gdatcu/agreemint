@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../programs/models/program_model.dart';
+import '../../contracts/controllers/contract_controller.dart';
 import '../controllers/student_controller.dart';
 import '../models/enrollment_model.dart';
 import '../models/student_model.dart';
@@ -174,7 +175,35 @@ class EnrolledStudentsView extends ConsumerWidget {
                                   color: Theme.of(context).colorScheme.secondary,
                                 ),
                           ),
-                          if (!canDelete) ...[
+                          if (enrollment.contract?.status == 'Refunded' ||
+                              enrollment.contract?.status == 'Cancelled') ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.amber.shade50,
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: Colors.amber.shade300),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.replay_rounded,
+                                      size: 11, color: Colors.amber.shade900),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    'Refunded',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.amber.shade900,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ] else if (!canDelete) ...[
                             const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -227,6 +256,15 @@ class EnrolledStudentsView extends ConsumerWidget {
                               extra: enrollment);
                         },
                       ),
+                      if (enrollment.contract?.status != 'Refunded' &&
+                          enrollment.contract?.status != 'Cancelled')
+                        IconButton(
+                          icon: Icon(Icons.currency_exchange_outlined,
+                              color: Colors.orange.shade700),
+                          tooltip: 'Refund & Retire Client',
+                          onPressed: () => _showRefundDialog(
+                              context, ref, enrollment, student),
+                        ),
                       if (canDelete)
                         IconButton(
                           icon: Icon(Icons.delete_outline,
@@ -239,12 +277,12 @@ class EnrolledStudentsView extends ConsumerWidget {
                         IconButton(
                           icon: Icon(Icons.lock_outline,
                               color: Colors.grey.shade400),
-                          tooltip: 'Cannot delete: Contract signed by beneficiary',
+                          tooltip: 'Cannot delete: Active signed contract',
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
-                                    'Cannot delete student after contract is signed by beneficiary.'),
+                                    'Cannot delete student while contract is active. Process a refund/cancellation first.'),
                                 backgroundColor: Colors.orange,
                               ),
                             );
@@ -298,6 +336,129 @@ class EnrolledStudentsView extends ConsumerWidget {
         tooltip: 'Enroll New Student',
         child: const Icon(Icons.person_add_alt_1),
       ),
+    );
+  }
+
+  void _showRefundDialog(
+    BuildContext context,
+    WidgetRef ref,
+    EnrollmentModel enrollment,
+    StudentModel student,
+  ) {
+    final formKey = GlobalKey<FormState>();
+    final initialPrice = program.totalPrice;
+    final reasonController = TextEditingController(
+        text: 'Client requested withdrawal / refund within guarantee period.');
+    final amountController =
+        TextEditingController(text: initialPrice.toStringAsFixed(2));
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.currency_exchange_outlined, color: Colors.orange.shade800),
+              const SizedBox(width: 10),
+              const Text('Process Refund & Retirement'),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Student: ${student.name} (${student.email})',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text('Program: ${program.name}'),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: amountController,
+                    decoration: InputDecoration(
+                      labelText: 'Refund Amount (${program.currency})',
+                      prefixIcon: const Icon(Icons.attach_money),
+                    ),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Please enter refund amount';
+                      }
+                      if (double.tryParse(val.trim()) == null) {
+                        return 'Please enter a valid numeric amount';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: reasonController,
+                    decoration: const InputDecoration(
+                      labelText: 'Refund Reason / Notes',
+                      hintText: 'e.g., Requested withdrawal within 5 days',
+                    ),
+                    maxLines: 2,
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Please enter a refund reason';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange.shade800,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                if (formKey.currentState?.validate() ?? false) {
+                  final navigator = Navigator.of(context);
+                  final refundAmount = double.parse(amountController.text.trim());
+                  final refundReason = reasonController.text.trim();
+
+                  await ref
+                      .read(enrollmentContractControllerProvider(enrollment.id)
+                          .notifier)
+                      .cancelAndRefundContract(
+                        refundReason: refundReason,
+                        refundAmount: refundAmount,
+                      );
+
+                  ref.invalidate(
+                      programEnrollmentsControllerProvider(program.id));
+
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            'Contract for ${student.name} marked as Refunded.'),
+                        backgroundColor: Colors.orange.shade800,
+                      ),
+                    );
+                  }
+
+                  navigator.pop();
+                }
+              },
+              child: const Text('Process Refund'),
+            ),
+          ],
+        );
+      },
     );
   }
 

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:agreemint/core/constants.dart';
 import 'package:agreemint/core/routing/app_router.dart';
 
+import 'package:agreemint/core/services/notification_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -18,6 +20,9 @@ void main() async {
     url: AppConstants.supabaseUrl,
     publishableKey: AppConstants.supabaseAnonKey,
   );
+
+  await NotificationService.initialize();
+  await NotificationService.requestPermission();
 
   runApp(
     const ProviderScope(

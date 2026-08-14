@@ -3,6 +3,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/contract_model.dart';
 import '../repositories/contract_repository.dart';
 import '../services/pdf_generator_service.dart';
+import '../../payments/repositories/payment_repository.dart';
+import '../../payments/controllers/payment_controller.dart';
+import '../../analytics/controllers/analytics_controller.dart';
 
 part 'contract_controller.g.dart';
 
@@ -284,6 +287,46 @@ class EnrollmentContractController extends _$EnrollmentContractController {
       );
 
       return finalContract;
+    });
+  }
+
+  /// Processes client retirement / cancellation and refund:
+  /// Updates contract status to 'Refunded', saves refund details in contract.details snapshot,
+  /// updates associated payments to 'Refunded', and invalidates analytics summary.
+  Future<void> cancelAndRefundContract({
+    required String refundReason,
+    required double refundAmount,
+  }) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final contractRepo = ref.read(contractRepositoryProvider);
+      final paymentRepo = ref.read(paymentRepositoryProvider);
+
+      var contract = await contractRepo.fetchContractForEnrollment(enrollmentId);
+      if (contract == null) {
+        throw Exception('Contract not found for enrollment');
+      }
+
+      final existingDetails = Map<String, dynamic>.from(contract.details ?? {});
+      existingDetails['refund_reason'] = refundReason;
+      existingDetails['refund_amount'] = refundAmount;
+      existingDetails['refund_date'] = DateTime.now().toIso8601String();
+
+      // 1. Update contract status to 'Refunded' and store refund details snapshot
+      final updatedContract = await contractRepo.updateStatus(
+        contractId: contract.id,
+        status: 'Refunded',
+        details: existingDetails,
+      );
+
+      // 2. Mark payments as refunded
+      await paymentRepo.markPaymentsAsRefunded(enrollmentId);
+
+      // 3. Invalidate analytics summary provider and enrollment payments provider to refresh UI
+      ref.invalidate(analyticsSummaryControllerProvider);
+      ref.invalidate(enrollmentPaymentsControllerProvider(enrollmentId));
+
+      return updatedContract;
     });
   }
 }

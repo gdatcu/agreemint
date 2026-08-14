@@ -94,12 +94,26 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
       final studentsResponse = await client.from('students').select('id');
       final totalStudents = (studentsResponse as List<dynamic>).length;
 
-      // 2. Fetch Expected Revenue per currency from enrollments -> programs
-      final enrollmentsResponse =
-          await client.from('enrollments').select('programs(total_price, currency)');
-      
+      // 2. Fetch Expected Revenue per currency from enrollments -> programs (excluding refunded/cancelled contracts)
+      final enrollmentsResponse = await client
+          .from('enrollments')
+          .select('programs(total_price, currency), contracts(status)');
+
       final Map<String, double> expectedRevenueByCurrency = {};
       for (final row in enrollmentsResponse as List<dynamic>) {
+        final contractRaw = row['contracts'];
+        Map<String, dynamic>? contractJson;
+        if (contractRaw is Map<String, dynamic>) {
+          contractJson = contractRaw;
+        } else if (contractRaw is List && contractRaw.isNotEmpty) {
+          contractJson = contractRaw.first as Map<String, dynamic>?;
+        }
+
+        final contractStatus = contractJson?['status'] as String?;
+        if (contractStatus == 'Refunded' || contractStatus == 'Cancelled') {
+          continue;
+        }
+
         final programRaw = row['programs'];
         Map<String, dynamic>? programJson;
         if (programRaw is Map<String, dynamic>) {

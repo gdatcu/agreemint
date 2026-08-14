@@ -21,16 +21,25 @@ class EnrollmentModel {
     this.contract,
   });
 
-  /// True if the contract has been signed by the student / beneficiary.
+  /// True if the contract has been signed by the student / beneficiary and is active.
   bool get isSignedByBeneficiary {
     if (contract == null) return false;
+    if (contract!.status == 'Refunded' || contract!.status == 'Cancelled') {
+      return false;
+    }
     return contract!.status == 'FullySigned' ||
         contract!.clientSignatureUrl != null ||
         contract!.clientSignedDate != null;
   }
 
-  /// A student can be deleted if the contract has NOT been signed by the beneficiary yet.
-  bool get canBeDeleted => !isSignedByBeneficiary;
+  /// A student can be deleted if the contract has NOT been signed by the beneficiary yet or is refunded/cancelled.
+  bool get canBeDeleted {
+    if (contract == null) return true;
+    if (contract!.status == 'Refunded' || contract!.status == 'Cancelled') {
+      return true;
+    }
+    return !isSignedByBeneficiary;
+  }
 
   /// Factory constructor to parse PostgreSQL json results cleanly and defensively.
   /// Handles nested `students`, `programs`, and `contracts` objects from relational joins.

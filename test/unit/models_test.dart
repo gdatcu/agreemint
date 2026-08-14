@@ -143,6 +143,27 @@ void main() {
       expect(enrollment.isSignedByBeneficiary, true);
       expect(enrollment.canBeDeleted, false);
     });
+
+    test('canBeDeleted returns true when contract is Refunded or Cancelled', () {
+      final contract = ContractModel(
+        id: 'cnt-3',
+        enrollmentId: 'enr-3',
+        contractNumber: 3,
+        status: 'Refunded',
+        clientSignatureUrl: 'https://storage.supabase.com/sig.png',
+        clientSignedDate: DateTime.now(),
+      );
+
+      final enrollment = EnrollmentModel(
+        id: 'enr-3',
+        programId: 'prog-1',
+        studentId: 'stud-1',
+        contract: contract,
+      );
+
+      expect(enrollment.isSignedByBeneficiary, false);
+      expect(enrollment.canBeDeleted, true);
+    });
   });
 
   group('StudentModel & ContractModel Serialization Tests', () {

@@ -37,6 +37,7 @@ class PaymentRepository {
           .from('payments')
           .select('*, enrollments(*, students(*), programs(*))')
           .neq('status', 'Paid')
+          .neq('status', 'Refunded')
           .order('due_date', ascending: true);
 
       final data = response as List<dynamic>;
@@ -45,6 +46,21 @@ class PaymentRepository {
           .toList();
     } catch (e) {
       throw Exception('Failed to fetch global pending payments: $e');
+    }
+  }
+
+  /// Marks all payments for an enrollment as 'Refunded'.
+  Future<void> markPaymentsAsRefunded(String enrollmentId) async {
+    try {
+      await _client
+          .from('payments')
+          .update({
+            'status': 'Refunded',
+            'amount_paid': 0.0,
+          })
+          .eq('enrollment_id', enrollmentId);
+    } catch (e) {
+      throw Exception('Failed to mark payments as refunded: $e');
     }
   }
 
@@ -108,14 +124,19 @@ class PaymentRepository {
     required double amountPaid,
     required String status,
     required String paymentMethod,
+    DateTime? dueDate,
   }) async {
     try {
-      await _client.from('payments').update({
+      final Map<String, dynamic> updateData = {
         'amount_due': amountDue,
         'amount_paid': amountPaid,
         'status': status,
         'payment_method': paymentMethod,
-      }).eq('id', paymentId);
+      };
+      if (dueDate != null) {
+        updateData['due_date'] = dueDate.toIso8601String().split('T')[0];
+      }
+      await _client.from('payments').update(updateData).eq('id', paymentId);
     } catch (e) {
       throw Exception('Failed to update payment record: $e');
     }
