@@ -120,6 +120,8 @@ CREATE POLICY "Anon can update contracts for client signing" ON contracts
 -- 5. PAYMENTS TABLE
 -- ============================================================================
 ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS receipt_url TEXT;
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS receipt_generated_at TIMESTAMPTZ;
 
 DROP POLICY IF EXISTS "Authenticated users can read payments" ON payments;
 DROP POLICY IF EXISTS "Authenticated users can insert payments" ON payments;
@@ -140,13 +142,27 @@ CREATE POLICY "Authenticated users can delete payments" ON payments
 
 
 -- ============================================================================
--- 6. PROGRAM HISTORY TABLE (if exists)
+-- 6. PROSPECTS TABLE (v1.0.24 Lead & Follow-up System)
 -- ============================================================================
--- Uncomment if you have a program_history or archived_programs table:
---
--- ALTER TABLE program_history ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY "Authenticated users full access to program_history" ON program_history
---   FOR ALL USING (auth.uid() IS NOT NULL);
+CREATE TABLE IF NOT EXISTS prospects (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  phone TEXT,
+  email TEXT,
+  program_id UUID REFERENCES programs(id) ON DELETE SET NULL,
+  notes TEXT,
+  follow_up_date TIMESTAMPTZ NOT NULL,
+  status TEXT NOT NULL DEFAULT 'Pending',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE prospects ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Authenticated users full access to prospects" ON prospects;
+
+CREATE POLICY "Authenticated users full access to prospects" ON prospects
+  FOR ALL USING (auth.uid() IS NOT NULL);
 
 
 -- ============================================================================
@@ -154,3 +170,4 @@ CREATE POLICY "Authenticated users can delete payments" ON payments
 -- ============================================================================
 -- Run this query to confirm RLS is active:
 -- SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = 'public';
+
