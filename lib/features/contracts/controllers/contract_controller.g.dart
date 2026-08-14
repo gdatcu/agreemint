@@ -6,177 +6,103 @@ part of 'contract_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$enrollmentContractControllerHash() =>
-    r'd6fcd5b863a1ae4d1a862179fd604e518941895c';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-  }
-}
-
-abstract class _$EnrollmentContractController
-    extends BuildlessAutoDisposeAsyncNotifier<ContractModel?> {
-  late final String enrollmentId;
-
-  FutureOr<ContractModel?> build(String enrollmentId);
-}
-
-/// See also [EnrollmentContractController].
 @ProviderFor(EnrollmentContractController)
 const enrollmentContractControllerProvider =
-    EnrollmentContractControllerFamily();
+    EnrollmentContractControllerFamily._();
 
-/// See also [EnrollmentContractController].
-class EnrollmentContractControllerFamily
-    extends Family<AsyncValue<ContractModel?>> {
-  /// See also [EnrollmentContractController].
-  const EnrollmentContractControllerFamily();
-
-  /// See also [EnrollmentContractController].
-  EnrollmentContractControllerProvider call(String enrollmentId) {
-    return EnrollmentContractControllerProvider(enrollmentId);
-  }
-
-  @override
-  EnrollmentContractControllerProvider getProviderOverride(
-    covariant EnrollmentContractControllerProvider provider,
-  ) {
-    return call(provider.enrollmentId);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'enrollmentContractControllerProvider';
-}
-
-/// See also [EnrollmentContractController].
-class EnrollmentContractControllerProvider
+final class EnrollmentContractControllerProvider
     extends
-        AutoDisposeAsyncNotifierProviderImpl<
-          EnrollmentContractController,
-          ContractModel?
-        > {
-  /// See also [EnrollmentContractController].
-  EnrollmentContractControllerProvider(String enrollmentId)
-    : this._internal(
-        () => EnrollmentContractController()..enrollmentId = enrollmentId,
-        from: enrollmentContractControllerProvider,
-        name: r'enrollmentContractControllerProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$enrollmentContractControllerHash,
-        dependencies: EnrollmentContractControllerFamily._dependencies,
-        allTransitiveDependencies:
-            EnrollmentContractControllerFamily._allTransitiveDependencies,
-        enrollmentId: enrollmentId,
-      );
-
-  EnrollmentContractControllerProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.enrollmentId,
-  }) : super.internal();
-
-  final String enrollmentId;
+        $AsyncNotifierProvider<EnrollmentContractController, ContractModel?> {
+  const EnrollmentContractControllerProvider._({
+    required EnrollmentContractControllerFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'enrollmentContractControllerProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
-  FutureOr<ContractModel?> runNotifierBuild(
-    covariant EnrollmentContractController notifier,
-  ) {
-    return notifier.build(enrollmentId);
-  }
+  String debugGetCreateSourceHash() => _$enrollmentContractControllerHash();
 
   @override
-  Override overrideWith(EnrollmentContractController Function() create) {
-    return ProviderOverride(
-      origin: this,
-      override: EnrollmentContractControllerProvider._internal(
-        () => create()..enrollmentId = enrollmentId,
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        enrollmentId: enrollmentId,
-      ),
-    );
+  String toString() {
+    return r'enrollmentContractControllerProvider'
+        ''
+        '($argument)';
   }
 
+  @$internal
   @override
-  AutoDisposeAsyncNotifierProviderElement<
-    EnrollmentContractController,
-    ContractModel?
-  >
-  createElement() {
-    return _EnrollmentContractControllerProviderElement(this);
-  }
+  EnrollmentContractController create() => EnrollmentContractController();
 
   @override
   bool operator ==(Object other) {
     return other is EnrollmentContractControllerProvider &&
-        other.enrollmentId == enrollmentId;
+        other.argument == argument;
   }
 
   @override
   int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, enrollmentId.hashCode);
-
-    return _SystemHash.finish(hash);
+    return argument.hashCode;
   }
 }
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin EnrollmentContractControllerRef
-    on AutoDisposeAsyncNotifierProviderRef<ContractModel?> {
-  /// The parameter `enrollmentId` of this provider.
-  String get enrollmentId;
-}
+String _$enrollmentContractControllerHash() =>
+    r'd6fcd5b863a1ae4d1a862179fd604e518941895c';
 
-class _EnrollmentContractControllerProviderElement
-    extends
-        AutoDisposeAsyncNotifierProviderElement<
+final class EnrollmentContractControllerFamily extends $Family
+    with
+        $ClassFamilyOverride<
           EnrollmentContractController,
-          ContractModel?
-        >
-    with EnrollmentContractControllerRef {
-  _EnrollmentContractControllerProviderElement(super.provider);
+          AsyncValue<ContractModel?>,
+          ContractModel?,
+          FutureOr<ContractModel?>,
+          String
+        > {
+  const EnrollmentContractControllerFamily._()
+    : super(
+        retry: null,
+        name: r'enrollmentContractControllerProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  EnrollmentContractControllerProvider call(String enrollmentId) =>
+      EnrollmentContractControllerProvider._(
+        argument: enrollmentId,
+        from: this,
+      );
 
   @override
-  String get enrollmentId =>
-      (origin as EnrollmentContractControllerProvider).enrollmentId;
+  String toString() => r'enrollmentContractControllerProvider';
 }
 
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+abstract class _$EnrollmentContractController
+    extends $AsyncNotifier<ContractModel?> {
+  late final _$args = ref.$arg as String;
+  String get enrollmentId => _$args;
+
+  FutureOr<ContractModel?> build(String enrollmentId);
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build(_$args);
+    final ref = this.ref as $Ref<AsyncValue<ContractModel?>, ContractModel?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<ContractModel?>, ContractModel?>,
+              AsyncValue<ContractModel?>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

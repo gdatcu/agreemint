@@ -6,23 +6,52 @@ part of 'program_repository.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$programRepositoryHash() => r'2fde31fb7fc21931aed684dea8693d12fe1d4ccd';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [programRepository].
 @ProviderFor(programRepository)
-final programRepositoryProvider =
-    AutoDisposeProvider<ProgramRepository>.internal(
-      programRepository,
-      name: r'programRepositoryProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$programRepositoryHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+const programRepositoryProvider = ProgramRepositoryProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef ProgramRepositoryRef = AutoDisposeProviderRef<ProgramRepository>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class ProgramRepositoryProvider
+    extends
+        $FunctionalProvider<
+          ProgramRepository,
+          ProgramRepository,
+          ProgramRepository
+        >
+    with $Provider<ProgramRepository> {
+  const ProgramRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'programRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$programRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<ProgramRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ProgramRepository create(Ref ref) {
+    return programRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ProgramRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ProgramRepository>(value),
+    );
+  }
+}
+
+String _$programRepositoryHash() => r'2fde31fb7fc21931aed684dea8693d12fe1d4ccd';

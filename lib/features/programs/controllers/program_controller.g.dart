@@ -6,202 +6,186 @@ part of 'program_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$programHistoryHash() => r'a010bd1cddcffce99450d6d950988098ada40aa1';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// Fetches archived programs from program_history.
-///
-/// Copied from [programHistory].
-@ProviderFor(programHistory)
-final programHistoryProvider =
-    AutoDisposeFutureProvider<List<ProgramModel>>.internal(
-      programHistory,
-      name: r'programHistoryProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$programHistoryHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+@ProviderFor(ProgramController)
+const programControllerProvider = ProgramControllerProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef ProgramHistoryRef = AutoDisposeFutureProviderRef<List<ProgramModel>>;
-String _$programByIdHash() => r'300a0b9a143e9ce4171f8e81e398768fd5010721';
-
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-  }
-}
-
-/// Fetches a single program by ID. Used by the router when navigating
-/// directly to a deep-link URL (i.e. state.extra is null on browser reload).
-///
-/// Copied from [programById].
-@ProviderFor(programById)
-const programByIdProvider = ProgramByIdFamily();
-
-/// Fetches a single program by ID. Used by the router when navigating
-/// directly to a deep-link URL (i.e. state.extra is null on browser reload).
-///
-/// Copied from [programById].
-class ProgramByIdFamily extends Family<AsyncValue<ProgramModel?>> {
-  /// Fetches a single program by ID. Used by the router when navigating
-  /// directly to a deep-link URL (i.e. state.extra is null on browser reload).
-  ///
-  /// Copied from [programById].
-  const ProgramByIdFamily();
-
-  /// Fetches a single program by ID. Used by the router when navigating
-  /// directly to a deep-link URL (i.e. state.extra is null on browser reload).
-  ///
-  /// Copied from [programById].
-  ProgramByIdProvider call(String programId) {
-    return ProgramByIdProvider(programId);
-  }
-
-  @override
-  ProgramByIdProvider getProviderOverride(
-    covariant ProgramByIdProvider provider,
-  ) {
-    return call(provider.programId);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'programByIdProvider';
-}
-
-/// Fetches a single program by ID. Used by the router when navigating
-/// directly to a deep-link URL (i.e. state.extra is null on browser reload).
-///
-/// Copied from [programById].
-class ProgramByIdProvider extends AutoDisposeFutureProvider<ProgramModel?> {
-  /// Fetches a single program by ID. Used by the router when navigating
-  /// directly to a deep-link URL (i.e. state.extra is null on browser reload).
-  ///
-  /// Copied from [programById].
-  ProgramByIdProvider(String programId)
-    : this._internal(
-        (ref) => programById(ref as ProgramByIdRef, programId),
-        from: programByIdProvider,
-        name: r'programByIdProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$programByIdHash,
-        dependencies: ProgramByIdFamily._dependencies,
-        allTransitiveDependencies: ProgramByIdFamily._allTransitiveDependencies,
-        programId: programId,
+final class ProgramControllerProvider
+    extends $AsyncNotifierProvider<ProgramController, List<ProgramModel>> {
+  const ProgramControllerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'programControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
-  ProgramByIdProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.programId,
-  }) : super.internal();
-
-  final String programId;
-
   @override
-  Override overrideWith(
-    FutureOr<ProgramModel?> Function(ProgramByIdRef provider) create,
-  ) {
-    return ProviderOverride(
-      origin: this,
-      override: ProgramByIdProvider._internal(
-        (ref) => create(ref as ProgramByIdRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        programId: programId,
-      ),
-    );
-  }
+  String debugGetCreateSourceHash() => _$programControllerHash();
 
+  @$internal
   @override
-  AutoDisposeFutureProviderElement<ProgramModel?> createElement() {
-    return _ProgramByIdProviderElement(this);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is ProgramByIdProvider && other.programId == programId;
-  }
-
-  @override
-  int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, programId.hashCode);
-
-    return _SystemHash.finish(hash);
-  }
-}
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin ProgramByIdRef on AutoDisposeFutureProviderRef<ProgramModel?> {
-  /// The parameter `programId` of this provider.
-  String get programId;
-}
-
-class _ProgramByIdProviderElement
-    extends AutoDisposeFutureProviderElement<ProgramModel?>
-    with ProgramByIdRef {
-  _ProgramByIdProviderElement(super.provider);
-
-  @override
-  String get programId => (origin as ProgramByIdProvider).programId;
+  ProgramController create() => ProgramController();
 }
 
 String _$programControllerHash() => r'f1487d974a9f83539a66cdd2f9bf9563c9753a7c';
 
-/// See also [ProgramController].
-@ProviderFor(ProgramController)
-final programControllerProvider =
-    AutoDisposeAsyncNotifierProvider<
-      ProgramController,
-      List<ProgramModel>
-    >.internal(
-      ProgramController.new,
-      name: r'programControllerProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$programControllerHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+abstract class _$ProgramController extends $AsyncNotifier<List<ProgramModel>> {
+  FutureOr<List<ProgramModel>> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref =
+        this.ref as $Ref<AsyncValue<List<ProgramModel>>, List<ProgramModel>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<ProgramModel>>, List<ProgramModel>>,
+              AsyncValue<List<ProgramModel>>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
-typedef _$ProgramController = AutoDisposeAsyncNotifier<List<ProgramModel>>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+/// Fetches archived programs from program_history.
+
+@ProviderFor(programHistory)
+const programHistoryProvider = ProgramHistoryProvider._();
+
+/// Fetches archived programs from program_history.
+
+final class ProgramHistoryProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<ProgramModel>>,
+          List<ProgramModel>,
+          FutureOr<List<ProgramModel>>
+        >
+    with
+        $FutureModifier<List<ProgramModel>>,
+        $FutureProvider<List<ProgramModel>> {
+  /// Fetches archived programs from program_history.
+  const ProgramHistoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'programHistoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$programHistoryHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<ProgramModel>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<ProgramModel>> create(Ref ref) {
+    return programHistory(ref);
+  }
+}
+
+String _$programHistoryHash() => r'a010bd1cddcffce99450d6d950988098ada40aa1';
+
+/// Fetches a single program by ID. Used by the router when navigating
+/// directly to a deep-link URL (i.e. state.extra is null on browser reload).
+
+@ProviderFor(programById)
+const programByIdProvider = ProgramByIdFamily._();
+
+/// Fetches a single program by ID. Used by the router when navigating
+/// directly to a deep-link URL (i.e. state.extra is null on browser reload).
+
+final class ProgramByIdProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<ProgramModel?>,
+          ProgramModel?,
+          FutureOr<ProgramModel?>
+        >
+    with $FutureModifier<ProgramModel?>, $FutureProvider<ProgramModel?> {
+  /// Fetches a single program by ID. Used by the router when navigating
+  /// directly to a deep-link URL (i.e. state.extra is null on browser reload).
+  const ProgramByIdProvider._({
+    required ProgramByIdFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'programByIdProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$programByIdHash();
+
+  @override
+  String toString() {
+    return r'programByIdProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<ProgramModel?> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<ProgramModel?> create(Ref ref) {
+    final argument = this.argument as String;
+    return programById(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ProgramByIdProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$programByIdHash() => r'300a0b9a143e9ce4171f8e81e398768fd5010721';
+
+/// Fetches a single program by ID. Used by the router when navigating
+/// directly to a deep-link URL (i.e. state.extra is null on browser reload).
+
+final class ProgramByIdFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<ProgramModel?>, String> {
+  const ProgramByIdFamily._()
+    : super(
+        retry: null,
+        name: r'programByIdProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// Fetches a single program by ID. Used by the router when navigating
+  /// directly to a deep-link URL (i.e. state.extra is null on browser reload).
+
+  ProgramByIdProvider call(String programId) =>
+      ProgramByIdProvider._(argument: programId, from: this);
+
+  @override
+  String toString() => r'programByIdProvider';
+}

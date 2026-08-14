@@ -6,26 +6,55 @@ part of 'analytics_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(AnalyticsSummaryController)
+const analyticsSummaryControllerProvider =
+    AnalyticsSummaryControllerProvider._();
+
+final class AnalyticsSummaryControllerProvider
+    extends
+        $AsyncNotifierProvider<AnalyticsSummaryController, AnalyticsSummary> {
+  const AnalyticsSummaryControllerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'analyticsSummaryControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$analyticsSummaryControllerHash();
+
+  @$internal
+  @override
+  AnalyticsSummaryController create() => AnalyticsSummaryController();
+}
+
 String _$analyticsSummaryControllerHash() =>
     r'a69d6a521effb82e40e19f1e69f010a7d97d1b16';
 
-/// See also [AnalyticsSummaryController].
-@ProviderFor(AnalyticsSummaryController)
-final analyticsSummaryControllerProvider =
-    AutoDisposeAsyncNotifierProvider<
-      AnalyticsSummaryController,
-      AnalyticsSummary
-    >.internal(
-      AnalyticsSummaryController.new,
-      name: r'analyticsSummaryControllerProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$analyticsSummaryControllerHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$AnalyticsSummaryController =
-    AutoDisposeAsyncNotifier<AnalyticsSummary>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+abstract class _$AnalyticsSummaryController
+    extends $AsyncNotifier<AnalyticsSummary> {
+  FutureOr<AnalyticsSummary> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref =
+        this.ref as $Ref<AsyncValue<AnalyticsSummary>, AnalyticsSummary>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<AnalyticsSummary>, AnalyticsSummary>,
+              AsyncValue<AnalyticsSummary>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
