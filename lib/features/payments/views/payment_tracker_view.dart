@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:file_picker/file_picker.dart';
 import '../../students/models/enrollment_model.dart';
 import '../controllers/payment_controller.dart';
 import '../models/payment_model.dart';
@@ -918,6 +919,62 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.link),
                   ),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.upload_file, color: Colors.blue),
+                  label: const Text('📁 Select & Upload SOLO PDF Invoice'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(44),
+                  ),
+                  onPressed: () async {
+                    try {
+                      final result = await FilePicker.platform.pickFiles(
+                        type: FileType.custom,
+                        allowedExtensions: ['pdf'],
+                        withData: true,
+                      );
+                      if (result != null && result.files.isNotEmpty) {
+                        final file = result.files.first;
+                        if (file.bytes != null) {
+                          final number = invoiceNumberController.text.trim();
+                          final invNum =
+                              number.isNotEmpty ? number : 'SOLO-PDF';
+
+                          final uploadedUrl = await ref
+                              .read(enrollmentPaymentsControllerProvider(
+                                      widget.enrollment.id)
+                                  .notifier)
+                              .uploadSoloInvoicePdf(
+                                paymentId: payment.id,
+                                invoiceNumber: invNum,
+                                pdfBytes: file.bytes!,
+                                fileName: file.name,
+                              );
+
+                          invoiceUrlController.text = uploadedUrl;
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'SOLO PDF uploaded and attached successfully!'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          }
+                        }
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Upload failed: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  },
                 ),
               ],
             ),

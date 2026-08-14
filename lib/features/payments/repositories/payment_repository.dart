@@ -224,6 +224,39 @@ class PaymentRepository {
       throw Exception('Failed to update external SOLO invoice: $e');
     }
   }
+
+  /// Uploads an external SOLO invoice PDF file to Supabase Storage ('contracts/solo_invoices/')
+  /// and attaches the resulting public URL to the payment record.
+  Future<String> uploadSoloInvoicePdf({
+    required String paymentId,
+    required String invoiceNumber,
+    required Uint8List pdfBytes,
+    required String fileName,
+  }) async {
+    try {
+      final sanitizedName = fileName.replaceAll(RegExp(r'[^a-zA-Z0-9_\.-]'), '_');
+      final path = 'solo_invoices/${paymentId}_${DateTime.now().millisecondsSinceEpoch}_$sanitizedName';
+      await _client.storage.from('contracts').uploadBinary(
+            path,
+            pdfBytes,
+            fileOptions: const FileOptions(
+              contentType: 'application/pdf',
+              upsert: true,
+            ),
+          );
+
+      final publicUrl = _client.storage.from('contracts').getPublicUrl(path);
+
+      await _client.from('payments').update({
+        'external_invoice_number': invoiceNumber,
+        'external_invoice_url': publicUrl,
+      }).eq('id', paymentId);
+
+      return publicUrl;
+    } catch (e) {
+      throw Exception('Failed to upload SOLO invoice PDF: $e');
+    }
+  }
 }
 
 @riverpod

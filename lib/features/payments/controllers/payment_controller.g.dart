@@ -57,7 +57,7 @@ final class EnrollmentPaymentsControllerProvider
 }
 
 String _$enrollmentPaymentsControllerHash() =>
-    r'a3ffbe1e27274b87d92f788a95b430b826013dc4';
+    r'75df8ccb3fdb5d010ca8bfd70167cd4285fd2029';
 
 final class EnrollmentPaymentsControllerFamily extends $Family
     with

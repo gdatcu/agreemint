@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/payment_model.dart';
 import '../repositories/payment_repository.dart';
@@ -106,6 +107,25 @@ class EnrollmentPaymentsController extends _$EnrollmentPaymentsController {
       ref.invalidate(globalPendingPaymentsControllerProvider);
       return repository.fetchPaymentsForEnrollment(enrollmentId);
     });
+  }
+
+  /// Uploads SOLO invoice PDF bytes to Supabase storage and links it to the payment.
+  Future<String> uploadSoloInvoicePdf({
+    required String paymentId,
+    required String invoiceNumber,
+    required Uint8List pdfBytes,
+    required String fileName,
+  }) async {
+    final repository = ref.read(paymentRepositoryProvider);
+    final url = await repository.uploadSoloInvoicePdf(
+      paymentId: paymentId,
+      invoiceNumber: invoiceNumber,
+      pdfBytes: pdfBytes,
+      fileName: fileName,
+    );
+    ref.invalidate(globalPendingPaymentsControllerProvider);
+    ref.invalidateSelf();
+    return url;
   }
 }
 
