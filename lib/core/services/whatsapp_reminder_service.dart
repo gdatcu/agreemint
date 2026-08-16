@@ -21,13 +21,22 @@ class WhatsAppReminderService {
     required String currency,
     required String dueDateStr,
     bool isDueTomorrow = false,
+    String dueStage = 'overdue',
   }) {
     final amountFormatted = '${amount.toStringAsFixed(2)} $currency';
 
-    if (isDueTomorrow) {
+    if (isDueTomorrow || dueStage == 'tomorrow') {
       return '🤖 *[Notificare Automată - QualiAdept Billing]*\n\n'
           'Stimate/ă *$studentName*,\n\n'
           'Vă reamintim amabil că pentru înregistrarea la programul *$programName*, tranșa în valoare de *$amountFormatted* are termenul de plată *mâine, $dueDateStr*.\n\n'
+          'Vă rugăm să efectuați transferul bancar conform acordului agreat. Dacă ați efectuat deja plata, vă rugăm să ignorați această notificare automatizată.\n\n'
+          '_Sistemul Automat de Facturare QualiAdept._';
+    }
+
+    if (dueStage == 'today') {
+      return '🤖 *[Notificare Automată - QualiAdept Billing]*\n\n'
+          'Stimate/ă *$studentName*,\n\n'
+          'Vă reamintim amabil că pentru înregistrarea la programul *$programName*, tranșa în valoare de *$amountFormatted* are termenul de plată *astăzi, $dueDateStr*.\n\n'
           'Vă rugăm să efectuați transferul bancar conform acordului agreat. Dacă ați efectuat deja plata, vă rugăm să ignorați această notificare automatizată.\n\n'
           '_Sistemul Automat de Facturare QualiAdept._';
     }
@@ -84,6 +93,7 @@ class WhatsAppReminderService {
     required String currency,
     required String dueDateStr,
     bool isDueTomorrow = false,
+    String dueStage = 'overdue',
   }) async {
     final rawPhone = phone?.trim() ?? '';
     final messageText = buildReminderMessage(
@@ -93,6 +103,7 @@ class WhatsAppReminderService {
       currency: currency,
       dueDateStr: dueDateStr,
       isDueTomorrow: isDueTomorrow,
+      dueStage: dueStage,
     );
 
     if (rawPhone.isEmpty) {

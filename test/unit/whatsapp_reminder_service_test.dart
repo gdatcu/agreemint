@@ -32,10 +32,21 @@ void main() {
         amount: 500.0,
         currency: 'RON',
         dueDateStr: '2026-08-17',
-        isDueTomorrow: true,
+        dueStage: 'tomorrow',
       );
 
       expect(msgTomorrow, contains('*mâine, 2026-08-17*'));
+
+      final msgToday = WhatsAppReminderService.buildReminderMessage(
+        studentName: 'Ion Popescu',
+        programName: 'Web Development',
+        amount: 500.0,
+        currency: 'RON',
+        dueDateStr: '2026-08-16',
+        dueStage: 'today',
+      );
+
+      expect(msgToday, contains('*astăzi, 2026-08-16*'));
     });
   });
 }
