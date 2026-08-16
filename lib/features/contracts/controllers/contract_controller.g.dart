@@ -106,3 +106,52 @@ abstract class _$EnrollmentContractController
     element.handleValue(ref, created);
   }
 }
+
+@ProviderFor(GlobalContractsController)
+const globalContractsControllerProvider = GlobalContractsControllerProvider._();
+
+final class GlobalContractsControllerProvider
+    extends
+        $AsyncNotifierProvider<GlobalContractsController, List<ContractModel>> {
+  const GlobalContractsControllerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'globalContractsControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$globalContractsControllerHash();
+
+  @$internal
+  @override
+  GlobalContractsController create() => GlobalContractsController();
+}
+
+String _$globalContractsControllerHash() =>
+    r'f88c10fa0e4520ee50b5780afd69b0d652867c68';
+
+abstract class _$GlobalContractsController
+    extends $AsyncNotifier<List<ContractModel>> {
+  FutureOr<List<ContractModel>> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref =
+        this.ref as $Ref<AsyncValue<List<ContractModel>>, List<ContractModel>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<ContractModel>>, List<ContractModel>>,
+              AsyncValue<List<ContractModel>>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

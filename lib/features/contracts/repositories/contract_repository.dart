@@ -32,6 +32,26 @@ class ContractRepository {
     }
   }
 
+  /// Fetches all contracts with relational join data for student & program details.
+  Future<List<ContractModel>> fetchAllContracts() async {
+    try {
+      final response = await _client
+          .from('contracts')
+          .select('*, enrollments(*, students(*), programs(*))')
+          .order('created_at', ascending: false);
+
+      if (response is List) {
+        return response
+            .map((json) => ContractModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      debugPrint('fetchAllContracts error: $e');
+      return [];
+    }
+  }
+
   /// Fetches a contract by contract ID. Returns null if none exists or on error.
   Future<ContractModel?> fetchContractById(String contractId) async {
     try {

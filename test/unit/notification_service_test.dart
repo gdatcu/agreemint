@@ -38,5 +38,12 @@ void main() {
         completes,
       );
     });
+
+    test('checkAndNotifyUnsignedContracts evaluates contracts list without errors', () async {
+      await expectLater(
+        NotificationService.checkAndNotifyUnsignedContracts([]),
+        completes,
+      );
+    });
   });
 }

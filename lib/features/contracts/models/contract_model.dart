@@ -33,6 +33,13 @@ class ContractModel {
     this.enrollment,
   });
 
+  /// Helper getters for student, program, and date access
+  DateTime get createdDate => createdAt ?? DateTime.now();
+  String? get studentName => enrollment?.student?.name;
+  String? get studentPhone => enrollment?.student?.phone;
+  String? get programName => enrollment?.program?.name;
+  String get contractNumberStr => 'CTR-$contractNumber';
+
   /// Sanitizes signed/expiring Supabase storage URLs into permanent public URLs.
   static String? normalizeUrl(String? url) {
     if (url == null || url.isEmpty) return null;

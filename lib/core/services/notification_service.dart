@@ -1,5 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../features/contracts/models/contract_model.dart';
 import '../../features/payments/models/payment_model.dart';
 import '../../features/prospects/models/prospect_model.dart';
 
@@ -122,6 +123,45 @@ class NotificationService {
 
       await showOverdueNotification(id: 202, title: title, body: body);
       await prefs.setString('last_prospect_notified_date', todayStr);
+    } catch (_) {}
+  }
+
+  /// Evaluates contracts list and dispatches an Android notification for unsigned contracts issued >= 1 day ago.
+  static Future<void> checkAndNotifyUnsignedContracts(
+      List<ContractModel> contracts) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final todayStr = '${now.year}-${now.month}-${now.day}';
+
+    final unsignedContracts = contracts.where((c) {
+      if (c.status == 'Signed' || c.clientSignatureUrl != null) return false;
+      if (c.status == 'Cancelled' || c.status == 'Refunded') return false;
+      final created = DateTime(c.createdDate.year, c.createdDate.month, c.createdDate.day);
+      return created.isBefore(today);
+    }).toList();
+
+    if (unsignedContracts.isEmpty) return;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final lastNotified = prefs.getString('last_unsigned_contract_notified_date');
+      if (lastNotified == todayStr) {
+        return;
+      }
+
+      final studentCount = unsignedContracts
+          .map((c) => c.studentName ?? 'Cursant')
+          .toSet()
+          .length;
+
+      final title =
+          '🔔 ${unsignedContracts.length} Contract${unsignedContracts.length > 1 ? 'e' : ''} Nesemnat${unsignedContracts.length > 1 ? 'e' : ''}!';
+      final body = studentCount == 1
+          ? '${unsignedContracts.first.studentName ?? 'Student'} nu a semnat încă contractul.'
+          : '$studentCount cursanți au contracte generate ce așteaptă semnătura.';
+
+      await showOverdueNotification(id: 303, title: title, body: body);
+      await prefs.setString('last_unsigned_contract_notified_date', todayStr);
     } catch (_) {}
   }
 

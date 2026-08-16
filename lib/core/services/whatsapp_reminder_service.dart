@@ -45,20 +45,64 @@ class WhatsAppReminderService {
       final invNumText = (invoiceNumber != null && invoiceNumber.trim().isNotEmpty)
           ? ' ($invoiceNumber)'
           : '';
-      docsBuffer.writeln('📄 *Factură fiscală (SOLO)$invNumText:* ${invoiceUrl.trim()}');
+      docsBuffer.writeln('📋 *Factură fiscală (SOLO)$invNumText:* ${invoiceUrl.trim()}');
     }
     if (contractPdfUrl != null && contractPdfUrl.trim().isNotEmpty) {
-      docsBuffer.writeln('✍️ *Contract de servicii semnat:* ${contractPdfUrl.trim()}');
+      docsBuffer.writeln('📝 *Contract de servicii semnat:* ${contractPdfUrl.trim()}');
     }
 
     final docsSection = docsBuffer.isNotEmpty ? '\n${docsBuffer.toString()}' : '';
 
-    return '📌 *[Notificare Automată - QualiAdept Billing]*\n\n'
+    return '🔔 *[Notificare Automată - QualiAdept Billing]*\n\n'
         'Stimate/ă *$studentName*,\n\n'
         'Vă transmitem acest mesaj pentru a vă reaminti că tranșa aferentă programului *$programName*, în valoare de *$amountFormatted*, $dueText.$docsSection\n'
         'Detaliile bancare pentru transfer le regăsiți pe factura atașată. În cazul în care plata a fost deja efectuată, vă rugăm să ignorați această notificare.\n\n'
         'Vă mulțumim,\n'
         '_Echipa QualiAdept_';
+  }
+
+  /// Builds a friendly contract signature follow-up text in Romanian.
+  static String buildContractFollowUpMessage({
+    required String studentName,
+    required String programName,
+    required String createdDateStr,
+    required String contractSigningUrl,
+  }) {
+    return '🔔 *[QualiAdept Contract Follow-Up]*\n\n'
+        'Buna *$studentName*,\n\n'
+        'Îți reamintim că contractul de servicii pentru programul *$programName* a fost generat pe *$createdDateStr* și așteaptă semnătura ta.\n\n'
+        '📝 *Link Semnare Contract:* ${contractSigningUrl.trim()}\n\n'
+        'Te rugăm să accesezi linkul de mai sus pentru a revizui și semna contractul. Dacă ai întrebări, îmi poți scrie direct aici.\n\n'
+        'O zi frumoasă,\n'
+        '_Echipa QualiAdept_';
+  }
+
+  /// Launches WhatsApp with the pre-filled contract signature follow-up message.
+  static Future<void> sendContractFollowUp({
+    required BuildContext context,
+    required String? phone,
+    required String studentName,
+    required String programName,
+    required String createdDateStr,
+    required String contractSigningUrl,
+  }) async {
+    final rawPhone = phone?.trim() ?? '';
+    final messageText = buildContractFollowUpMessage(
+      studentName: studentName,
+      programName: programName,
+      createdDateStr: createdDateStr,
+      contractSigningUrl: contractSigningUrl,
+    );
+
+    if (rawPhone.isEmpty) {
+      _showMissingPhoneDialog(context, messageText, (enteredPhone) async {
+        await _launchWhatsApp(context, enteredPhone, messageText);
+      });
+      return;
+    }
+
+    final cleaned = cleanPhoneNumber(rawPhone);
+    await _launchWhatsApp(context, cleaned, messageText);
   }
 
   /// Builds a polite prospect follow-up text in Romanian.

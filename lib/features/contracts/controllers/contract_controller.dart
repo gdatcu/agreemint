@@ -330,3 +330,11 @@ class EnrollmentContractController extends _$EnrollmentContractController {
     });
   }
 }
+
+@riverpod
+class GlobalContractsController extends _$GlobalContractsController {
+  @override
+  Future<List<ContractModel>> build() async {
+    return ref.watch(contractRepositoryProvider).fetchAllContracts();
+  }
+}
