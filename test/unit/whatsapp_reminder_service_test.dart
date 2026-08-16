@@ -23,7 +23,7 @@ void main() {
       expect(msg, contains('500.00 RON'));
       expect(msg, contains('Web Development'));
       expect(msg, contains('2026-08-14'));
-      expect(msg, contains('Salut Ion Popescu! Îți reamintesc că plata tranșei de 500.00 RON'));
+      expect(msg, contains('QualiAdept Billing'));
     });
   });
 }

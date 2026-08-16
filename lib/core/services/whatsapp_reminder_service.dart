@@ -13,7 +13,7 @@ class WhatsAppReminderService {
     return cleaned;
   }
 
-  /// Builds a polite payment reminder text in Romanian.
+  /// Builds an objective, formal payment notification in Romanian from QualiAdept Billing Bot.
   static String buildReminderMessage({
     required String studentName,
     required String programName,
@@ -21,7 +21,11 @@ class WhatsAppReminderService {
     required String currency,
     required String dueDateStr,
   }) {
-    return 'Salut $studentName! Îți reamintesc că plata tranșei de ${amount.toStringAsFixed(2)} $currency pentru $programName a fost scadentă pe data de $dueDateStr. Te rog să efectuezi transferul când ai timp. Mulțumesc!';
+    return '🤖 [Notificare Automată - QualiAdept Billing]\n\n'
+        'Stimate/ă $studentName,\n\n'
+        'Vă informăm că pentru înregistrarea la programul $programName, tranșa în valoare de ${amount.toStringAsFixed(2)} $currency a înregistrat termenul de plată pe data de $dueDateStr.\n\n'
+        'Vă rugăm să efectuați transferul bancar conform acordului agreat. Dacă ați efectuat deja plata, vă rugăm să ignorați această notificare automatizată.\n\n'
+        'Sistemul Automat de Facturare QualiAdept.';
   }
 
   /// Builds a polite prospect follow-up text in Romanian.

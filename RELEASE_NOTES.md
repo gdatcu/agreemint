@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.24 Release Notes
+# 🚀 Agreemint v1.0.25 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,15 +19,12 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.24
+## 🎨 What's New in Version 1.0.25
 
-- 🎯 **Prospect Follow-ups & Lead Reminders System**:
-  - Added dedicated **Follow-ups** 4th bottom navigation tab with live badge counters for overdue/due today leads.
-  - Track prospective students, notes (*"Wants to think about it until Friday"*), and scheduled follow-up dates.
-  - 💬 **1-Click WhatsApp Prospect Outreach**: Opens WhatsApp with prefilled polite Romanian follow-up text.
-  - 🎓 **Convert to Student**: 1-tap action to enroll a prospect directly into a program cohort.
-- 🔔 **Android Prospect Push Notifications**:
-  - Automatically triggers native Android status bar notification banners when prospect follow-ups are due today or overdue.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.24` (`1.0.24+24`).
+- 🤖 **Meta WhatsApp Cloud API (Free Bot Automation)**:
+  - Official Meta Graph API (`v25.0`) integration (`MetaWhatsAppService`) leveraging Meta's 1,000 free monthly conversations tier.
+  - Added **🤖 Meta WhatsApp Bot Settings** modal to input and store `Phone Number ID` and `Access Token`.
+  - Added **🤖 Send via Meta Bot** 1-click action button on unpaid installments to dispatch official template messages automatically.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.25` (`1.0.25+25`).
 
 

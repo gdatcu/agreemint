@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/payment_controller.dart';
 import '../../../core/services/whatsapp_reminder_service.dart';
+import '../../../core/services/meta_whatsapp_service.dart';
+import '../../../core/services/local_whatsapp_bot_service.dart';
 
 class PendingDashboardView extends ConsumerWidget {
   const PendingDashboardView({super.key});
@@ -14,6 +16,13 @@ class PendingDashboardView extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Unpaid Installments'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.smart_toy_outlined),
+            tooltip: 'Meta WhatsApp Bot Settings',
+            onPressed: () => MetaWhatsAppService.openSettings(context),
+          ),
+        ],
       ),
       body: pendingPaymentsState.when(
         data: (payments) {
@@ -80,7 +89,7 @@ class PendingDashboardView extends ConsumerWidget {
                             ),
                             const SizedBox(height: 2),
                             const Text(
-                              'Past due agreed payments. Click the WhatsApp icon to send a friendly reminder.',
+                              'Past due agreed payments. Click the Meta Bot icon or WhatsApp icon to send reminders.',
                               style: TextStyle(color: Colors.red, fontSize: 11),
                             ),
                           ],
@@ -196,21 +205,55 @@ class PendingDashboardView extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          trailing: IconButton(
-                            icon: Icon(Icons.chat_outlined,
-                                color: Colors.green.shade600),
-                            tooltip: 'Send WhatsApp Reminder',
-                            onPressed: () {
-                              WhatsAppReminderService.sendReminder(
-                                context: context,
-                                phone: student?.phone,
-                                studentName: student?.name ?? 'Cursant',
-                                programName: program?.name ?? 'Program Mentorat',
-                                amount: payment.amountDue - payment.amountPaid,
-                                currency: currency,
-                                dueDateStr: dueLocalDate.toString().split(' ')[0],
-                              );
-                            },
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.smart_toy_outlined,
+                                    color: Colors.blue.shade600),
+                                tooltip: 'Send Automated QualiAdept WhatsApp Bot',
+                                onPressed: () async {
+                                  final sent = await LocalWhatsAppBotService.sendReminder(
+                                    context: context,
+                                    recipientPhone: student?.phone ?? '',
+                                    studentName: student?.name ?? 'Cursant',
+                                    programName: program?.name ?? 'Program Mentorat',
+                                    amountStr:
+                                        (payment.amountDue - payment.amountPaid).toStringAsFixed(2),
+                                    currency: currency,
+                                    dueDateStr: dueLocalDate.toString().split(' ')[0],
+                                  );
+                                  if (!sent && context.mounted) {
+                                    // Fallback to Meta Cloud API if local bot server is unconfigured
+                                    MetaWhatsAppService.sendTemplateMessage(
+                                      context: context,
+                                      recipientPhone: student?.phone ?? '',
+                                      studentName: student?.name ?? 'Cursant',
+                                      programName: program?.name ?? 'Program Mentorat',
+                                      amountStr:
+                                          '${(payment.amountDue - payment.amountPaid).toStringAsFixed(2)} $currency',
+                                      dueDateStr: dueLocalDate.toString().split(' ')[0],
+                                    );
+                                  }
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.chat_outlined,
+                                    color: Colors.green.shade600),
+                                tooltip: 'Send Manual WhatsApp Link',
+                                onPressed: () {
+                                  WhatsAppReminderService.sendReminder(
+                                    context: context,
+                                    phone: student?.phone,
+                                    studentName: student?.name ?? 'Cursant',
+                                    programName: program?.name ?? 'Program Mentorat',
+                                    amount: payment.amountDue - payment.amountPaid,
+                                    currency: currency,
+                                    dueDateStr: dueLocalDate.toString().split(' ')[0],
+                                  );
+                                },
+                              ),
+                            ],
                           ),
                         ),
                       ),
