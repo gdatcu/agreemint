@@ -22,30 +22,43 @@ class WhatsAppReminderService {
     required String dueDateStr,
     bool isDueTomorrow = false,
     String dueStage = 'overdue',
+    int? daysUntilDue,
+    String? invoiceUrl,
+    String? invoiceNumber,
+    String? contractPdfUrl,
   }) {
     final amountFormatted = '${amount.toStringAsFixed(2)} $currency';
 
-    if (isDueTomorrow || dueStage == 'tomorrow') {
-      return '📌 *[Notificare Automată - QualiAdept Billing]*\n\n'
-          'Stimate/ă *$studentName*,\n\n'
-          'Vă reamintim amabil că pentru înregistrarea la programul *$programName*, tranșa în valoare de *$amountFormatted* are termenul de plată *mâine, $dueDateStr*.\n\n'
-          'Vă rugăm să efectuați transferul bancar conform acordului agreat. Dacă ați efectuat deja plata, vă rugăm să ignorați această notificare automatizată.\n\n'
-          '_Sistemul Automat de Facturare QualiAdept._';
+    String dueText;
+    if (isDueTomorrow || dueStage == 'tomorrow' || daysUntilDue == 1) {
+      dueText = 'are scadența *mâine, $dueDateStr*';
+    } else if (dueStage == 'today' || daysUntilDue == 0) {
+      dueText = 'are scadența *astăzi, $dueDateStr*';
+    } else if (daysUntilDue != null && daysUntilDue > 1) {
+      dueText = 'are scadența în *$daysUntilDue zile* (pe *$dueDateStr*)';
+    } else {
+      dueText = 'a înregistrat scadența pe data de *$dueDateStr*';
     }
 
-    if (dueStage == 'today') {
-      return '📌 *[Notificare Automată - QualiAdept Billing]*\n\n'
-          'Stimate/ă *$studentName*,\n\n'
-          'Vă reamintim amabil că pentru înregistrarea la programul *$programName*, tranșa în valoare de *$amountFormatted* are termenul de plată *astăzi, $dueDateStr*.\n\n'
-          'Vă rugăm să efectuați transferul bancar conform acordului agreat. Dacă ați efectuat deja plata, vă rugăm să ignorați această notificare automatizată.\n\n'
-          '_Sistemul Automat de Facturare QualiAdept._';
+    final docsBuffer = StringBuffer();
+    if (invoiceUrl != null && invoiceUrl.trim().isNotEmpty) {
+      final invNumText = (invoiceNumber != null && invoiceNumber.trim().isNotEmpty)
+          ? ' ($invoiceNumber)'
+          : '';
+      docsBuffer.writeln('📄 *Factură fiscală (SOLO)$invNumText:* ${invoiceUrl.trim()}');
     }
+    if (contractPdfUrl != null && contractPdfUrl.trim().isNotEmpty) {
+      docsBuffer.writeln('✍️ *Contract de servicii semnat:* ${contractPdfUrl.trim()}');
+    }
+
+    final docsSection = docsBuffer.isNotEmpty ? '\n${docsBuffer.toString()}' : '';
 
     return '📌 *[Notificare Automată - QualiAdept Billing]*\n\n'
         'Stimate/ă *$studentName*,\n\n'
-        'Vă informăm că pentru înregistrarea la programul *$programName*, tranșa în valoare de *$amountFormatted* a înregistrat termenul de plată pe data de *$dueDateStr*.\n\n'
-        'Vă rugăm să efectuați transferul bancar conform acordului agreat. Dacă ați efectuat deja plata, vă rugăm să ignorați această notificare automatizată.\n\n'
-        '_Sistemul Automat de Facturare QualiAdept._';
+        'Vă transmitem acest mesaj pentru a vă reaminti că tranșa aferentă programului *$programName*, în valoare de *$amountFormatted*, $dueText.$docsSection\n'
+        'Detaliile bancare pentru transfer le regăsiți pe factura atașată. În cazul în care plata a fost deja efectuată, vă rugăm să ignorați această notificare.\n\n'
+        'Vă mulțumim,\n'
+        '_Echipa QualiAdept_';
   }
 
   /// Builds a polite prospect follow-up text in Romanian.
@@ -94,6 +107,10 @@ class WhatsAppReminderService {
     required String dueDateStr,
     bool isDueTomorrow = false,
     String dueStage = 'overdue',
+    int? daysUntilDue,
+    String? invoiceUrl,
+    String? invoiceNumber,
+    String? contractPdfUrl,
   }) async {
     final rawPhone = phone?.trim() ?? '';
     final messageText = buildReminderMessage(
@@ -104,6 +121,10 @@ class WhatsAppReminderService {
       dueDateStr: dueDateStr,
       isDueTomorrow: isDueTomorrow,
       dueStage: dueStage,
+      daysUntilDue: daysUntilDue,
+      invoiceUrl: invoiceUrl,
+      invoiceNumber: invoiceNumber,
+      contractPdfUrl: contractPdfUrl,
     );
 
     if (rawPhone.isEmpty) {

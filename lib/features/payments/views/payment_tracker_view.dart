@@ -10,6 +10,8 @@ import '../repositories/payment_repository.dart';
 import '../../../core/services/frankfurter_service.dart';
 import '../../../core/services/whatsapp_reminder_service.dart';
 import '../services/receipt_generator_service.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../core/services/invoice_storage_service.dart';
 import 'receipt_preview_dialog.dart';
 
 class PaymentTrackerView extends ConsumerStatefulWidget {
@@ -583,6 +585,13 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                     size: 20, color: Colors.green.shade600),
                                 tooltip: 'Send WhatsApp Reminder',
                                 onPressed: () {
+                                  final now = DateTime.now();
+                                  final today = DateTime(now.year, now.month, now.day);
+                                  final dueDay = DateTime(payment.dueDate.year, payment.dueDate.month, payment.dueDate.day);
+                                  final daysUntilDue = dueDay.difference(today).inDays;
+
+                                  final contractPdf = widget.enrollment.contract?.signedPdfUrl ?? widget.enrollment.contract?.pdfUrl;
+
                                   WhatsAppReminderService.sendReminder(
                                     context: context,
                                     phone: student?.phone,
@@ -591,6 +600,10 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                     amount: payment.amountDue - payment.amountPaid,
                                     currency: currency,
                                     dueDateStr: dateStr,
+                                    daysUntilDue: daysUntilDue,
+                                    invoiceUrl: payment.invoiceUrl,
+                                    invoiceNumber: payment.invoiceNumber,
+                                    contractPdfUrl: contractPdf,
                                   );
                                 },
                               ),
@@ -1327,6 +1340,8 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
       },
     );
   }
+
+
 
   Future<void> _generateAndShowReceipt(
     BuildContext context,

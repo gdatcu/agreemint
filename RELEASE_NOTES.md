@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.31 Release Notes
+# 🚀 Agreemint v1.0.32 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,11 +19,14 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.31
+## 🎨 What's New in Version 1.0.32
 
-- 📌 **Universal Crisp Icon Rendering (`📌`)**:
-  - Replaced `🤖` with `📌` in WhatsApp message headers (`📌 *[Notificare Automată - QualiAdept Billing]*`).
-  - Fixes Windows URL surrogate encoding, guaranteeing 100% crisp, clean rendering with zero diamond replacement symbols (``) on Windows browsers, WhatsApp Web, and Desktop apps.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.31` (`1.0.31+31`).
+- 📑 **SOLO Platform Invoice Upload & Cloud Storage**:
+  - Integrated `InvoiceStorageService` allowing mentors to upload and store SOLO PDF Invoices directly in Supabase Storage (`invoices` bucket).
+- ✍️ **Signed Contract & Invoice WhatsApp Links**:
+  - Automatically embeds clickable direct web links for both **SOLO PDF Invoices** (`📄 Factură fiscală (SOLO)`) and **Signed Contracts** (`✍️ Contract de servicii semnat`) in 1-tap WhatsApp notifications.
+- 🎯 **Varianta 1 Dynamic Romanian Reminders**:
+  - Calculates exact scadență days dynamically (*mâine*, *astăzi*, *în N zile*, or *past due date*).
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.32` (`1.0.32+32`).
 
 

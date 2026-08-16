@@ -215,17 +215,10 @@ class PendingDashboardView extends ConsumerWidget {
                                 onPressed: () {
                                   final now = DateTime.now();
                                   final today = DateTime(now.year, now.month, now.day);
-                                  final tomorrow = today.add(const Duration(days: 1));
                                   final dueDay = DateTime(dueLocalDate.year, dueLocalDate.month, dueLocalDate.day);
+                                  final daysUntilDue = dueDay.difference(today).inDays;
 
-                                  String dueStage = 'overdue';
-                                  if (dueDay.isAtSameMomentAs(tomorrow)) {
-                                    dueStage = 'tomorrow';
-                                  } else if (dueDay.isAtSameMomentAs(today)) {
-                                    dueStage = 'today';
-                                  } else if (dueDay.isAfter(today)) {
-                                    dueStage = 'tomorrow';
-                                  }
+                                  final contractPdf = payment.enrollment?.contract?.signedPdfUrl ?? payment.enrollment?.contract?.pdfUrl;
 
                                   WhatsAppReminderService.sendReminder(
                                     context: context,
@@ -235,7 +228,10 @@ class PendingDashboardView extends ConsumerWidget {
                                     amount: payment.amountDue - payment.amountPaid,
                                     currency: currency,
                                     dueDateStr: dueLocalDate.toString().split(' ')[0],
-                                    dueStage: dueStage,
+                                    daysUntilDue: daysUntilDue,
+                                    invoiceUrl: payment.invoiceUrl,
+                                    invoiceNumber: payment.invoiceNumber,
+                                    contractPdfUrl: contractPdf,
                                   );
                                 },
                               ),

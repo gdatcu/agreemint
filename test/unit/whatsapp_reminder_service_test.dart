@@ -44,9 +44,14 @@ void main() {
         currency: 'RON',
         dueDateStr: '2026-08-16',
         dueStage: 'today',
+        invoiceUrl: 'https://example.com/invoice.pdf',
+        invoiceNumber: 'SOLO-1042',
+        contractPdfUrl: 'https://example.com/contract.pdf',
       );
 
       expect(msgToday, contains('*astăzi, 2026-08-16*'));
+      expect(msgToday, contains('📄 *Factură fiscală (SOLO) (SOLO-1042):* https://example.com/invoice.pdf'));
+      expect(msgToday, contains('✍️ *Contract de servicii semnat:* https://example.com/contract.pdf'));
     });
   });
 }

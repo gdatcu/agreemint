@@ -33,6 +33,10 @@ class PaymentModel {
   bool get isReceiptSigned =>
       receiptUrl != null && receiptUrl!.toLowerCase().contains('signed');
 
+  /// Alias getters for SOLO invoice details
+  String? get invoiceNumber => externalInvoiceNumber;
+  String? get invoiceUrl => externalInvoiceUrl;
+
   /// Factory constructor to parse PostgreSQL json results cleanly and defensively.
   factory PaymentModel.fromJson(Map<String, dynamic> json) {
     final enrollmentRaw = json['enrollments'];
@@ -57,8 +61,10 @@ class PaymentModel {
       receiptGeneratedAt: json['receipt_generated_at'] != null
           ? DateTime.tryParse(json['receipt_generated_at'] as String)
           : null,
-      externalInvoiceNumber: json['external_invoice_number'] as String?,
-      externalInvoiceUrl: json['external_invoice_url'] as String?,
+      externalInvoiceNumber: json['external_invoice_number'] as String? ??
+          json['invoice_number'] as String?,
+      externalInvoiceUrl: json['external_invoice_url'] as String? ??
+          json['invoice_url'] as String?,
       enrollment: enrollmentJson != null
           ? EnrollmentModel.fromJson(enrollmentJson)
           : null,
