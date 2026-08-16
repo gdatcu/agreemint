@@ -20,12 +20,23 @@ class WhatsAppReminderService {
     required double amount,
     required String currency,
     required String dueDateStr,
+    bool isDueTomorrow = false,
   }) {
-    return '🤖 [Notificare Automată - QualiAdept Billing]\n\n'
-        'Stimate/ă $studentName,\n\n'
-        'Vă informăm că pentru înregistrarea la programul $programName, tranșa în valoare de ${amount.toStringAsFixed(2)} $currency a înregistrat termenul de plată pe data de $dueDateStr.\n\n'
+    final amountFormatted = '${amount.toStringAsFixed(2)} $currency';
+
+    if (isDueTomorrow) {
+      return '🤖 *[Notificare Automată - QualiAdept Billing]*\n\n'
+          'Stimate/ă *$studentName*,\n\n'
+          'Vă reamintim amabil că pentru înregistrarea la programul *$programName*, tranșa în valoare de *$amountFormatted* are termenul de plată *mâine, $dueDateStr*.\n\n'
+          'Vă rugăm să efectuați transferul bancar conform acordului agreat. Dacă ați efectuat deja plata, vă rugăm să ignorați această notificare automatizată.\n\n'
+          '_Sistemul Automat de Facturare QualiAdept._';
+    }
+
+    return '🤖 *[Notificare Automată - QualiAdept Billing]*\n\n'
+        'Stimate/ă *$studentName*,\n\n'
+        'Vă informăm că pentru înregistrarea la programul *$programName*, tranșa în valoare de *$amountFormatted* a înregistrat termenul de plată pe data de *$dueDateStr*.\n\n'
         'Vă rugăm să efectuați transferul bancar conform acordului agreat. Dacă ați efectuat deja plata, vă rugăm să ignorați această notificare automatizată.\n\n'
-        'Sistemul Automat de Facturare QualiAdept.';
+        '_Sistemul Automat de Facturare QualiAdept._';
   }
 
   /// Builds a polite prospect follow-up text in Romanian.
@@ -34,9 +45,9 @@ class WhatsAppReminderService {
     String? programName,
   }) {
     final progInfo = (programName != null && programName.isNotEmpty)
-        ? ' privind discuția noastră despre programul $programName'
+        ? ' privind discuția noastră despre programul *$programName*'
         : '';
-    return 'Salut $prospectName! Revin cu un mesaj scurt$progInfo. Ai reușit să te gândești? Sunteți pregătit(ă) să facem pasul următor? Mulțumesc!';
+    return 'Salut *$prospectName*! Revin cu un mesaj scurt$progInfo. Ai reușit să te gândești? Sunteți pregătit(ă) să facem pasul următor? Mulțumesc!';
   }
 
   /// Launches WhatsApp with the pre-filled prospect follow-up message.
@@ -72,6 +83,7 @@ class WhatsAppReminderService {
     required double amount,
     required String currency,
     required String dueDateStr,
+    bool isDueTomorrow = false,
   }) async {
     final rawPhone = phone?.trim() ?? '';
     final messageText = buildReminderMessage(
@@ -80,6 +92,7 @@ class WhatsAppReminderService {
       amount: amount,
       currency: currency,
       dueDateStr: dueDateStr,
+      isDueTomorrow: isDueTomorrow,
     );
 
     if (rawPhone.isEmpty) {

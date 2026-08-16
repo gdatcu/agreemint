@@ -10,20 +10,32 @@ void main() {
       expect(WhatsAppReminderService.cleanPhoneNumber('40722571081'), equals('40722571081'));
     });
 
-    test('buildReminderMessage constructs polite Romanian reminder string', () {
-      final msg = WhatsAppReminderService.buildReminderMessage(
+    test('buildReminderMessage constructs polite Romanian reminder string with formatting', () {
+      final msgOverdue = WhatsAppReminderService.buildReminderMessage(
         studentName: 'Ion Popescu',
         programName: 'Web Development',
         amount: 500.0,
         currency: 'RON',
         dueDateStr: '2026-08-14',
+        isDueTomorrow: false,
       );
 
-      expect(msg, contains('Ion Popescu'));
-      expect(msg, contains('500.00 RON'));
-      expect(msg, contains('Web Development'));
-      expect(msg, contains('2026-08-14'));
-      expect(msg, contains('QualiAdept Billing'));
+      expect(msgOverdue, contains('*Ion Popescu*'));
+      expect(msgOverdue, contains('*500.00 RON*'));
+      expect(msgOverdue, contains('*Web Development*'));
+      expect(msgOverdue, contains('*2026-08-14*'));
+      expect(msgOverdue, contains('QualiAdept Billing'));
+
+      final msgTomorrow = WhatsAppReminderService.buildReminderMessage(
+        studentName: 'Ion Popescu',
+        programName: 'Web Development',
+        amount: 500.0,
+        currency: 'RON',
+        dueDateStr: '2026-08-17',
+        isDueTomorrow: true,
+      );
+
+      expect(msgTomorrow, contains('*mâine, 2026-08-17*'));
     });
   });
 }

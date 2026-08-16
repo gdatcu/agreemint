@@ -209,27 +209,15 @@ class PendingDashboardView extends ConsumerWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: Icon(Icons.smart_toy_outlined,
-                                    color: Colors.blue.shade600),
-                                tooltip: 'Send Automated QualiAdept WhatsApp Bot',
-                                onPressed: () async {
-                                  await LocalWhatsAppBotService.sendReminder(
-                                    context: context,
-                                    recipientPhone: student?.phone ?? '',
-                                    studentName: student?.name ?? 'Cursant',
-                                    programName: program?.name ?? 'Program Mentorat',
-                                    amountStr:
-                                        (payment.amountDue - payment.amountPaid).toStringAsFixed(2),
-                                    currency: currency,
-                                    dueDateStr: dueLocalDate.toString().split(' ')[0],
-                                  );
-                                },
-                              ),
-                              IconButton(
                                 icon: Icon(Icons.chat_outlined,
                                     color: Colors.green.shade600),
-                                tooltip: 'Send Manual WhatsApp Link',
+                                tooltip: 'Send WhatsApp Reminder',
                                 onPressed: () {
+                                  final now = DateTime.now();
+                                  final today = DateTime(now.year, now.month, now.day);
+                                  final dueDay = DateTime(dueLocalDate.year, dueLocalDate.month, dueLocalDate.day);
+                                  final isDueTomorrow = dueDay.isAfter(today);
+
                                   WhatsAppReminderService.sendReminder(
                                     context: context,
                                     phone: student?.phone,
@@ -238,6 +226,7 @@ class PendingDashboardView extends ConsumerWidget {
                                     amount: payment.amountDue - payment.amountPaid,
                                     currency: currency,
                                     dueDateStr: dueLocalDate.toString().split(' ')[0],
+                                    isDueTomorrow: isDueTomorrow,
                                   );
                                 },
                               ),

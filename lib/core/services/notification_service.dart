@@ -55,16 +55,16 @@ class NotificationService {
       List<PaymentModel> payments) async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
     final todayStr = '${now.year}-${now.month}-${now.day}';
 
-    final overduePayments = payments.where((p) {
+    final actionRequiredPayments = payments.where((p) {
+      if (p.status == 'Paid' || p.status == 'Refunded') return false;
       final due = DateTime(p.dueDate.year, p.dueDate.month, p.dueDate.day);
-      return due.isBefore(today) &&
-          p.status != 'Paid' &&
-          p.status != 'Refunded';
+      return due.isBefore(tomorrow) || due.isAtSameMomentAs(tomorrow);
     }).toList();
 
-    if (overduePayments.isEmpty) return;
+    if (actionRequiredPayments.isEmpty) return;
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -74,16 +74,16 @@ class NotificationService {
         return;
       }
 
-      final studentCount = overduePayments
+      final studentCount = actionRequiredPayments
           .map((p) => p.enrollment?.student?.name ?? 'Cursant')
           .toSet()
           .length;
 
       final title =
-          '⚠️ ${overduePayments.length} Overdue Payment${overduePayments.length > 1 ? 's' : ''}!';
+          '🔔 ${actionRequiredPayments.length} Payment Reminder${actionRequiredPayments.length > 1 ? 's' : ''} Due!';
       final body = studentCount == 1
-          ? '${overduePayments.first.enrollment?.student?.name ?? 'Student'} has an overdue payment.'
-          : '$studentCount students have payments past their due date.';
+          ? '${actionRequiredPayments.first.enrollment?.student?.name ?? 'Student'} has an upcoming or past due payment.'
+          : '$studentCount students have payments requiring attention.';
 
       await showOverdueNotification(id: 101, title: title, body: body);
       await prefs.setString('last_overdue_notified_date', todayStr);
