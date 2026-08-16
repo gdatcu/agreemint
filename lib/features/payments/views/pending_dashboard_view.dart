@@ -19,8 +19,8 @@ class PendingDashboardView extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.smart_toy_outlined),
-            tooltip: 'Meta WhatsApp Bot Settings',
-            onPressed: () => MetaWhatsAppService.openSettings(context),
+            tooltip: 'QualiAdept Bot Settings',
+            onPressed: () => LocalWhatsAppBotService.openSettings(context),
           ),
         ],
       ),

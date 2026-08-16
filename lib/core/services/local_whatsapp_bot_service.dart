@@ -5,7 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalWhatsAppBotService {
   static const String _keyServerUrl = 'local_bot_server_url';
-  static const String _defaultUrl = 'http://localhost:3000';
+  static const String _defaultUrl =
+      'https://qualiadept-whatsapp-bot.onrender.com';
 
   /// Saves the bot server URL.
   static Future<void> saveServerUrl(String url) async {

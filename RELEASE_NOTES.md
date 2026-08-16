@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.26 Release Notes
+# 🚀 Agreemint v1.0.27 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,14 +19,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.26
+## 🎨 What's New in Version 1.0.27
 
-- 🤖 **QualiAdept Free 24/7 WhatsApp Cloud Bot Integration**:
-  - `LocalWhatsAppBotService` integration connecting Agreemint directly to your 24/7 cloud bot server (`https://qualiadept-whatsapp-bot.onrender.com`).
-  - **Zero Meta Business Verification & Zero Credit Cards**: Operates 100% free with open-source `whatsapp-web.js` engine.
-  - **Objective Billing Identity**: Dispatches formal, neutral billing notifications as *QualiAdept Billing Bot*.
-  - Added session `/logout` reset feature on `http://localhost:3000/qr` and cloud endpoints.
-  - **Render.com Cloud Deployment**: Complete Docker container setup for 24/7 zero-laptop cloud execution.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.26` (`1.0.26+26`).
+- 🤖 **Zero-Setup Built-in WhatsApp Cloud Bot**:
+  - Pre-configured `https://qualiadept-whatsapp-bot.onrender.com` as the default built-in cloud server URL.
+  - Mobile app works out-of-the-box: tapping the 🤖 **Bot Icon** on mobile dispatches 1-click automated messages directly without requiring any configuration or token input!
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.27` (`1.0.27+27`).
 
 
