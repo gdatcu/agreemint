@@ -26,7 +26,7 @@ class WhatsAppReminderService {
     final amountFormatted = '${amount.toStringAsFixed(2)} $currency';
 
     if (isDueTomorrow || dueStage == 'tomorrow') {
-      return '🤖 *[Notificare Automată - QualiAdept Billing]*\n\n'
+      return '📌 *[Notificare Automată - QualiAdept Billing]*\n\n'
           'Stimate/ă *$studentName*,\n\n'
           'Vă reamintim amabil că pentru înregistrarea la programul *$programName*, tranșa în valoare de *$amountFormatted* are termenul de plată *mâine, $dueDateStr*.\n\n'
           'Vă rugăm să efectuați transferul bancar conform acordului agreat. Dacă ați efectuat deja plata, vă rugăm să ignorați această notificare automatizată.\n\n'
@@ -34,14 +34,14 @@ class WhatsAppReminderService {
     }
 
     if (dueStage == 'today') {
-      return '🤖 *[Notificare Automată - QualiAdept Billing]*\n\n'
+      return '📌 *[Notificare Automată - QualiAdept Billing]*\n\n'
           'Stimate/ă *$studentName*,\n\n'
           'Vă reamintim amabil că pentru înregistrarea la programul *$programName*, tranșa în valoare de *$amountFormatted* are termenul de plată *astăzi, $dueDateStr*.\n\n'
           'Vă rugăm să efectuați transferul bancar conform acordului agreat. Dacă ați efectuat deja plata, vă rugăm să ignorați această notificare automatizată.\n\n'
           '_Sistemul Automat de Facturare QualiAdept._';
     }
 
-    return '🤖 *[Notificare Automată - QualiAdept Billing]*\n\n'
+    return '📌 *[Notificare Automată - QualiAdept Billing]*\n\n'
         'Stimate/ă *$studentName*,\n\n'
         'Vă informăm că pentru înregistrarea la programul *$programName*, tranșa în valoare de *$amountFormatted* a înregistrat termenul de plată pe data de *$dueDateStr*.\n\n'
         'Vă rugăm să efectuați transferul bancar conform acordului agreat. Dacă ați efectuat deja plata, vă rugăm să ignorați această notificare automatizată.\n\n'

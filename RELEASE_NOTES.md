@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.30 Release Notes
+# 🚀 Agreemint v1.0.31 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,13 +19,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.30
+## 🎨 What's New in Version 1.0.31
 
-- 🎯 **3-Stage Contextual WhatsApp Reminders**:
-  - 🟢 **1-Day Pre-Due (Due Tomorrow)**: *"are termenul de plată **mâine, [Data]**"*
-  - 🟡 **Due Today (Scadență Astăzi)**: *"are termenul de plată **astăzi, [Data]**"*
-  - 🔴 **Past Due / Overdue**: *"a înregistrat termenul de plată pe data de **[Data]**"*
-  - Includes exact **Bold** (`*`) and _Italics_ (`_`) formatting with clean paragraph spacing.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.30` (`1.0.30+30`).
+- 📌 **Universal Crisp Icon Rendering (`📌`)**:
+  - Replaced `🤖` with `📌` in WhatsApp message headers (`📌 *[Notificare Automată - QualiAdept Billing]*`).
+  - Fixes Windows URL surrogate encoding, guaranteeing 100% crisp, clean rendering with zero diamond replacement symbols (``) on Windows browsers, WhatsApp Web, and Desktop apps.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.31` (`1.0.31+31`).
 
 

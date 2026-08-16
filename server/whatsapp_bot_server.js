@@ -174,11 +174,11 @@ app.post('/send-reminder', async (req, res) => {
   const dateStr = dueDate || new Date().toISOString().split('T')[0];
 
   const messageText =
-    `🤖 [Notificare Automată - QualiAdept Billing]\n\n` +
-    `Stimate/ă ${student},\n\n` +
-    `Vă informăm că pentru înregistrarea la programul ${program}, tranșa în valoare de ${amt} ${curr} a înregistrat termenul de plată pe data de ${dateStr}.\n\n` +
+    `📌 *[Notificare Automată - QualiAdept Billing]*\n\n` +
+    `Stimate/ă *${student}*,\n\n` +
+    `Vă informăm că pentru înregistrarea la programul *${program}*, tranșa în valoare de *${amt} ${curr}* a înregistrat termenul de plată pe data de *${dateStr}*.\n\n` +
     `Vă rugăm să efectuați transferul bancar conform acordului agreat. Dacă ați efectuat deja plata, vă rugăm să ignorați această notificare automatizată.\n\n` +
-    `Sistemul Automat de Facturare QualiAdept.`;
+    `_Sistemul Automat de Facturare QualiAdept._`;
 
   try {
     await client.sendMessage(formattedPhone, messageText);
