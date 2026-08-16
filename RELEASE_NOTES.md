@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.27 Release Notes
+# 🚀 Agreemint v1.0.28 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,11 +19,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.27
+## 🎨 What's New in Version 1.0.28
 
-- 🤖 **Zero-Setup Built-in WhatsApp Cloud Bot**:
-  - Pre-configured `https://qualiadept-whatsapp-bot.onrender.com` as the default built-in cloud server URL.
-  - Mobile app works out-of-the-box: tapping the 🤖 **Bot Icon** on mobile dispatches 1-click automated messages directly without requiring any configuration or token input!
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.27` (`1.0.27+27`).
+- 🧼 **Clean WhatsApp Cloud Bot UI (Meta Bot Fallback Removed)**:
+  - Removed Meta Cloud API fallbacks and popup dialogs.
+  - Tapping the 🤖 **Bot Icon** now communicates exclusively with your free QualiAdept Cloud Bot (`https://qualiadept-whatsapp-bot.onrender.com`), displaying clean status feedback with zero popup prompts!
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.28` (`1.0.28+28`).
 
 

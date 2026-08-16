@@ -213,7 +213,7 @@ class PendingDashboardView extends ConsumerWidget {
                                     color: Colors.blue.shade600),
                                 tooltip: 'Send Automated QualiAdept WhatsApp Bot',
                                 onPressed: () async {
-                                  final sent = await LocalWhatsAppBotService.sendReminder(
+                                  await LocalWhatsAppBotService.sendReminder(
                                     context: context,
                                     recipientPhone: student?.phone ?? '',
                                     studentName: student?.name ?? 'Cursant',
@@ -223,18 +223,6 @@ class PendingDashboardView extends ConsumerWidget {
                                     currency: currency,
                                     dueDateStr: dueLocalDate.toString().split(' ')[0],
                                   );
-                                  if (!sent && context.mounted) {
-                                    // Fallback to Meta Cloud API if local bot server is unconfigured
-                                    MetaWhatsAppService.sendTemplateMessage(
-                                      context: context,
-                                      recipientPhone: student?.phone ?? '',
-                                      studentName: student?.name ?? 'Cursant',
-                                      programName: program?.name ?? 'Program Mentorat',
-                                      amountStr:
-                                          '${(payment.amountDue - payment.amountPaid).toStringAsFixed(2)} $currency',
-                                      dueDateStr: dueLocalDate.toString().split(' ')[0],
-                                    );
-                                  }
                                 },
                               ),
                               IconButton(
