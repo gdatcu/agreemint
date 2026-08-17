@@ -40,22 +40,22 @@ class WhatsAppReminderService {
       dueText = 'a înregistrat scadența pe data de *$dueDateStr*';
     }
 
-    final docsBuffer = StringBuffer();
+    final docsList = <String>[];
     if (invoiceUrl != null && invoiceUrl.trim().isNotEmpty) {
       final invNumText = (invoiceNumber != null && invoiceNumber.trim().isNotEmpty)
           ? ' ($invoiceNumber)'
           : '';
-      docsBuffer.writeln('📋 *Factură fiscală (SOLO)$invNumText:* ${invoiceUrl.trim()}');
+      docsList.add('\u{1F4C4} *Factură fiscală (SOLO)$invNumText:* ${invoiceUrl.trim()}');
     }
     if (contractPdfUrl != null && contractPdfUrl.trim().isNotEmpty) {
-      docsBuffer.writeln('📝 *Contract de servicii semnat:* ${contractPdfUrl.trim()}');
+      docsList.add('\u{270D}\u{FE0F} *Contract de servicii semnat:* ${contractPdfUrl.trim()}');
     }
 
-    final docsSection = docsBuffer.isNotEmpty ? '\n${docsBuffer.toString()}' : '';
+    final docsSection = docsList.isNotEmpty ? '\n\n${docsList.join('\n\n')}' : '';
 
-    return '🔔 *[Notificare Automată - QualiAdept Billing]*\n\n'
+    return '\u{1F916} *[Notificare Automată - QualiAdept Billing]*\n\n'
         'Stimate/ă *$studentName*,\n\n'
-        'Vă transmitem acest mesaj pentru a vă reaminti că tranșa aferentă programului *$programName*, în valoare de *$amountFormatted*, $dueText.$docsSection\n'
+        'Vă transmitem acest mesaj pentru a vă reaminti că tranșa aferentă programului *$programName*, în valoare de *$amountFormatted*, $dueText.$docsSection\n\n'
         'Detaliile bancare pentru transfer le regăsiți pe factura atașată. În cazul în care plata a fost deja efectuată, vă rugăm să ignorați această notificare.\n\n'
         'Vă mulțumim,\n'
         '_Echipa QualiAdept_';

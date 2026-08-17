@@ -35,7 +35,7 @@ class PaymentRepository {
     try {
       final response = await _client
           .from('payments')
-          .select('*, enrollments(*, students(*), programs(*))')
+          .select('*, enrollments(*, students(*), programs(*), contracts(*))')
           .neq('status', 'Paid')
           .neq('status', 'Refunded')
           .order('due_date', ascending: true);

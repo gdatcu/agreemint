@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.33 Release Notes
+# 🚀 Agreemint v1.0.34 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,15 +19,13 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.33
+## 🎨 What's New in Version 1.0.34
 
-- 📑 **Unsigned Contracts Follow-Up Tab**:
-  - Dedicated view tracking generated contracts pending client signature with exact days overdue calculations.
-  - 1-tap **Send WhatsApp Follow-Up** button pre-filling the student's exact contract signing link.
-- 🔔 **Android Push Notifications for Unsigned Contracts**:
-  - Daily background alerts notifying mentors of pending unsigned contracts issued $\ge 1$ day ago.
-- 💎 **100% URL-Safe Universal Icons (`🔔`, `📋`, `📝`)**:
-  - Replaced complex emojis with single-codepoint symbols (`🔔`, `📋`, `📝`) for 100% error-free decoding on WhatsApp Web, Desktop, and mobile.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.33` (`1.0.33+33`).
+- 🔗 **Full Signed Contract Database Join (`contracts(*)`)**:
+  - Updated `PaymentRepository.fetchGlobalPendingPayments()` to join `contracts(*)`. Ensures signed contract links are ALWAYS loaded and attached in 1-tap WhatsApp notifications on the Pending Dashboard.
+- 💬 **Generous Paragraph Spacing & Unicode Escaped Icons (`\u{1F916}`, `\u{1F4C4}`, `\u{270D}\u{FE0F}`)**:
+  - Added double linebreaks (`\n\n`) between document links for clean, spacious readability.
+  - Formatted icons with explicit Dart Unicode escapes for 100% clean URL encoding.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.34` (`1.0.34+34`).
 
 
