@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.48 Release Notes
+# 🚀 Agreemint v1.0.49 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,14 +19,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.48
+## 🎨 What's New in Version 1.0.49
 
-- 🔐 **QualiAdept PIN Gateway Web Viewer**:
-  - Implemented public `/view-doc` web route (`DocGatewayView`) featuring 4-digit PIN verification.
-  - When clients click WhatsApp links for receipts, contracts, or invoices, they are prompted to enter the last 4 digits of their phone number (`9506`) before the PDF document renders!
-  - Displays instant error feedback if an incorrect PIN is entered (`❌ PIN incorect. Vă rugăm să introduceți ultimele 4 cifre ale numărului de telefon`).
-- 💬 **Integrated Gateway URLs in All Shared Messages**:
-  - Automatically wraps receipt, contract, and SOLO invoice links in `buildDocGatewayUrl` across all WhatsApp delivery templates.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.48` (`1.0.48+48`).
+- 🌐 **Dynamic Base Domain Resolution for PIN Web Gateway**:
+  - Replaced hardcoded placeholder domain with dynamic runtime origin detection (`Uri.base.origin`) with fallback to production domain (`https://apps.qualiadept.eu/agreemint/`).
+  - Resolves "Firebase Site Not Found" error when testing on localhost (`http://localhost:50080/#/view-doc?...`) or running on live production server.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.49` (`1.0.49+49`).
 
 

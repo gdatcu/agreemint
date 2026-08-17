@@ -50,8 +50,8 @@ void main() {
       );
 
       expect(msgToday, contains('*astăzi, 2026-08-16*'));
-      expect(msgToday, contains('📄 *Factură fiscală (SOLO) (SOLO-1042):* https://agreemint.web.app/#/view-doc'));
-      expect(msgToday, contains('✍️ *Contract de servicii semnat:* https://agreemint.web.app/#/view-doc'));
+      expect(msgToday, contains('#/view-doc?url=https%3A%2F%2Fexample.com%2Finvoice.pdf'));
+      expect(msgToday, contains('#/view-doc?url=https%3A%2F%2Fexample.com%2Fcontract.pdf'));
     });
 
     test('buildContractFollowUpMessage constructs polite contract follow-up string', () {
