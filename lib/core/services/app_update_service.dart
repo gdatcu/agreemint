@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:open_file_plus/open_file_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -321,7 +321,8 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
         if (!isCancelled) {
           isComplete = true;
           statusMessage = 'Triggering Android Installer...';
-          await OpenFile.open(filePath, type: 'application/vnd.android.package-archive');
+          const platform = MethodChannel('com.example.agreemint/installer');
+          await platform.invokeMethod('installApk', {'filePath': filePath});
         }
       } else {
         isFailed = true;
