@@ -4,6 +4,7 @@ import '../../programs/controllers/program_controller.dart';
 import '../../programs/models/program_model.dart';
 import '../controllers/prospect_controller.dart';
 import '../models/prospect_model.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../core/services/whatsapp_reminder_service.dart';
 
 class ProspectsView extends ConsumerStatefulWidget {
@@ -54,6 +55,9 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
           Expanded(
             child: prospectsState.when(
               data: (prospects) {
+                // Trigger daily background push alert evaluation for prospect follow-ups
+                NotificationService.checkAndNotifyProspectFollowUps(prospects);
+
                 final filtered = _filterProspects(prospects);
 
                 if (filtered.isEmpty) {
@@ -184,6 +188,8 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
                                 Text(
                                   '📝 ${prospect.notes}',
                                   style: Theme.of(context).textTheme.bodySmall,
+                                  maxLines: 4,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                               const SizedBox(height: 8),

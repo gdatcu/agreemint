@@ -167,6 +167,42 @@ class NotificationService {
     } catch (_) {}
   }
 
+  /// Evaluates prospects list and dispatches an Android push notification for pending follow-ups due today or overdue.
+  static Future<void> checkAndNotifyProspectFollowUps(
+      List<ProspectModel> prospects) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final todayStr = '${now.year}-${now.month}-${now.day}';
+
+    final dueProspects = prospects.where((p) {
+      if (p.status == 'Converted') return false;
+      final followUp = DateTime(
+          p.followUpDate.year, p.followUpDate.month, p.followUpDate.day);
+      return !followUp.isAfter(today);
+    }).toList();
+
+    if (dueProspects.isEmpty) return;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final lastNotified =
+          prefs.getString('last_prospect_followup_notified_date');
+      if (lastNotified == todayStr) {
+        return;
+      }
+
+      final count = dueProspects.length;
+      final title =
+          '🔔 $count Prospecț${count > 1 ? 'i' : 't'} Așteaptă Follow-up!';
+      final body = count == 1
+          ? '${dueProspects.first.name} necesită urmărire/follow-up astăzi.'
+          : 'Aveți $count prospecți ce necesită urmărire/follow-up astăzi.';
+
+      await showOverdueNotification(id: 304, title: title, body: body);
+      await prefs.setString('last_prospect_followup_notified_date', todayStr);
+    } catch (_) {}
+  }
+
   /// Triggers a native heads-up notification banner with high priority, sound, and vibration.
   static Future<void> showOverdueNotification({
     required int id,

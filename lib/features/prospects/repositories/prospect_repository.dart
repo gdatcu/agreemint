@@ -116,7 +116,6 @@ class ProspectRepository {
             'name': prospect.name,
             'phone': prospect.phone,
             'email': prospect.email,
-            'notes': prospect.notes,
             'created_at': now.toIso8601String(),
           })
           .select()
