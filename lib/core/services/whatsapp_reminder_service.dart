@@ -13,6 +13,16 @@ class WhatsAppReminderService {
     return cleaned;
   }
 
+  /// Extracts the last 4 digits of a phone number for the document security PIN notice.
+  static String extractPinFromPhone(String? phone) {
+    if (phone == null || phone.trim().isEmpty) return '****';
+    final cleaned = phone.replaceAll(RegExp(r'[^\d]'), '');
+    if (cleaned.length >= 4) {
+      return cleaned.substring(cleaned.length - 4);
+    }
+    return cleaned.isNotEmpty ? cleaned : '****';
+  }
+
   /// Builds an objective, formal payment notification in Romanian from QualiAdept Billing Bot.
   static String buildReminderMessage({
     required String studentName,
@@ -26,6 +36,7 @@ class WhatsAppReminderService {
     String? invoiceUrl,
     String? invoiceNumber,
     String? contractPdfUrl,
+    String? studentPhone,
   }) {
     final amountFormatted = '${amount.toStringAsFixed(2)} $currency';
 
@@ -40,15 +51,20 @@ class WhatsAppReminderService {
       dueText = 'a înregistrat scadența pe data de *$dueDateStr*';
     }
 
+    final pin = extractPinFromPhone(studentPhone);
+    final pinNotice = (studentPhone != null && studentPhone.trim().isNotEmpty)
+        ? '\n🔐 *PIN Securitate Document:* Ultimele 4 cifre ale numărului tău de telefon (*$pin*)'
+        : '';
+
     final docsList = <String>[];
     if (invoiceUrl != null && invoiceUrl.trim().isNotEmpty) {
       final invNumText = (invoiceNumber != null && invoiceNumber.trim().isNotEmpty)
           ? ' ($invoiceNumber)'
           : '';
-      docsList.add('\u{1F4C4} *Factură fiscală (SOLO)$invNumText:* ${invoiceUrl.trim()}');
+      docsList.add('\u{1F4C4} *Factură fiscală (SOLO)$invNumText:* ${invoiceUrl.trim()}$pinNotice');
     }
     if (contractPdfUrl != null && contractPdfUrl.trim().isNotEmpty) {
-      docsList.add('\u{270D}\u{FE0F} *Contract de servicii semnat:* ${contractPdfUrl.trim()}');
+      docsList.add('\u{270D}\u{FE0F} *Contract de servicii semnat:* ${contractPdfUrl.trim()}$pinNotice');
     }
 
     final docsSection = docsList.isNotEmpty ? '\n\n${docsList.join('\n\n')}' : '';
@@ -71,14 +87,20 @@ class WhatsAppReminderService {
     required int totalInstallments,
     required String receiptNumber,
     String? receiptUrl,
+    String? studentPhone,
   }) {
     final amountFormatted = '${amount.toStringAsFixed(2)} $currency';
     final installmentText = totalInstallments > 1
         ? 'Rata $installmentNumber din $totalInstallments'
         : 'Plată Integrală';
 
+    final pin = extractPinFromPhone(studentPhone);
+    final pinNotice = (studentPhone != null && studentPhone.trim().isNotEmpty)
+        ? '\n🔐 *PIN Securitate Document:* Ultimele 4 cifre ale numărului tău de telefon (*$pin*)'
+        : '';
+
     final urlSection = (receiptUrl != null && receiptUrl.trim().isNotEmpty)
-        ? '\n\n📄 *Link Chitanță PDF:* ${receiptUrl.trim()}'
+        ? '\n\n📄 *Link Chitanță PDF:* ${receiptUrl.trim()}$pinNotice'
         : '';
 
     return 'Salut *$studentName*! 👋\n\n'
@@ -111,6 +133,7 @@ class WhatsAppReminderService {
       totalInstallments: totalInstallments,
       receiptNumber: receiptNumber,
       receiptUrl: receiptUrl,
+      studentPhone: rawPhone,
     );
 
     if (rawPhone.isEmpty) {
@@ -130,11 +153,17 @@ class WhatsAppReminderService {
     required String programName,
     required String createdDateStr,
     required String contractSigningUrl,
+    String? studentPhone,
   }) {
+    final pin = extractPinFromPhone(studentPhone);
+    final pinNotice = (studentPhone != null && studentPhone.trim().isNotEmpty)
+        ? '\n🔐 *PIN Securitate Document:* Ultimele 4 cifre ale numărului tău de telefon (*$pin*)'
+        : '';
+
     return '🔔 *[QualiAdept Contract Follow-Up]*\n\n'
         'Buna *$studentName*,\n\n'
         'Îți reamintim că contractul de servicii pentru programul *$programName* a fost generat pe *$createdDateStr* și așteaptă semnătura ta.\n\n'
-        '📝 *Link Semnare Contract:* ${contractSigningUrl.trim()}\n\n'
+        '📝 *Link Semnare Contract:* ${contractSigningUrl.trim()}$pinNotice\n\n'
         'Te rugăm să accesezi linkul de mai sus pentru a revizui și semna contractul. Dacă ai întrebări, îmi poți scrie direct aici.\n\n'
         'O zi frumoasă,\n'
         '_Echipa QualiAdept_';
@@ -155,6 +184,7 @@ class WhatsAppReminderService {
       programName: programName,
       createdDateStr: createdDateStr,
       contractSigningUrl: contractSigningUrl,
+      studentPhone: rawPhone,
     );
 
     if (rawPhone.isEmpty) {
@@ -232,6 +262,7 @@ class WhatsAppReminderService {
       invoiceUrl: invoiceUrl,
       invoiceNumber: invoiceNumber,
       contractPdfUrl: contractPdfUrl,
+      studentPhone: rawPhone,
     );
 
     if (rawPhone.isEmpty) {

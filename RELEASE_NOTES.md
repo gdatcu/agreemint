@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.46 Release Notes
+# 🚀 Agreemint v1.0.47 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,13 +19,15 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.46
+## 🎨 What's New in Version 1.0.47
 
-- 📄 **Receipt PDF Link Included in WhatsApp Message**:
-  - Automatically attaches the direct public Supabase PDF link in WhatsApp receipt share messages (`📄 *Link Chitanță PDF:* https://...`).
-- 👁️ **1-Tap SOLO Invoice PDF Direct Preview**:
-  - Tapping the `📄 SOLO #123` badge now **directly opens/previews the invoice PDF** in a new browser tab/app.
-  - Added an explicit **`👁️ View / Open SOLO Invoice PDF`** button inside the SOLO modal dialog for 1-click previewing.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.46` (`1.0.46+46`).
+- 🔐 **Document Security PIN Notice across ALL Client Messages**:
+  - Dynamically extracts the student's phone PIN (e.g. `5678`) and attaches `🔐 *PIN Securitate Document:* Ultimele 4 cifre ale numărului tău de telefon (*5678*)` across **all shared client files**:
+    - 💳 **Receipts** (`buildReceiptShareMessage`)
+    - 📜 **Contracts** (`buildContractFollowUpMessage`)
+    - 📄 **SOLO Invoices & Reminders** (`buildReminderMessage`)
+- ♾️ **Permanent Unexpired Storage Links**:
+  - Guarantees 100% permanent access to all receipts, contracts, and invoices without link expiration errors.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.47` (`1.0.47+47`).
 
 
