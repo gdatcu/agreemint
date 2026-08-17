@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.43 Release Notes
+# 🚀 Agreemint v1.0.44 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,11 +19,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.43
+## 🎨 What's New in Version 1.0.44
 
-- 📲 **Native In-App Automatic OTA APK Downloads & Android Installer**:
-  - Integrated `ota_update` with an in-app real-time progress dialog (`Downloading Update... XX%`).
-  - Automatically triggers the native Android Package Installer screen upon download completion—eliminating browser reliance and hung downloads!
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.43` (`1.0.43+43`).
+- 🛠️ **Android Gradle Build Fix (`lStar` Resource Linker Error)**:
+  - Explicitly upgraded `compileSdk` and `targetSdk` to SDK `34` in `android/app/build.gradle.kts` to resolve AAPT resource linking errors (`android:attr/lStar not found`).
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.44` (`1.0.44+44`).
 
 
