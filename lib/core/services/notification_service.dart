@@ -134,7 +134,9 @@ class NotificationService {
     final todayStr = '${now.year}-${now.month}-${now.day}';
 
     final unsignedContracts = contracts.where((c) {
-      if (c.status == 'Signed' || c.clientSignatureUrl != null) return false;
+      if (c.status == 'FullySigned' || c.status == 'Signed') return false;
+      if (c.clientSignatureUrl != null && c.clientSignatureUrl!.isNotEmpty) return false;
+      if (c.signedPdfUrl != null && c.signedPdfUrl!.isNotEmpty) return false;
       if (c.status == 'Cancelled' || c.status == 'Refunded') return false;
       final created = DateTime(c.createdDate.year, c.createdDate.month, c.createdDate.day);
       return created.isBefore(today);

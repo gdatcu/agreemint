@@ -151,17 +151,28 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
     final link = '${AppConstants.clientPortalBaseUrl}$contractId';
     await Clipboard.setData(ClipboardData(text: link));
 
+    final studentName = widget.enrollment.student?.name ?? 'Cursant';
+    final programName = widget.enrollment.program?.name ?? 'Program Mentorat';
+
+    final shareText = '\u{1F4DD} *[QualiAdept Contract Mentorat]*\n\n'
+        'Salut *$studentName*,\n\n'
+        'Contractul de servicii pentru programul *$programName* a fost generat și semnat de mentor.\n\n'
+        '\u{270D}\u{FE0F} *Link Semnare Contract:* $link\n\n'
+        'Te rugăm să accesezi linkul de mai sus pentru a revizui și aplica semnătura ta electronică.\n\n'
+        'Mulțumim,\n'
+        '_Echipa QualiAdept_';
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Signing link copied to clipboard!\n$link'),
+          content: Text('Linkul de semnare a fost copiat în clipboard!\n$link'),
           duration: const Duration(seconds: 4),
           action: SnackBarAction(
-            label: 'SHARE',
+            label: 'TRIMITE',
             onPressed: () {
               Share.share(
-                'Hi! Please review and sign your mentoring program contract here: $link',
-                subject: 'Mentorship Agreement Contract Signing',
+                shareText,
+                subject: 'Semnare Contract Mentorat QualiAdept',
               );
             },
           ),
@@ -171,8 +182,8 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
 
     try {
       await Share.share(
-        'Hi! Please review and sign your mentoring program contract here: $link',
-        subject: 'Mentorship Agreement Contract Signing',
+        shareText,
+        subject: 'Semnare Contract Mentorat QualiAdept',
       );
     } catch (_) {
       // Fallback silently if platform share isn't supported
@@ -711,7 +722,7 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
                           horizontal: 20, vertical: 14),
                     ),
                     icon: const Icon(Icons.send),
-                    label: const Text('Send to Client for Signature'),
+                    label: const Text('Trimite Contractul spre Semnare'),
                   ),
                   const SizedBox(height: 12),
                   Row(

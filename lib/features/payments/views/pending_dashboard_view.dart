@@ -221,16 +221,18 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                             children: [
                               Text(
                                 'Due: ${(payment.amountDue - payment.amountPaid).toStringAsFixed(2)} $currency',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.black87,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                               const SizedBox(width: 16),
                               Text(
                                 'Due Date: ${dueLocalDate.toString().split(' ')[0]}',
                                 style: TextStyle(
-                                  color: isOverdue ? Colors.red : Colors.grey.shade700,
+                                  color: isOverdue
+                                      ? Colors.redAccent
+                                      : Theme.of(context).colorScheme.onSurfaceVariant,
                                   fontWeight: isOverdue ? FontWeight.bold : FontWeight.normal,
                                 ),
                               ),

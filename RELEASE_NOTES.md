@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.34 Release Notes
+# 🚀 Agreemint v1.0.35 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,13 +19,16 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.34
+## 🎨 What's New in Version 1.0.35
 
-- 🔗 **Full Signed Contract Database Join (`contracts(*)`)**:
-  - Updated `PaymentRepository.fetchGlobalPendingPayments()` to join `contracts(*)`. Ensures signed contract links are ALWAYS loaded and attached in 1-tap WhatsApp notifications on the Pending Dashboard.
-- 💬 **Generous Paragraph Spacing & Unicode Escaped Icons (`\u{1F916}`, `\u{1F4C4}`, `\u{270D}\u{FE0F}`)**:
-  - Added double linebreaks (`\n\n`) between document links for clean, spacious readability.
-  - Formatted icons with explicit Dart Unicode escapes for 100% clean URL encoding.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.34` (`1.0.34+34`).
+- 🌙 **Dark Mode Text Contrast**:
+  - Replaced hardcoded dark text styles on `PendingDashboardView` (`Due: X RON` and `Due Date`) with dynamic theme colors for crisp legibility in dark mode.
+- 🇷🇴 **Formal Romanian Initial Contract Share Message**:
+  - Updated button to **Trimite Contractul spre Semnare** and pre-filled message text to formal Romanian with web signature portal link (`/#/sign/[contractId]`).
+- 🔗 **Web Signature Portal Link Integration for Follow-Ups**:
+  - WhatsApp follow-ups in `UnsignedContractsView` now send the interactive web signature portal link (`https://apps.qualiadept.eu/agreemint/#/sign/[contractId]`) instead of raw PDF files.
+- 🛡️ **Exclusion of Manually Uploaded Signed Contracts**:
+  - Excluded contracts with `signedPdfUrl != null` or `status == 'FullySigned'` from the Unsigned Contracts tab and push notifications.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.35` (`1.0.35+35`).
 
 

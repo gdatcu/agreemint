@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../controllers/contract_controller.dart';
 import '../models/contract_model.dart';
+import '../../../core/constants.dart';
 import '../../../core/services/whatsapp_reminder_service.dart';
 
 class UnsignedContractsView extends ConsumerWidget {
@@ -20,7 +21,10 @@ class UnsignedContractsView extends ConsumerWidget {
           final today = DateTime(now.year, now.month, now.day);
 
           final unsignedContracts = contracts.where((c) {
-            final isSigned = c.status == 'Signed' || (c.clientSignatureUrl != null && c.clientSignatureUrl!.isNotEmpty);
+            final isSigned = c.status == 'FullySigned' ||
+                c.status == 'Signed' ||
+                (c.clientSignatureUrl != null && c.clientSignatureUrl!.isNotEmpty) ||
+                (c.signedPdfUrl != null && c.signedPdfUrl!.isNotEmpty);
             final isArchived = c.status == 'Cancelled' || c.status == 'Refunded';
             return !isSigned && !isArchived;
           }).toList();
@@ -64,7 +68,8 @@ class UnsignedContractsView extends ConsumerWidget {
                       ? 'Generat ieri (1 zi)'
                       : 'Așteaptă semnătura de $daysPending zile');
 
-              final signingUrl = contract.pdfUrl ?? contract.signedPdfUrl ?? '';
+              final signingWebUrl = '${AppConstants.clientPortalBaseUrl}${contract.id}';
+              final rawPdfUrl = contract.pdfUrl ?? contract.signedPdfUrl ?? '';
 
               return Card(
                 elevation: 2,
@@ -173,16 +178,16 @@ class UnsignedContractsView extends ConsumerWidget {
                                 studentName: contract.studentName ?? 'Cursant',
                                 programName: contract.programName ?? 'Program Mentorat',
                                 createdDateStr: createdStr,
-                                contractSigningUrl: signingUrl,
+                                contractSigningUrl: signingWebUrl,
                               );
                             },
                             icon: const Icon(Icons.chat, size: 18),
                             label: const Text('Trimite Follow-Up WhatsApp'),
                           ),
                           const SizedBox(width: 8),
-                          if (signingUrl.isNotEmpty) ...[
+                          if (rawPdfUrl.isNotEmpty) ...[
                             OutlinedButton.icon(
-                              onPressed: () => launchUrl(Uri.parse(signingUrl)),
+                              onPressed: () => launchUrl(Uri.parse(rawPdfUrl)),
                               icon: const Icon(Icons.picture_as_pdf, size: 18),
                               label: const Text('PDF'),
                             ),
@@ -191,7 +196,7 @@ class UnsignedContractsView extends ConsumerWidget {
                               icon: const Icon(Icons.copy, size: 18),
                               tooltip: 'Copiază Link Semnătură',
                               onPressed: () {
-                                Clipboard.setData(ClipboardData(text: signingUrl));
+                                Clipboard.setData(ClipboardData(text: signingWebUrl));
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text('Linkul de semnare s-a copiat în clipboard!'),
