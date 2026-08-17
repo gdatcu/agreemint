@@ -23,6 +23,18 @@ class WhatsAppReminderService {
     return cleaned.isNotEmpty ? cleaned : '****';
   }
 
+  /// Wraps a raw document PDF URL inside the Agreemint PIN Gateway Web Viewer URL.
+  static String buildDocGatewayUrl({
+    required String rawPdfUrl,
+    required String? studentPhone,
+    required String docTitle,
+  }) {
+    final pin = extractPinFromPhone(studentPhone);
+    final encodedUrl = Uri.encodeComponent(rawPdfUrl.trim());
+    final encodedTitle = Uri.encodeComponent(docTitle.trim());
+    return 'https://agreemint.web.app/#/view-doc?url=$encodedUrl&pin=$pin&title=$encodedTitle';
+  }
+
   /// Builds an objective, formal payment notification in Romanian from QualiAdept Billing Bot.
   static String buildReminderMessage({
     required String studentName,
@@ -61,10 +73,20 @@ class WhatsAppReminderService {
       final invNumText = (invoiceNumber != null && invoiceNumber.trim().isNotEmpty)
           ? ' ($invoiceNumber)'
           : '';
-      docsList.add('\u{1F4C4} *Factură fiscală (SOLO)$invNumText:* ${invoiceUrl.trim()}$pinNotice');
+      final gatewayInvoiceUrl = buildDocGatewayUrl(
+        rawPdfUrl: invoiceUrl,
+        studentPhone: studentPhone,
+        docTitle: 'Factură Fiscală SOLO$invNumText',
+      );
+      docsList.add('\u{1F4C4} *Factură fiscală (SOLO)$invNumText:* $gatewayInvoiceUrl$pinNotice');
     }
     if (contractPdfUrl != null && contractPdfUrl.trim().isNotEmpty) {
-      docsList.add('\u{270D}\u{FE0F} *Contract de servicii semnat:* ${contractPdfUrl.trim()}$pinNotice');
+      final gatewayContractUrl = buildDocGatewayUrl(
+        rawPdfUrl: contractPdfUrl,
+        studentPhone: studentPhone,
+        docTitle: 'Contract de servicii semnat',
+      );
+      docsList.add('\u{270D}\u{FE0F} *Contract de servicii semnat:* $gatewayContractUrl$pinNotice');
     }
 
     final docsSection = docsList.isNotEmpty ? '\n\n${docsList.join('\n\n')}' : '';
@@ -99,8 +121,16 @@ class WhatsAppReminderService {
         ? '\n🔐 *PIN Securitate Document:* Ultimele 4 cifre ale numărului tău de telefon (*$pin*)'
         : '';
 
-    final urlSection = (receiptUrl != null && receiptUrl.trim().isNotEmpty)
-        ? '\n\n📄 *Link Chitanță PDF:* ${receiptUrl.trim()}$pinNotice'
+    final gatewayUrl = (receiptUrl != null && receiptUrl.trim().isNotEmpty)
+        ? buildDocGatewayUrl(
+            rawPdfUrl: receiptUrl,
+            studentPhone: studentPhone,
+            docTitle: 'Chitanță Plată $receiptNumber',
+          )
+        : null;
+
+    final urlSection = gatewayUrl != null
+        ? '\n\n📄 *Link Chitanță PDF:* $gatewayUrl$pinNotice'
         : '';
 
     return 'Salut *$studentName*! 👋\n\n'

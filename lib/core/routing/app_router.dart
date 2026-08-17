@@ -16,6 +16,7 @@ import '../../features/payments/views/pending_dashboard_view.dart';
 import '../../features/payments/views/payment_tracker_view.dart';
 import '../../features/analytics/views/analytics_view.dart';
 import '../../features/prospects/views/prospects_view.dart';
+import '../../features/documents/views/doc_gateway_view.dart';
 
 part 'app_router.g.dart';
 
@@ -71,7 +72,7 @@ GoRouter appRouter(Ref ref) {
     initialLocation: '/programs',
     redirect: (context, state) {
       final loc = state.matchedLocation;
-      final isPublic = loc.startsWith('/sign/') || loc == '/access-denied';
+      final isPublic = loc.startsWith('/sign/') || loc.startsWith('/view-doc') || loc == '/access-denied';
       if (isPublic) return null;
 
       final isAuth = authState.value ?? false;
@@ -225,6 +226,20 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/access-denied',
         builder: (context, state) => const AccessDeniedView(),
+      ),
+      // Root-level route for PIN Secure Document Gateway
+      GoRoute(
+        path: '/view-doc',
+        builder: (context, state) {
+          final pdfUrl = state.uri.queryParameters['url'] ?? '';
+          final pin = state.uri.queryParameters['pin'] ?? '';
+          final title = state.uri.queryParameters['title'] ?? 'Document Securizat';
+          return DocGatewayView(
+            pdfUrl: pdfUrl,
+            expectedPin: pin,
+            docTitle: title,
+          );
+        },
       ),
     ],
   );

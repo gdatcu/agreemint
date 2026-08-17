@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.47 Release Notes
+# 🚀 Agreemint v1.0.48 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,15 +19,14 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.47
+## 🎨 What's New in Version 1.0.48
 
-- 🔐 **Document Security PIN Notice across ALL Client Messages**:
-  - Dynamically extracts the student's phone PIN (e.g. `5678`) and attaches `🔐 *PIN Securitate Document:* Ultimele 4 cifre ale numărului tău de telefon (*5678*)` across **all shared client files**:
-    - 💳 **Receipts** (`buildReceiptShareMessage`)
-    - 📜 **Contracts** (`buildContractFollowUpMessage`)
-    - 📄 **SOLO Invoices & Reminders** (`buildReminderMessage`)
-- ♾️ **Permanent Unexpired Storage Links**:
-  - Guarantees 100% permanent access to all receipts, contracts, and invoices without link expiration errors.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.47` (`1.0.47+47`).
+- 🔐 **QualiAdept PIN Gateway Web Viewer**:
+  - Implemented public `/view-doc` web route (`DocGatewayView`) featuring 4-digit PIN verification.
+  - When clients click WhatsApp links for receipts, contracts, or invoices, they are prompted to enter the last 4 digits of their phone number (`9506`) before the PDF document renders!
+  - Displays instant error feedback if an incorrect PIN is entered (`❌ PIN incorect. Vă rugăm să introduceți ultimele 4 cifre ale numărului de telefon`).
+- 💬 **Integrated Gateway URLs in All Shared Messages**:
+  - Automatically wraps receipt, contract, and SOLO invoice links in `buildDocGatewayUrl` across all WhatsApp delivery templates.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.48` (`1.0.48+48`).
 
 
