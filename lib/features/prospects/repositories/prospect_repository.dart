@@ -148,7 +148,6 @@ class ProspectRepository {
         await _client.from('enrollments').insert({
           'student_id': studentId,
           'program_id': programId,
-          'created_at': now.toIso8601String(),
         });
       }
 

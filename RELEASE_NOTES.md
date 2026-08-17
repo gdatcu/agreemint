@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.40 Release Notes
+# 🚀 Agreemint v1.0.41 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,10 +19,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.40
+## 🎨 What's New in Version 1.0.41
 
-- 💡 **Smart Prospect-to-Student Conversion & Duplicate Email Resolution**:
-  - Implemented pre-insert lookup in `ProspectRepository.convertToStudent()`. If a student with matching email already exists in the roster, the app reuses their existing profile and enrolls them into the selected program cohort without triggering PostgreSQL `students_email_key` unique constraint errors.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.40` (`1.0.40+40`).
+- 🛠️ **Enrollments Schema Fix (`created_at` Column Resolution)**:
+  - Removed non-existent `'created_at'` key from `enrollments` insert payload in `ProspectRepository.convertToStudent()`.
+  - Matching `StudentRepository` schema (`student_id`, `program_id`), prospect conversions now execute with **100% clean PostgreSQL compatibility**.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.41` (`1.0.41+41`).
 
 
