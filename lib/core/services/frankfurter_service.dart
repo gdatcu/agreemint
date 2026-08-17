@@ -54,6 +54,9 @@ class FrankfurterService {
     } catch (_) {}
 
     // Fallback default BNR/ECB rate
-    return _cachedRate ?? 4.9750;
+    final fallbackRate = _cachedRate ?? 4.9750;
+    _cachedRate = fallbackRate;
+    _cacheTime = DateTime.now();
+    return fallbackRate;
   }
 }
