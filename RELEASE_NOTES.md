@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.45 Release Notes
+# 🚀 Agreemint v1.0.46 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,12 +19,13 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.45
+## 🎨 What's New in Version 1.0.46
 
-- 🔔 **Push Notification for Pending Receipts**:
-  - Automatically triggers a push notification (`🧾 Plată Înregistrată - Semnează Chitanța`) whenever an installment is marked as **Paid** until the receipt is signed and issued.
-- 💬 **1-Tap WhatsApp Receipt Share**:
-  - Integrated WhatsApp receipt sharing directly in the `ReceiptPreviewDialog` with polite, pre-formatted Romanian delivery template (Option A).
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.45` (`1.0.45+45`).
+- 📄 **Receipt PDF Link Included in WhatsApp Message**:
+  - Automatically attaches the direct public Supabase PDF link in WhatsApp receipt share messages (`📄 *Link Chitanță PDF:* https://...`).
+- 👁️ **1-Tap SOLO Invoice PDF Direct Preview**:
+  - Tapping the `📄 SOLO #123` badge now **directly opens/previews the invoice PDF** in a new browser tab/app.
+  - Added an explicit **`👁️ View / Open SOLO Invoice PDF`** button inside the SOLO modal dialog for 1-click previewing.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.46` (`1.0.46+46`).
 
 

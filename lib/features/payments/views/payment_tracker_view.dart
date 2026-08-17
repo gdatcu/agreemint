@@ -498,33 +498,49 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                     payment.externalInvoiceNumber!.isNotEmpty) ...[
                                   const SizedBox(width: 8),
                                   InkWell(
-                                    onTap: () => _showSoloInvoiceDialog(
+                                    onTap: () async {
+                                      if (payment.externalInvoiceUrl != null &&
+                                          payment.externalInvoiceUrl!.trim().isNotEmpty) {
+                                        final uri = Uri.parse(payment.externalInvoiceUrl!.trim());
+                                        if (await canLaunchUrl(uri)) {
+                                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                          return;
+                                        }
+                                      }
+                                      if (context.mounted) {
+                                        _showSoloInvoiceDialog(context, ref, payment);
+                                      }
+                                    },
+                                    onLongPress: () => _showSoloInvoiceDialog(
                                         context, ref, payment),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: Colors.blue.shade50,
-                                        borderRadius: BorderRadius.circular(4),
-                                        border: Border.all(
-                                            color: Colors.blue.shade300),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(Icons.description,
-                                              size: 11,
-                                              color: Colors.blue.shade700),
-                                          const SizedBox(width: 3),
-                                          Text(
-                                            'SOLO #${payment.externalInvoiceNumber}',
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.blue.shade800,
+                                    child: Tooltip(
+                                      message: 'Tap to view invoice | Long press to edit',
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue.shade50,
+                                          borderRadius: BorderRadius.circular(4),
+                                          border: Border.all(
+                                              color: Colors.blue.shade300),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.description,
+                                                size: 11,
+                                                color: Colors.blue.shade700),
+                                            const SizedBox(width: 3),
+                                            Text(
+                                              'SOLO #${payment.externalInvoiceNumber}',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.blue.shade800,
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -1029,6 +1045,28 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                     }
                   },
                 ),
+                if (payment.externalInvoiceUrl != null &&
+                    payment.externalInvoiceUrl!.trim().isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.picture_as_pdf),
+                    label: const Text('👁️ View / Open SOLO Invoice PDF'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue.shade800,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(44),
+                    ),
+                    onPressed: () async {
+                      final url = invoiceUrlController.text.trim();
+                      if (url.isNotEmpty) {
+                        final uri = Uri.parse(url);
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        }
+                      }
+                    },
+                  ),
+                ],
               ],
             ),
           ),
@@ -1416,6 +1454,8 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
         }
       }
 
+      String? currentReceiptUrl = payment.receiptUrl;
+
       // 2. Generate a new PDF if no existing PDF was retrieved
       if (pdfBytes == null) {
         final now = DateTime.now();
@@ -1435,7 +1475,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
 
         // Persist receipt PDF to Supabase Storage and database record
         try {
-          await ref.read(paymentRepositoryProvider).uploadReceiptPdf(
+          currentReceiptUrl = await ref.read(paymentRepositoryProvider).uploadReceiptPdf(
                 paymentId: payment.id,
                 enrollmentId: widget.enrollment.id,
                 pdfBytes: pdfBytes,
@@ -1461,7 +1501,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
             installmentNumber: installmentIndex,
             totalInstallments: totalInstallments,
             receiptNumber: receiptNumber,
-            receiptUrl: payment.receiptUrl,
+            receiptUrl: currentReceiptUrl,
             onSignReceipt: (signatureBytes) async {
               final signedPdfBytes = await ReceiptGeneratorService().generateReceiptPdf(
                 receiptNumber: receiptNumber,
@@ -1479,13 +1519,13 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
               );
 
               try {
-                await ref.read(paymentRepositoryProvider).uploadReceiptPdf(
+                final signedUrl = await ref.read(paymentRepositoryProvider).uploadReceiptPdf(
                       paymentId: payment.id,
                       enrollmentId: widget.enrollment.id,
                       pdfBytes: signedPdfBytes,
                       isSigned: true,
                     );
-
+                currentReceiptUrl = signedUrl;
                 // Refresh payments state so the tile updates to show Receipt Signed badge
                 ref.invalidate(enrollmentPaymentsControllerProvider(widget.enrollment.id));
               } catch (_) {}
