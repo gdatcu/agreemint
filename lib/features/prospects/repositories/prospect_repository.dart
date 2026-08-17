@@ -108,27 +108,49 @@ class ProspectRepository {
   }) async {
     try {
       final now = DateTime.now();
+      String? studentId;
 
-      // 1. Insert into students table
-      final studentRes = await _client
-          .from('students')
-          .insert({
-            'name': prospect.name,
-            'phone': prospect.phone,
-            'email': prospect.email,
-            'created_at': now.toIso8601String(),
-          })
-          .select()
-          .single();
+      // 1. Check if a student with matching email already exists
+      final emailToMatch = prospect.email?.trim();
+      if (emailToMatch != null && emailToMatch.isNotEmpty) {
+        final existing = await _client
+            .from('students')
+            .select('id')
+            .eq('email', emailToMatch);
+        if (existing is List && existing.isNotEmpty) {
+          studentId = existing.first['id'] as String;
+        }
+      }
 
-      final studentId = studentRes['id'] as String;
+      if (studentId == null) {
+        // Create new student
+        final studentRes = await _client
+            .from('students')
+            .insert({
+              'name': prospect.name,
+              'phone': prospect.phone,
+              'email': prospect.email,
+              'created_at': now.toIso8601String(),
+            })
+            .select()
+            .single();
+        studentId = studentRes['id'] as String;
+      }
 
-      // 2. Insert into enrollments table
-      await _client.from('enrollments').insert({
-        'student_id': studentId,
-        'program_id': programId,
-        'created_at': now.toIso8601String(),
-      });
+      // 2. Check if student is already enrolled in this program
+      final existingEnrollment = await _client
+          .from('enrollments')
+          .select('id')
+          .eq('student_id', studentId)
+          .eq('program_id', programId);
+
+      if (existingEnrollment is List && existingEnrollment.isEmpty) {
+        await _client.from('enrollments').insert({
+          'student_id': studentId,
+          'program_id': programId,
+          'created_at': now.toIso8601String(),
+        });
+      }
 
       // 3. Mark prospect status as Converted
       await _client
