@@ -18,6 +18,14 @@ subprojects {
     project.plugins.withId("com.android.library") {
         (project.extensions.getByName("android") as com.android.build.gradle.BaseExtension).compileSdkVersion(36)
     }
+
+    project.configurations.all {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "androidx.core" && requested.name == "core") {
+                useVersion("1.6.0")
+            }
+        }
+    }
 }
 
 subprojects {
