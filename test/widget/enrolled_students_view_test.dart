@@ -77,7 +77,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('John Signed'), findsOneWidget);
-      expect(find.text('Signed'), findsOneWidget);
+      expect(find.text('Signed'), findsWidgets);
       expect(find.byIcon(Icons.lock_outline), findsOneWidget);
       expect(find.byIcon(Icons.delete_outline), findsNothing);
     });

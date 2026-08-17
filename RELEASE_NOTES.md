@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.41 Release Notes
+# 🚀 Agreemint v1.0.43 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,11 +19,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.41
+## 🎨 What's New in Version 1.0.43
 
-- 🛠️ **Enrollments Schema Fix (`created_at` Column Resolution)**:
-  - Removed non-existent `'created_at'` key from `enrollments` insert payload in `ProspectRepository.convertToStudent()`.
-  - Matching `StudentRepository` schema (`student_id`, `program_id`), prospect conversions now execute with **100% clean PostgreSQL compatibility**.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.41` (`1.0.41+41`).
+- 📲 **Native In-App Automatic OTA APK Downloads & Android Installer**:
+  - Integrated `ota_update` with an in-app real-time progress dialog (`Downloading Update... XX%`).
+  - Automatically triggers the native Android Package Installer screen upon download completion—eliminating browser reliance and hung downloads!
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.43` (`1.0.43+43`).
 
 

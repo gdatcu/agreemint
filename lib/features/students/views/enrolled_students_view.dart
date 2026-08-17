@@ -7,19 +7,181 @@ import '../controllers/student_controller.dart';
 import '../models/enrollment_model.dart';
 import '../models/student_model.dart';
 
-class EnrolledStudentsView extends ConsumerWidget {
+class EnrolledStudentsView extends ConsumerStatefulWidget {
   final ProgramModel program;
 
   const EnrolledStudentsView({super.key, required this.program});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<EnrolledStudentsView> createState() =>
+      _EnrolledStudentsViewState();
+}
+
+class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
+  String _selectedFilter = 'All'; // 'All', 'Signed', 'Unsigned', 'Fully Paid', 'Retired'
+  String _selectedSort =
+      'Enrolled: Newest First'; // 'Enrolled: Newest First', 'Enrolled: Oldest First', 'Signed Date: Newest First', 'Name: A-Z'
+
+  List<EnrollmentModel> _filterAndSortEnrollments(
+      List<EnrollmentModel> enrollments) {
+    final list = enrollments.where((e) {
+      if (_selectedFilter == 'Signed') {
+        return e.isSignedByBeneficiary;
+      } else if (_selectedFilter == 'Unsigned') {
+        return !e.isSignedByBeneficiary && !e.isRetired;
+      } else if (_selectedFilter == 'Fully Paid') {
+        return e.isFullyPaid;
+      } else if (_selectedFilter == 'Retired') {
+        return e.isRetired;
+      }
+      return true;
+    }).toList();
+
+    list.sort((a, b) {
+      if (_selectedSort == 'Enrolled: Oldest First') {
+        final aDate = a.enrollmentDate ?? DateTime(1970);
+        final bDate = b.enrollmentDate ?? DateTime(1970);
+        return aDate.compareTo(bDate);
+      } else if (_selectedSort == 'Signed Date: Newest First') {
+        final aDate = a.signedDate ?? DateTime(1970);
+        final bDate = b.signedDate ?? DateTime(1970);
+        return bDate.compareTo(aDate);
+      } else if (_selectedSort == 'Name: A-Z') {
+        final aName = a.student?.name.toLowerCase() ?? '';
+        final bName = b.student?.name.toLowerCase() ?? '';
+        return aName.compareTo(bName);
+      } else {
+        // Enrolled: Newest First (default)
+        final aDate = a.enrollmentDate ?? DateTime(1970);
+        final bDate = b.enrollmentDate ?? DateTime(1970);
+        return bDate.compareTo(aDate);
+      }
+    });
+
+    return list;
+  }
+
+  Widget _buildSummaryHeader(List<EnrollmentModel> enrollments) {
+    final totalCount = enrollments.length;
+    final signedCount =
+        enrollments.where((e) => e.isSignedByBeneficiary).length;
+    final fullyPaidCount = enrollments.where((e) => e.isFullyPaid).length;
+    final retiredCount = enrollments.where((e) => e.isRetired).length;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: [
+          _buildStatCard('Total', '$totalCount', Icons.people_alt, Colors.blue),
+          const SizedBox(width: 6),
+          _buildStatCard('Signed', '$signedCount', Icons.verified, Colors.green),
+          const SizedBox(width: 6),
+          _buildStatCard('Fully Paid', '$fullyPaidCount', Icons.payments, Colors.teal),
+          const SizedBox(width: 6),
+          _buildStatCard('Retired', '$retiredCount', Icons.replay_rounded, Colors.orange),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(
+      String label, String value, IconData icon, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        decoration: BoxDecoration(
+          color: color.withAlpha(isDark ? 30 : 15),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withAlpha(80)),
+        ),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 14, color: color),
+                const SizedBox(width: 4),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? color : color.withAlpha(220),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white70 : Colors.black87,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label) {
+    final selected = _selectedFilter == label;
+    return FilterChip(
+      label: Text(label, style: const TextStyle(fontSize: 11)),
+      selected: selected,
+      showCheckmark: false,
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      visualDensity: VisualDensity.compact,
+      onSelected: (_) {
+        setState(() {
+          _selectedFilter = label;
+        });
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final enrollmentsAsync =
-        ref.watch(programEnrollmentsControllerProvider(program.id));
+        ref.watch(programEnrollmentsControllerProvider(widget.program.id));
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${program.name} - Students'),
+        title: Text('${widget.program.name} - Students'),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.sort_rounded),
+            tooltip: 'Sort Students',
+            onSelected: (val) {
+              setState(() {
+                _selectedSort = val;
+              });
+            },
+            itemBuilder: (ctx) => const [
+              PopupMenuItem(
+                value: 'Enrolled: Newest First',
+                child: Text('Enrolled: Newest First'),
+              ),
+              PopupMenuItem(
+                value: 'Enrolled: Oldest First',
+                child: Text('Enrolled: Oldest First'),
+              ),
+              PopupMenuItem(
+                value: 'Signed Date: Newest First',
+                child: Text('Signed Date: Newest First'),
+              ),
+              PopupMenuItem(
+                value: 'Name: A-Z',
+                child: Text('Name: A-Z'),
+              ),
+            ],
+          ),
+        ],
       ),
       body: enrollmentsAsync.when(
         data: (enrollments) {
@@ -52,247 +214,302 @@ class EnrolledStudentsView extends ConsumerWidget {
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: enrollments.length,
-            itemBuilder: (context, index) {
-              final enrollment = enrollments[index];
-              final student = enrollment.student;
+          final filtered = _filterAndSortEnrollments(enrollments);
 
-              if (student == null) return const SizedBox.shrink();
+          return Column(
+            children: [
+              // Summary Header Cards
+              _buildSummaryHeader(enrollments),
 
-              final d = enrollment.enrollmentDate;
-              final dateStr = d != null
-                  ? '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}'
-                  : 'N/A';
-
-              final canDelete = enrollment.canBeDeleted;
-
-              return Card(
-                elevation: 1,
-                margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  leading: CircleAvatar(
-                    backgroundColor:
-                        Theme.of(context).colorScheme.primaryContainer,
-                    child: Text(
-                      student.name.isNotEmpty
-                          ? student.name[0].toUpperCase()
-                          : 'S',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.bold,
+              // Filter Chips & Sort Info Row
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _buildFilterChip('All'),
+                            const SizedBox(width: 6),
+                            _buildFilterChip('Signed'),
+                            const SizedBox(width: 6),
+                            _buildFilterChip('Unsigned'),
+                            const SizedBox(width: 6),
+                            _buildFilterChip('Fully Paid'),
+                            const SizedBox(width: 6),
+                            _buildFilterChip('Retired'),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  title: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          student.name,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                      ),
-                      if (student.clientType != 'PF')
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: Colors.blue.shade200),
-                          ),
-                          child: Text(
-                            student.clientType,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue.shade900,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(Icons.email_outlined,
-                              size: 14,
-                              color: Theme.of(context).colorScheme.outline),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              student.email,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (student.phone != null &&
-                          student.phone!.isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Icon(Icons.phone_outlined,
-                                size: 14,
-                                color: Theme.of(context).colorScheme.outline),
-                            const SizedBox(width: 6),
-                            Text(
-                              student.phone!,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                          ],
-                        ),
-                      ],
-                      if (student.cui != null && student.cui!.isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Icon(Icons.business_outlined,
-                                size: 14,
-                                color: Theme.of(context).colorScheme.outline),
-                            const SizedBox(width: 6),
-                            Text(
-                              'CUI: ${student.cui}',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
-                        ),
-                      ],
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Text(
-                            'Enrolled: $dateStr',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.secondary,
-                                ),
-                          ),
-                          if (enrollment.contract?.status == 'Refunded' ||
-                              enrollment.contract?.status == 'Cancelled') ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.amber.shade50,
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(color: Colors.amber.shade300),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.replay_rounded,
-                                      size: 11, color: Colors.amber.shade900),
-                                  const SizedBox(width: 3),
-                                  Text(
-                                    'Refunded',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.amber.shade900,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ] else if (!canDelete) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.green.shade50,
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(color: Colors.green.shade200),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.verified,
-                                      size: 11, color: Colors.green.shade700),
-                                  const SizedBox(width: 3),
-                                  Text(
-                                    'Signed',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.green.shade800,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ],
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.description_outlined),
-                        tooltip: 'Manage Contract',
-                        onPressed: () {
-                          context.go(
-                              '/programs/${program.id}/students/contract',
-                              extra: enrollment);
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.payment_outlined),
-                        tooltip: 'Payments',
-                        onPressed: () {
-                          context.go(
-                              '/programs/${program.id}/students/payments',
-                              extra: enrollment);
-                        },
-                      ),
-                      if (enrollment.contract?.status != 'Refunded' &&
-                          enrollment.contract?.status != 'Cancelled')
-                        IconButton(
-                          icon: Icon(Icons.currency_exchange_outlined,
-                              color: Colors.orange.shade700),
-                          tooltip: 'Refund & Retire Client',
-                          onPressed: () => _showRefundDialog(
-                              context, ref, enrollment, student),
-                        ),
-                      if (canDelete)
-                        IconButton(
-                          icon: Icon(Icons.delete_outline,
-                              color: Colors.red.shade400),
-                          tooltip: 'Delete Student',
-                          onPressed: () => _showDeleteConfirmationDialog(
-                              context, ref, enrollment, student),
-                        )
-                      else
-                        IconButton(
-                          icon: Icon(Icons.lock_outline,
-                              color: Colors.grey.shade400),
-                          tooltip: 'Cannot delete: Active signed contract',
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    'Cannot delete student while contract is active. Process a refund/cancellation first.'),
-                                backgroundColor: Colors.orange,
-                              ),
-                            );
-                          },
-                        ),
-                    ],
-                  ),
+                  ],
                 ),
-              );
-            },
+              ),
+
+              const Divider(height: 1),
+
+              // Student List
+              Expanded(
+                child: filtered.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No students matching "$_selectedFilter" filter.',
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.outline),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(12),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final enrollment = filtered[index];
+                          final student = enrollment.student;
+
+                          if (student == null) return const SizedBox.shrink();
+
+                          final d = enrollment.enrollmentDate;
+                          final dateStr = d != null
+                              ? '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}'
+                              : 'N/A';
+
+                          final canDelete = enrollment.canBeDeleted;
+                          final isSigned = enrollment.isSignedByBeneficiary;
+                          final isFullyPaid = enrollment.isFullyPaid;
+                          final payments = enrollment.payments ?? [];
+
+                          return Card(
+                            elevation: 1,
+                            margin: const EdgeInsets.only(bottom: 10),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 6),
+                              leading: CircleAvatar(
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .primaryContainer,
+                                child: Text(
+                                  student.name.isNotEmpty
+                                      ? student.name[0].toUpperCase()
+                                      : 'S',
+                                  style: TextStyle(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimaryContainer,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              title: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      student.name,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                  ),
+                                  if (student.clientType != 'PF') ...[
+                                    const SizedBox(width: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue.shade50,
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(
+                                            color: Colors.blue.shade200),
+                                      ),
+                                      child: Text(
+                                        student.clientType,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.blue.shade900,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.email_outlined,
+                                          size: 13,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .outline),
+                                      const SizedBox(width: 5),
+                                      Expanded(
+                                        child: Text(
+                                          student.email,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (student.phone != null &&
+                                      student.phone!.isNotEmpty) ...[
+                                    const SizedBox(height: 2),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.phone_outlined,
+                                            size: 13,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .outline),
+                                        const SizedBox(width: 5),
+                                        Text(
+                                          student.phone!,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                  const SizedBox(height: 6),
+
+                                  // Status Badges Row (Contract + Payments)
+                                  Wrap(
+                                    spacing: 6,
+                                    runSpacing: 4,
+                                    children: [
+                                      Text(
+                                        'Enrolled: $dateStr',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelSmall
+                                            ?.copyWith(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary,
+                                            ),
+                                      ),
+
+                                      // Contract Badge
+                                      if (enrollment.isRetired)
+                                        _buildBadge(
+                                          icon: Icons.replay_rounded,
+                                          label: 'Retired',
+                                          bgColor: Colors.amber.shade50,
+                                          borderColor: Colors.amber.shade300,
+                                          textColor: Colors.amber.shade900,
+                                        )
+                                      else if (isSigned)
+                                        _buildBadge(
+                                          icon: Icons.verified,
+                                          label: 'Signed',
+                                          bgColor: Colors.green.shade50,
+                                          borderColor: Colors.green.shade200,
+                                          textColor: Colors.green.shade800,
+                                        )
+                                      else
+                                        _buildBadge(
+                                          icon: Icons.hourglass_empty,
+                                          label: 'Unsigned',
+                                          bgColor: Colors.orange.shade50,
+                                          borderColor: Colors.orange.shade200,
+                                          textColor: Colors.orange.shade900,
+                                        ),
+
+                                      // Payment Status Badge
+                                      if (isFullyPaid)
+                                        _buildBadge(
+                                          icon: Icons.check_circle_outline,
+                                          label: 'Fully Paid',
+                                          bgColor: Colors.teal.shade50,
+                                          borderColor: Colors.teal.shade200,
+                                          textColor: Colors.teal.shade900,
+                                        )
+                                      else if (payments.isNotEmpty)
+                                        _buildBadge(
+                                          icon: Icons.payments_outlined,
+                                          label:
+                                              '${enrollment.paidInstallmentsCount}/${payments.length} Paid',
+                                          bgColor: Colors.purple.shade50,
+                                          borderColor: Colors.purple.shade200,
+                                          textColor: Colors.purple.shade900,
+                                        ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.description_outlined),
+                                    tooltip: 'Manage Contract',
+                                    onPressed: () {
+                                      context.go(
+                                          '/programs/${widget.program.id}/students/contract',
+                                          extra: enrollment);
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.payment_outlined),
+                                    tooltip: 'Payments',
+                                    onPressed: () {
+                                      context.go(
+                                          '/programs/${widget.program.id}/students/payments',
+                                          extra: enrollment);
+                                    },
+                                  ),
+                                  if (enrollment.contract?.status != 'Refunded' &&
+                                      enrollment.contract?.status != 'Cancelled')
+                                    IconButton(
+                                      icon: Icon(Icons.currency_exchange_outlined,
+                                          color: Colors.orange.shade700),
+                                      tooltip: 'Refund & Retire Client',
+                                      onPressed: () => _showRefundDialog(
+                                          context, ref, enrollment, student),
+                                    ),
+                                  if (canDelete)
+                                    IconButton(
+                                      icon: Icon(Icons.delete_outline,
+                                          color: Colors.red.shade400),
+                                      tooltip: 'Delete Student',
+                                      onPressed: () =>
+                                          _showDeleteConfirmationDialog(
+                                              context, ref, enrollment, student),
+                                    )
+                                  else
+                                    IconButton(
+                                      icon: Icon(Icons.lock_outline,
+                                          color: Colors.grey.shade400),
+                                      tooltip:
+                                          'Cannot delete: Active signed contract',
+                                      onPressed: () {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'Cannot delete student while contract is active. Process a refund/cancellation first.'),
+                                            backgroundColor: Colors.orange,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -324,7 +541,7 @@ class EnrolledStudentsView extends ConsumerWidget {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.invalidate(
-                    programEnrollmentsControllerProvider(program.id)),
+                    programEnrollmentsControllerProvider(widget.program.id)),
                 child: const Text('Retry'),
               ),
             ],
@@ -339,6 +556,38 @@ class EnrolledStudentsView extends ConsumerWidget {
     );
   }
 
+  Widget _buildBadge({
+    required IconData icon,
+    required String label,
+    required Color bgColor,
+    required Color borderColor,
+    required Color textColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: borderColor),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 11, color: textColor),
+          const SizedBox(width: 3),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showRefundDialog(
     BuildContext context,
     WidgetRef ref,
@@ -346,7 +595,7 @@ class EnrolledStudentsView extends ConsumerWidget {
     StudentModel student,
   ) {
     final formKey = GlobalKey<FormState>();
-    final initialPrice = program.totalPrice;
+    final initialPrice = widget.program.totalPrice;
     final reasonController = TextEditingController(
         text: 'Client requested withdrawal / refund within guarantee period.');
     final amountController =
@@ -375,12 +624,12 @@ class EnrolledStudentsView extends ConsumerWidget {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  Text('Program: ${program.name}'),
+                  Text('Program: ${widget.program.name}'),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: amountController,
                     decoration: InputDecoration(
-                      labelText: 'Refund Amount (${program.currency})',
+                      labelText: 'Refund Amount (${widget.program.currency})',
                       prefixIcon: const Icon(Icons.attach_money),
                     ),
                     keyboardType:
@@ -439,7 +688,7 @@ class EnrolledStudentsView extends ConsumerWidget {
                       );
 
                   ref.invalidate(
-                      programEnrollmentsControllerProvider(program.id));
+                      programEnrollmentsControllerProvider(widget.program.id));
 
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -480,7 +729,7 @@ class EnrolledStudentsView extends ConsumerWidget {
             ],
           ),
           content: Text(
-            'Are you sure you want to delete ${student.name} (${student.email}) from ${program.name}?\n\nThis will remove their enrollment and any unsigned contract.',
+            'Are you sure you want to delete ${student.name} (${student.email}) from ${widget.program.name}?\n\nThis will remove their enrollment and any unsigned contract.',
           ),
           actions: [
             TextButton(
@@ -495,7 +744,7 @@ class EnrolledStudentsView extends ConsumerWidget {
               onPressed: () async {
                 Navigator.of(context).pop();
                 await ref
-                    .read(programEnrollmentsControllerProvider(program.id)
+                    .read(programEnrollmentsControllerProvider(widget.program.id)
                         .notifier)
                     .removeStudentEnrollment(
                       enrollmentId: enrollment.id,
@@ -568,17 +817,13 @@ class EnrolledStudentsView extends ConsumerWidget {
                       ),
                       TextFormField(
                         controller: nameController,
-                        decoration: InputDecoration(
-                          labelText: clientType == 'PF'
-                              ? 'Full Name'
-                              : 'Company / PFA Name',
-                          hintText: clientType == 'PF'
-                              ? 'e.g., Jane Doe'
-                              : 'e.g., Acme Tech PFA / SRL',
+                        decoration: const InputDecoration(
+                          labelText: 'Full Name *',
+                          prefixIcon: Icon(Icons.person),
                         ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Please enter name';
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return 'Please enter student name';
                           }
                           return null;
                         },
@@ -587,17 +832,15 @@ class EnrolledStudentsView extends ConsumerWidget {
                       TextFormField(
                         controller: emailController,
                         decoration: const InputDecoration(
-                          labelText: 'Email Address',
-                          hintText: 'e.g., jane.doe@example.com',
+                          labelText: 'Email Address *',
+                          prefixIcon: Icon(Icons.email),
                         ),
                         keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Please enter email';
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return 'Please enter email address';
                           }
-                          final emailRegExp =
-                              RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                          if (!emailRegExp.hasMatch(value.trim())) {
+                          if (!val.contains('@')) {
                             return 'Please enter a valid email address';
                           }
                           return null;
@@ -608,25 +851,18 @@ class EnrolledStudentsView extends ConsumerWidget {
                         controller: phoneController,
                         decoration: const InputDecoration(
                           labelText: 'Phone Number (Optional)',
-                          hintText: 'e.g., +15551234567',
+                          prefixIcon: Icon(Icons.phone),
                         ),
                         keyboardType: TextInputType.phone,
                       ),
-                      if (clientType != 'PF') ...[
+                      if (clientType == 'PFA') ...[
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: cuiController,
                           decoration: const InputDecoration(
-                            labelText: 'CUI / CIF',
+                            labelText: 'CUI / CIF (Optional)',
                             hintText: 'e.g., RO12345678',
                           ),
-                          validator: (value) {
-                            if (clientType != 'PF' &&
-                                (value == null || value.trim().isEmpty)) {
-                              return 'Please enter CUI / CIF for PFA / Company';
-                            }
-                            return null;
-                          },
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
@@ -666,7 +902,7 @@ class EnrolledStudentsView extends ConsumerWidget {
                       final billingAddress = billingAddressController.text.trim();
 
                       await ref
-                          .read(programEnrollmentsControllerProvider(program.id)
+                          .read(programEnrollmentsControllerProvider(widget.program.id)
                               .notifier)
                           .addAndEnrollStudent(
                             name: name,

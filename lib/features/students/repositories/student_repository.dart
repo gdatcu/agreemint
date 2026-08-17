@@ -16,7 +16,7 @@ class StudentRepository {
     try {
       final response = await _client
           .from('enrollments')
-          .select('*, students(*), programs(*), contracts(*)')
+          .select('*, students(*), programs(*), contracts(*), payments(*)')
           .eq('program_id', programId)
           .order('enrollment_date', ascending: false);
 

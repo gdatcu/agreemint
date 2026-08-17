@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:ota_update/ota_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -195,60 +196,98 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
 
     if (kIsWeb) {
       AppUpdateService.launchUpdate(_updateInfo!.releaseUrl);
-    } else {
-      // Launch APK download
-      final launched = await AppUpdateService.launchUpdate(_updateInfo!.apkDownloadUrl);
-      if (!launched) {
-        // Fallback to opening GitHub Release Page
-        AppUpdateService.launchUpdate(_updateInfo!.releaseUrl);
-      }
+      return;
+    }
 
-      if (!mounted) return;
+    int progress = 0;
+    String statusMessage = 'Downloading update package...';
+    bool isFailed = false;
 
-      // Show clear guidance dialog for Android installation
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          icon: const Icon(Icons.download_for_offline, size: 40, color: Colors.deepPurple),
-          title: Text('Updating to ${_updateInfo!.latestVersion}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '1. Download APK from browser or GitHub Release page.',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
-              const Text('2. Tap the completed download or open your device Downloads folder to install.'),
-              const SizedBox(height: 12),
-              const Divider(),
-              const SizedBox(height: 8),
-              const Text(
-                '⚠️ "App Not Installed" Note:',
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepOrange),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'If you previously installed a debug build via USB/Flutter CLI, uninstall the existing app first so Android allows installing the signed release APK.',
-                style: TextStyle(fontSize: 13, color: Colors.black87),
-              ),
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          return AlertDialog(
+            icon: const Icon(Icons.system_update_rounded, size: 40, color: Colors.deepPurple),
+            title: Text('Updating to ${_updateInfo!.latestVersion}'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (!isFailed) ...[
+                  LinearProgressIndicator(
+                    value: progress > 0 ? progress / 100.0 : null,
+                    color: Colors.deepPurple,
+                    backgroundColor: Colors.deepPurple.shade50,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '$progress%',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    statusMessage,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 13, color: Colors.black87),
+                  ),
+                ] else ...[
+                  const Text(
+                    'Direct in-app download was interrupted. Tap "Open Release Page" to download manually.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 13, color: Colors.deepOrange),
+                  ),
+                ],
+              ],
+            ),
+            actions: [
+              if (isFailed)
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(dialogCtx).pop();
+                    AppUpdateService.launchUpdate(_updateInfo!.releaseUrl);
+                  },
+                  child: const Text('Open Release Page'),
+                ),
+              if (!isFailed)
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(dialogCtx).pop();
+                  },
+                  child: const Text('Cancel'),
+                ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                AppUpdateService.launchUpdate(_updateInfo!.releaseUrl);
-              },
-              child: const Text('Open Release Page'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('OK, Got It'),
-            ),
-          ],
-        ),
-      );
+          );
+        },
+      ),
+    );
+
+    try {
+      OtaUpdate().execute(
+        _updateInfo!.apkDownloadUrl,
+        destinationFilename: 'agreemint_update.apk',
+      ).listen((OtaEvent event) {
+        if (!mounted) return;
+        if (event.status == OtaStatus.DOWNLOADING) {
+          final p = int.tryParse(event.value ?? '0') ?? 0;
+          progress = p;
+          statusMessage = 'Downloading update package... ($progress%)';
+        } else if (event.status == OtaStatus.INSTALLING) {
+          progress = 100;
+          statusMessage = 'Launching Android Package Installer...';
+        } else if (event.status == OtaStatus.ALREADY_RUNNING_ERROR ||
+            event.status == OtaStatus.PERMISSION_NOT_GRANTED_ERROR ||
+            event.status == OtaStatus.INTERNAL_ERROR ||
+            event.status == OtaStatus.DOWNLOAD_ERROR) {
+          isFailed = true;
+          statusMessage = 'Direct download failed: ${event.status}';
+        }
+      }, onError: (e) {
+        isFailed = true;
+        statusMessage = 'Error during update: $e';
+      });
+    } catch (e) {
+      AppUpdateService.launchUpdate(_updateInfo!.apkDownloadUrl);
     }
   }
 

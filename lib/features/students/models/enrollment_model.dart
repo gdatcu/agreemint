@@ -1,6 +1,7 @@
 import 'student_model.dart';
 import '../../programs/models/program_model.dart';
 import '../../contracts/models/contract_model.dart';
+import '../../payments/models/payment_model.dart';
 
 class EnrollmentModel {
   final String id;
@@ -10,6 +11,7 @@ class EnrollmentModel {
   final StudentModel? student;
   final ProgramModel? program;
   final ContractModel? contract;
+  final List<PaymentModel>? payments;
 
   const EnrollmentModel({
     required this.id,
@@ -19,6 +21,7 @@ class EnrollmentModel {
     this.student,
     this.program,
     this.contract,
+    this.payments,
   });
 
   /// True if the contract has been signed by the student / beneficiary and is active.
@@ -32,17 +35,51 @@ class EnrollmentModel {
         contract!.clientSignedDate != null;
   }
 
+  /// True if the contract status is Refunded or Cancelled.
+  bool get isRetired =>
+      contract?.status == 'Refunded' || contract?.status == 'Cancelled';
+
+  /// Returns date contract was signed or updated.
+  DateTime? get signedDate {
+    if (contract == null) return null;
+    return contract!.clientSignedDate ?? contract!.createdDate;
+  }
+
+  /// True if payments list exists, is non-empty, and all installments are Paid.
+  bool get isFullyPaid {
+    if (payments == null || payments!.isEmpty) return false;
+    return payments!.every((p) => p.status == 'Paid');
+  }
+
+  /// Number of paid installments.
+  int get paidInstallmentsCount {
+    if (payments == null) return 0;
+    return payments!.where((p) => p.status == 'Paid').length;
+  }
+
+  /// Total amount paid so far.
+  double get totalPaidAmount {
+    if (payments == null) return 0.0;
+    return payments!
+        .where((p) => p.status == 'Paid')
+        .fold(0.0, (sum, p) => sum + p.amountPaid);
+  }
+
+  /// Total sum of all scheduled installments.
+  double get totalPaymentsAmount {
+    if (payments == null) return 0.0;
+    return payments!.fold(0.0, (sum, p) => sum + p.amountDue);
+  }
+
   /// A student can be deleted if the contract has NOT been signed by the beneficiary yet or is refunded/cancelled.
   bool get canBeDeleted {
     if (contract == null) return true;
-    if (contract!.status == 'Refunded' || contract!.status == 'Cancelled') {
-      return true;
-    }
+    if (isRetired) return true;
     return !isSignedByBeneficiary;
   }
 
   /// Factory constructor to parse PostgreSQL json results cleanly and defensively.
-  /// Handles nested `students`, `programs`, and `contracts` objects from relational joins.
+  /// Handles nested `students`, `programs`, `contracts`, and `payments` objects from relational joins.
   factory EnrollmentModel.fromJson(Map<String, dynamic> json) {
     final studentRaw = json['students'];
     Map<String, dynamic>? studentJson;
@@ -68,6 +105,14 @@ class EnrollmentModel {
       contractJson = contractRaw.first as Map<String, dynamic>?;
     }
 
+    final paymentsRaw = json['payments'];
+    List<PaymentModel>? paymentsList;
+    if (paymentsRaw is List) {
+      paymentsList = paymentsRaw
+          .map((e) => PaymentModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+
     return EnrollmentModel(
       id: json['id'] as String? ?? '',
       programId: json['program_id'] as String? ?? '',
@@ -78,6 +123,7 @@ class EnrollmentModel {
       student: studentJson != null ? StudentModel.fromJson(studentJson) : null,
       program: programJson != null ? ProgramModel.fromJson(programJson) : null,
       contract: contractJson != null ? ContractModel.fromJson(contractJson) : null,
+      payments: paymentsList,
     );
   }
 
@@ -92,6 +138,7 @@ class EnrollmentModel {
       if (student != null) 'students': student?.toJson(),
       if (program != null) 'programs': program?.toJson(),
       if (contract != null) 'contracts': contract?.toJson(),
+      if (payments != null) 'payments': payments?.map((p) => p.toJson()).toList(),
     };
   }
 }
