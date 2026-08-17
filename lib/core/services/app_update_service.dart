@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:ota_update/ota_update.dart';
+import 'package:open_file_plus/open_file_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -200,8 +202,11 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
     }
 
     int progress = 0;
-    String statusMessage = 'Downloading update package...';
+    String statusMessage = 'Connecting to download server...';
     bool isFailed = false;
+    bool isComplete = false;
+    bool isCancelled = false;
+    http.Client? client;
 
     showDialog(
       context: context,
@@ -209,12 +214,16 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
       builder: (dialogCtx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
           return AlertDialog(
-            icon: const Icon(Icons.system_update_rounded, size: 40, color: Colors.deepPurple),
-            title: Text('Updating to ${_updateInfo!.latestVersion}'),
+            icon: Icon(
+              isComplete ? Icons.check_circle_outline : Icons.system_update_rounded,
+              size: 40,
+              color: isComplete ? Colors.green : Colors.deepPurple,
+            ),
+            title: Text(isComplete ? 'Download Complete' : 'Updating to ${_updateInfo!.latestVersion}'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (!isFailed) ...[
+                if (!isFailed && !isComplete) ...[
                   LinearProgressIndicator(
                     value: progress > 0 ? progress / 100.0 : null,
                     color: Colors.deepPurple,
@@ -223,7 +232,7 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
                   const SizedBox(height: 16),
                   Text(
                     '$progress%',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -231,11 +240,19 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 13, color: Colors.black87),
                   ),
-                ] else ...[
+                ] else if (isComplete) ...[
                   const Text(
-                    'Direct in-app download was interrupted. Tap "Open Release Page" to download manually.',
+                    'Update downloaded! Launching Android Package Installer...',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13, color: Colors.deepOrange),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.green),
+                  ),
+                ] else ...[
+                  Text(
+                    statusMessage.isNotEmpty
+                        ? statusMessage
+                        : 'Direct in-app download was interrupted. Tap "Open Release Page" to download manually.',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 13, color: Colors.deepOrange),
                   ),
                 ],
               ],
@@ -249,9 +266,11 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
                   },
                   child: const Text('Open Release Page'),
                 ),
-              if (!isFailed)
+              if (!isComplete)
                 TextButton(
                   onPressed: () {
+                    isCancelled = true;
+                    client?.close();
                     Navigator.of(dialogCtx).pop();
                   },
                   child: const Text('Cancel'),
@@ -263,31 +282,58 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
     );
 
     try {
-      OtaUpdate().execute(
-        _updateInfo!.apkDownloadUrl,
-        destinationFilename: 'agreemint_update.apk',
-      ).listen((OtaEvent event) {
-        if (!mounted) return;
-        if (event.status == OtaStatus.DOWNLOADING) {
-          final p = int.tryParse(event.value ?? '0') ?? 0;
-          progress = p;
-          statusMessage = 'Downloading update package... ($progress%)';
-        } else if (event.status == OtaStatus.INSTALLING) {
-          progress = 100;
-          statusMessage = 'Launching Android Package Installer...';
-        } else if (event.status == OtaStatus.ALREADY_RUNNING_ERROR ||
-            event.status == OtaStatus.PERMISSION_NOT_GRANTED_ERROR ||
-            event.status == OtaStatus.INTERNAL_ERROR ||
-            event.status == OtaStatus.DOWNLOAD_ERROR) {
-          isFailed = true;
-          statusMessage = 'Direct download failed: ${event.status}';
+      client = http.Client();
+      final request = http.Request('GET', Uri.parse(_updateInfo!.apkDownloadUrl));
+      final response = await client.send(request);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final totalBytes = response.contentLength ?? 0;
+        int receivedBytes = 0;
+
+        final tempDir = await getTemporaryDirectory();
+        final filePath = '${tempDir.path}/agreemint_update.apk';
+        final file = File(filePath);
+        final sink = file.openWrite();
+
+        await for (final chunk in response.stream) {
+          if (isCancelled) {
+            await sink.close();
+            if (await file.exists()) await file.delete();
+            return;
+          }
+          sink.add(chunk);
+          receivedBytes += chunk.length;
+          if (totalBytes > 0) {
+            final p = ((receivedBytes / totalBytes) * 100).clamp(0, 100).toInt();
+            final mbReceived = (receivedBytes / (1024 * 1024)).toStringAsFixed(1);
+            final mbTotal = (totalBytes / (1024 * 1024)).toStringAsFixed(1);
+            progress = p;
+            statusMessage = 'Downloading: $mbReceived MB / $mbTotal MB ($p%)';
+          } else {
+            final mbReceived = (receivedBytes / (1024 * 1024)).toStringAsFixed(1);
+            statusMessage = 'Downloaded $mbReceived MB...';
+          }
         }
-      }, onError: (e) {
+
+        await sink.flush();
+        await sink.close();
+
+        if (!isCancelled) {
+          isComplete = true;
+          statusMessage = 'Triggering Android Installer...';
+          await OpenFile.open(filePath, type: 'application/vnd.android.package-archive');
+        }
+      } else {
         isFailed = true;
-        statusMessage = 'Error during update: $e';
-      });
+        statusMessage = 'Download failed with status: ${response.statusCode}';
+      }
     } catch (e) {
-      AppUpdateService.launchUpdate(_updateInfo!.apkDownloadUrl);
+      if (!isCancelled) {
+        isFailed = true;
+        statusMessage = 'Download interrupted: $e';
+      }
+    } finally {
+      client?.close();
     }
   }
 
