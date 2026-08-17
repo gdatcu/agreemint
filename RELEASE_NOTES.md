@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.36 Release Notes
+# 🚀 Agreemint v1.0.37 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,12 +19,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.36
+## 🎨 What's New in Version 1.0.37
 
-- 🔤 **English Follow-Up Button**:
-  - Updated button label in `UnsignedContractsView` to **Send WhatsApp Follow-Up**.
-- 👋 **Client Welcome & Guidance Onboarding Banner**:
-  - Added a warm, welcoming onboarding card on the `QualiAdept — Client Contract Signing` portal guiding new clients on verifying their email and adding their signature.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.36` (`1.0.36+36`).
+- 👋 **Personalised Client Welcome Greeting**:
+  - Dynamically extracts the client's name from contract records to greet each client personally on the signing portal (`👋 Bine ai venit în comunitatea QualiAdept, [Nume Cursant]!`).
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.37` (`1.0.37+37`).
 
 

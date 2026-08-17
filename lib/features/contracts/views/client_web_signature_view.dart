@@ -541,6 +541,10 @@ class _ClientWebSignatureViewState
   }
 
   Widget _buildEmailVerificationGate(ThemeData theme) {
+    final clientName = (_contract?.details?['student_name'] as String?)?.trim() ??
+        _contract?.enrollment?.student?.name.trim();
+    final greetingSuffix = (clientName != null && clientName.isNotEmpty) ? ', $clientName' : '';
+
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
@@ -566,7 +570,7 @@ class _ClientWebSignatureViewState
                     child: Column(
                       children: [
                         Text(
-                          '👋 Bine ai venit în comunitatea QualiAdept!',
+                          '👋 Bine ai venit în comunitatea QualiAdept$greetingSuffix!',
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Colors.blue.shade900,
