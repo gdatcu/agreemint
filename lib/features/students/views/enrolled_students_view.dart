@@ -31,6 +31,10 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
         return !e.isSignedByBeneficiary && !e.isRetired;
       } else if (_selectedFilter == 'Fully Paid') {
         return e.isFullyPaid;
+      } else if (_selectedFilter == 'No Plan') {
+        return !e.hasPaymentPlan;
+      } else if (_selectedFilter == 'Missing SOLO') {
+        return e.hasMissingSoloInvoice;
       } else if (_selectedFilter == 'Retired') {
         return e.isRetired;
       }
@@ -65,6 +69,7 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
     final totalCount = enrollments.length;
     final signedCount =
         enrollments.where((e) => e.isSignedByBeneficiary).length;
+    final noPlanCount = enrollments.where((e) => !e.hasPaymentPlan).length;
     final fullyPaidCount = enrollments.where((e) => e.isFullyPaid).length;
     final retiredCount = enrollments.where((e) => e.isRetired).length;
 
@@ -73,11 +78,13 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
       child: Row(
         children: [
           _buildStatCard('Total', '$totalCount', Icons.people_alt, Colors.blue),
-          const SizedBox(width: 6),
+          const SizedBox(width: 4),
           _buildStatCard('Signed', '$signedCount', Icons.verified, Colors.green),
-          const SizedBox(width: 6),
+          const SizedBox(width: 4),
+          _buildStatCard('No Plan', '$noPlanCount', Icons.warning_amber_rounded, Colors.red),
+          const SizedBox(width: 4),
           _buildStatCard('Fully Paid', '$fullyPaidCount', Icons.payments, Colors.teal),
-          const SizedBox(width: 6),
+          const SizedBox(width: 4),
           _buildStatCard('Retired', '$retiredCount', Icons.replay_rounded, Colors.orange),
         ],
       ),
@@ -236,6 +243,10 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                             _buildFilterChip('Signed'),
                             const SizedBox(width: 6),
                             _buildFilterChip('Unsigned'),
+                            const SizedBox(width: 6),
+                            _buildFilterChip('No Plan'),
+                            const SizedBox(width: 6),
+                            _buildFilterChip('Missing SOLO'),
                             const SizedBox(width: 6),
                             _buildFilterChip('Fully Paid'),
                             const SizedBox(width: 6),
@@ -441,6 +452,24 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                           bgColor: Colors.purple.shade50,
                                           borderColor: Colors.purple.shade200,
                                           textColor: Colors.purple.shade900,
+                                        )
+                                      else
+                                        _buildBadge(
+                                          icon: Icons.warning_amber_rounded,
+                                          label: 'No Payment Plan',
+                                          bgColor: Colors.red.shade50,
+                                          borderColor: Colors.red.shade300,
+                                          textColor: Colors.red.shade900,
+                                        ),
+
+                                      // Missing SOLO Invoice Badge
+                                      if (enrollment.hasMissingSoloInvoice)
+                                        _buildBadge(
+                                          icon: Icons.receipt_long_outlined,
+                                          label: 'No SOLO Invoice',
+                                          bgColor: Colors.blueGrey.shade50,
+                                          borderColor: Colors.blueGrey.shade200,
+                                          textColor: Colors.blueGrey.shade800,
                                         ),
                                     ],
                                   ),

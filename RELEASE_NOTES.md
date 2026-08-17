@@ -21,8 +21,14 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ## 🎨 What's New in Version 1.0.44
 
-- 🛠️ **Android Gradle Build Fix (`lStar` Resource Linker Error)**:
-  - Explicitly upgraded `compileSdk` and `targetSdk` to SDK `34` in `android/app/build.gradle.kts` to resolve AAPT resource linking errors (`android:attr/lStar not found`).
+- ⚠️ **Missing Payment Plan Highlight & Filters**:
+  - Displays a prominent **`⚠️ No Payment Plan`** badge on student cards when no payment plan has been generated yet.
+  - Added **`No Plan`** summary stat card and filter chip to isolate students missing a payment schedule in 1 tap.
+- 📄 **SOLO Invoice Pending Badges & Indicators**:
+  - Displays a **`📄 No SOLO Invoice`** status badge on student cards and payment installment rows when a SOLO invoice has not been attached yet.
+  - Added **`Missing SOLO`** filter chip for quick roster filtering.
+- 📲 **Native MethodChannel In-App Auto-Update**:
+  - Implemented 100% native Android `MethodChannel` with `FileProvider` for robust, 1-tap in-app APK downloads and updates.
 - 📦 **Dynamic Version Bump**: Updated app version to `v1.0.44` (`1.0.44+44`).
 
 

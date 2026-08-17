@@ -65,6 +65,14 @@ class EnrollmentModel {
         .fold(0.0, (sum, p) => sum + p.amountPaid);
   }
 
+  /// True if a payment schedule has been generated for this enrollment.
+  bool get hasPaymentPlan => payments != null && payments!.isNotEmpty;
+
+  /// True if a payment plan exists and at least one installment is missing a SOLO invoice.
+  bool get hasMissingSoloInvoice =>
+      hasPaymentPlan &&
+      payments!.any((p) => p.externalInvoiceNumber == null || p.externalInvoiceNumber!.isEmpty);
+
   /// Total sum of all scheduled installments.
   double get totalPaymentsAmount {
     if (payments == null) return 0.0;

@@ -528,6 +528,46 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                       ),
                                     ),
                                   ),
+                                ] else ...[
+                                  const SizedBox(width: 8),
+                                  InkWell(
+                                    onTap: () => _showSoloInvoiceDialog(
+                                        context, ref, payment),
+                                    child: Tooltip(
+                                      message:
+                                          'No SOLO invoice uploaded yet (will appear once generated in SOLO)',
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: Colors.orange.shade50,
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                          border: Border.all(
+                                              color: Colors.orange.shade200),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.receipt_long_outlined,
+                                              size: 11,
+                                              color: Colors.orange.shade800,
+                                            ),
+                                            const SizedBox(width: 3),
+                                            Text(
+                                              'No SOLO Invoice',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.orange.shade900,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ],
                             ),
