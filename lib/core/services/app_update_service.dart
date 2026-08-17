@@ -134,12 +134,21 @@ class AppUpdateService {
     return false;
   }
 
-  static Future<void> launchUpdate(String url) async {
+  static Future<bool> launchUpdate(String url) async {
     final uri = Uri.parse(url);
     try {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        return await launchUrl(uri, mode: LaunchMode.platformDefault);
+      }
+      return true;
     } catch (_) {
-      await launchUrl(uri, mode: LaunchMode.platformDefault);
+      try {
+        return await launchUrl(uri, mode: LaunchMode.platformDefault);
+      } catch (e) {
+        debugPrint('Could not launch update URL $url: $e');
+        return false;
+      }
     }
   }
 }
@@ -181,13 +190,20 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
     }
   }
 
-  void _handleUpdateClick() {
+  void _handleUpdateClick() async {
     if (_updateInfo == null) return;
 
     if (kIsWeb) {
       AppUpdateService.launchUpdate(_updateInfo!.releaseUrl);
     } else {
-      AppUpdateService.launchUpdate(_updateInfo!.apkDownloadUrl);
+      // Launch APK download
+      final launched = await AppUpdateService.launchUpdate(_updateInfo!.apkDownloadUrl);
+      if (!launched) {
+        // Fallback to opening GitHub Release Page
+        AppUpdateService.launchUpdate(_updateInfo!.releaseUrl);
+      }
+
+      if (!mounted) return;
 
       // Show clear guidance dialog for Android installation
       showDialog(
@@ -198,23 +214,23 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text(
-                '1. The APK is downloading in your mobile browser.',
+            children: [
+              const Text(
+                '1. Download APK from browser or GitHub Release page.',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
-              SizedBox(height: 8),
-              Text('2. When complete, tap the completed download notification or open your device Downloads folder to install.'),
-              SizedBox(height: 12),
-              Divider(),
-              SizedBox(height: 8),
-              Text(
-                '⚠️ Debug Build Note:',
+              const SizedBox(height: 8),
+              const Text('2. Tap the completed download or open your device Downloads folder to install.'),
+              const SizedBox(height: 12),
+              const Divider(),
+              const SizedBox(height: 8),
+              const Text(
+                '⚠️ "App Not Installed" Note:',
                 style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepOrange),
               ),
-              SizedBox(height: 4),
-              Text(
-                'If you previously installed a debug build via USB/Flutter CLI, Android may require uninstalling the previous build first due to signature mismatch.',
+              const SizedBox(height: 4),
+              const Text(
+                'If you previously installed a debug build via USB/Flutter CLI, uninstall the existing app first so Android allows installing the signed release APK.',
                 style: TextStyle(fontSize: 13, color: Colors.black87),
               ),
             ],
@@ -222,10 +238,9 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(ctx).pop();
-                _dismissBanner();
+                AppUpdateService.launchUpdate(_updateInfo!.releaseUrl);
               },
-              child: const Text('Dismiss Notice'),
+              child: const Text('Open Release Page'),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(ctx).pop(),
