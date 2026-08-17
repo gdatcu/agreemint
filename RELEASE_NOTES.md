@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.35 Release Notes
+# 🚀 Agreemint v1.0.36 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,16 +19,12 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.35
+## 🎨 What's New in Version 1.0.36
 
-- 🌙 **Dark Mode Text Contrast**:
-  - Replaced hardcoded dark text styles on `PendingDashboardView` (`Due: X RON` and `Due Date`) with dynamic theme colors for crisp legibility in dark mode.
-- 🇷🇴 **Formal Romanian Initial Contract Share Message**:
-  - Updated button to **Trimite Contractul spre Semnare** and pre-filled message text to formal Romanian with web signature portal link (`/#/sign/[contractId]`).
-- 🔗 **Web Signature Portal Link Integration for Follow-Ups**:
-  - WhatsApp follow-ups in `UnsignedContractsView` now send the interactive web signature portal link (`https://apps.qualiadept.eu/agreemint/#/sign/[contractId]`) instead of raw PDF files.
-- 🛡️ **Exclusion of Manually Uploaded Signed Contracts**:
-  - Excluded contracts with `signedPdfUrl != null` or `status == 'FullySigned'` from the Unsigned Contracts tab and push notifications.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.35` (`1.0.35+35`).
+- 🔤 **English Follow-Up Button**:
+  - Updated button label in `UnsignedContractsView` to **Send WhatsApp Follow-Up**.
+- 👋 **Client Welcome & Guidance Onboarding Banner**:
+  - Added a warm, welcoming onboarding card on the `QualiAdept — Client Contract Signing` portal guiding new clients on verifying their email and adding their signature.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.36` (`1.0.36+36`).
 
 

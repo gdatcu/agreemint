@@ -182,7 +182,7 @@ class UnsignedContractsView extends ConsumerWidget {
                               );
                             },
                             icon: const Icon(Icons.chat, size: 18),
-                            label: const Text('Trimite Follow-Up WhatsApp'),
+                            label: const Text('Send WhatsApp Follow-Up'),
                           ),
                           const SizedBox(width: 8),
                           if (rawPdfUrl.isNotEmpty) ...[

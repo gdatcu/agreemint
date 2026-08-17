@@ -553,6 +553,39 @@ class _ClientWebSignatureViewState
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Welcome & Guidance Banner
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.only(bottom: 24),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.blue.shade200),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          '👋 Bine ai venit în comunitatea QualiAdept!',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue.shade900,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Ne bucurăm că ai decis să colaborezi cu noi pentru dezvoltarea ta profesională! Pentru a revizui și aplica semnătura ta pe contractul de servicii de mentorat, te rugăm mai întâi să confirmi adresa ta de email de mai jos.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.blue.shade900,
+                            height: 1.4,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
