@@ -34,29 +34,12 @@ class WhatsAppReminderService {
     final encodedUrl = Uri.encodeComponent(rawPdfUrl.trim());
     final encodedTitle = Uri.encodeComponent(docTitle.trim());
 
-    String baseUrl;
-    if (customBaseUrl != null && customBaseUrl.trim().isNotEmpty) {
-      baseUrl = customBaseUrl.trim();
-    } else {
-      try {
-        final origin = Uri.base.origin;
-        if (origin.startsWith('http')) {
-          final path = Uri.base.path;
-          final cleanPath = path.endsWith('/') ? path : '$path/';
-          baseUrl = '$origin$cleanPath';
-        } else {
-          baseUrl = 'https://apps.qualiadept.eu/agreemint/';
-        }
-      } catch (_) {
-        baseUrl = 'https://apps.qualiadept.eu/agreemint/';
-      }
-    }
+    final baseUrl = (customBaseUrl != null && customBaseUrl.trim().isNotEmpty)
+        ? customBaseUrl.trim()
+        : 'https://apps.qualiadept.eu/agreemint/';
 
-    if (!baseUrl.endsWith('/')) {
-      baseUrl = '$baseUrl/';
-    }
-
-    return '${baseUrl}#/view-doc?url=$encodedUrl&pin=$pin&title=$encodedTitle';
+    final cleanBase = baseUrl.endsWith('/') ? baseUrl : '$baseUrl/';
+    return '${cleanBase}#/view-doc?url=$encodedUrl&pin=$pin&title=$encodedTitle';
   }
 
   /// Builds an objective, formal payment notification in Romanian from QualiAdept Billing Bot.

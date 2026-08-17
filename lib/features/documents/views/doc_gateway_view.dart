@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:printing/printing.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DocGatewayView extends StatefulWidget {
   final String pdfUrl;
@@ -74,6 +75,23 @@ class _DocGatewayViewState extends State<DocGatewayView> {
     }
   }
 
+  Future<void> _downloadPdf() async {
+    if (_pdfBytes == null) return;
+    final sanitizedTitle =
+        widget.docTitle.replaceAll(RegExp(r'[^a-zA-Z0-9_\.-]'), '_');
+    final filename = sanitizedTitle.isNotEmpty
+        ? '$sanitizedTitle.pdf'
+        : 'Document_QualiAdept.pdf';
+    await Printing.sharePdf(bytes: _pdfBytes!, filename: filename);
+  }
+
+  Future<void> _openDirectInBrowser() async {
+    final uri = Uri.parse(widget.pdfUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final title = widget.docTitle.isNotEmpty
@@ -93,6 +111,26 @@ class _DocGatewayViewState extends State<DocGatewayView> {
         ),
         elevation: 0,
         centerTitle: true,
+        actions: [
+          if (_isUnlocked && _pdfBytes != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 12.0),
+              child: Center(
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.download, size: 18),
+                  label: const Text('📥 Descarcă PDF'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.shade600,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: _downloadPdf,
+                ),
+              ),
+            ),
+        ],
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -250,21 +288,91 @@ class _DocGatewayViewState extends State<DocGatewayView> {
   }
 
   Widget _buildUnlockedPdfViewer() {
-    return SizedBox(
-      height: 700,
-      width: 900,
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: PdfPreview(
-          build: (format) => _pdfBytes!,
-          allowPrinting: true,
-          allowSharing: true,
-          canChangeOrientation: false,
-          canChangePageFormat: false,
-          maxPageWidth: 800,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Custom Action Bar with Download, Print, and Open Buttons
+        Container(
+          constraints: const BoxConstraints(maxWidth: 900),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E293B),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFF334155)),
+          ),
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              ElevatedButton.icon(
+                icon: const Icon(Icons.download),
+                label: const Text('📥 Descarcă PDF'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green.shade600,
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: _downloadPdf,
+              ),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.print),
+                label: const Text('🖨️ Printează'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade700,
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () async {
+                  await Printing.layoutPdf(onLayout: (_) => _pdfBytes!);
+                },
+              ),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.open_in_new, size: 16),
+                label: const Text('🔗 Deschide în Browser'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.grey.shade300,
+                  side: const BorderSide(color: Color(0xFF475569)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: _openDirectInBrowser,
+              ),
+            ],
+          ),
         ),
-      ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 700,
+          width: 900,
+          child: Card(
+            clipBehavior: Clip.antiAlias,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+            child: PdfPreview(
+              build: (format) => _pdfBytes!,
+              allowPrinting: false,
+              allowSharing: false,
+              canChangeOrientation: false,
+              canChangePageFormat: false,
+              maxPageWidth: 800,
+              actions: const [], // Hides default bottom action bar with confusing toggle switch
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

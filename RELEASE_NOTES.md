@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.49 Release Notes
+# 🚀 Agreemint v1.0.50 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,11 +19,15 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.49
+## 🎨 What's New in Version 1.0.50
 
-- 🌐 **Dynamic Base Domain Resolution for PIN Web Gateway**:
-  - Replaced hardcoded placeholder domain with dynamic runtime origin detection (`Uri.base.origin`) with fallback to production domain (`https://apps.qualiadept.eu/agreemint/`).
-  - Resolves "Firebase Site Not Found" error when testing on localhost (`http://localhost:50080/#/view-doc?...`) or running on live production server.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.49` (`1.0.49+49`).
+- 📥 **Prominent Download PDF Buttons in PIN Web Gateway**:
+  - Added a prominent **`📥 Descarcă PDF`** button in the top navigation header and custom action bar when a document is unlocked.
+  - Allows clients to 1-tap download receipts, contracts, and invoices (`Chitanta_REC-2026.pdf`) directly to their phone or desktop.
+- 🧹 **Clean Custom Action Bar (No Confusing Toggle Switch)**:
+  - Replaced default PDF action controls with 3 clean, explicit actions: **`📥 Descarcă PDF`**, **`🖨️ Printează`**, and **`🔗 Deschide în Browser`**.
+- 🌐 **100% Production Domain Guarantee**:
+  - All WhatsApp delivery templates strictly generate `https://apps.qualiadept.eu/agreemint/#/view-doc?url=...`, ensuring client links never contain `localhost`.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.50` (`1.0.50+50`).
 
 
