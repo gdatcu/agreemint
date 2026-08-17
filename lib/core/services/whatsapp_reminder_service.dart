@@ -61,6 +61,69 @@ class WhatsAppReminderService {
         '_Echipa QualiAdept_';
   }
 
+  /// Builds Option A polite receipt message in Romanian.
+  static String buildReceiptShareMessage({
+    required String studentName,
+    required String programName,
+    required double amount,
+    required String currency,
+    required int installmentNumber,
+    required int totalInstallments,
+    required String receiptNumber,
+    String? receiptUrl,
+  }) {
+    final amountFormatted = '${amount.toStringAsFixed(2)} $currency';
+    final installmentText = totalInstallments > 1
+        ? 'Rata $installmentNumber din $totalInstallments'
+        : 'Plată Integrală';
+
+    final urlSection = (receiptUrl != null && receiptUrl.trim().isNotEmpty)
+        ? '\n\n📄 *Link Chitanță PDF:* ${receiptUrl.trim()}'
+        : '';
+
+    return 'Salut *$studentName*! 👋\n\n'
+        'Am înregistrat cu succes plata pentru *$installmentText* în valoare de *$amountFormatted* pentru programul *$programName*. 💳\n\n'
+        'Aici ai chitanța confirmată și semnată de către noi (*$receiptNumber*).$urlSection\n\n'
+        'Îți mulțumim și spor la învățat! 🚀\n'
+        '_— QualiAdept_';
+  }
+
+  /// Launches WhatsApp with Option A pre-filled receipt delivery message.
+  static Future<void> sendReceiptViaWhatsApp({
+    required BuildContext context,
+    required String? phone,
+    required String studentName,
+    required String programName,
+    required double amount,
+    required String currency,
+    required int installmentNumber,
+    required int totalInstallments,
+    required String receiptNumber,
+    String? receiptUrl,
+  }) async {
+    final rawPhone = phone?.trim() ?? '';
+    final messageText = buildReceiptShareMessage(
+      studentName: studentName,
+      programName: programName,
+      amount: amount,
+      currency: currency,
+      installmentNumber: installmentNumber,
+      totalInstallments: totalInstallments,
+      receiptNumber: receiptNumber,
+      receiptUrl: receiptUrl,
+    );
+
+    if (rawPhone.isEmpty) {
+      _showMissingPhoneDialog(context, messageText, (enteredPhone) async {
+        await _launchWhatsApp(context, enteredPhone, messageText);
+      });
+      return;
+    }
+
+    final cleaned = cleanPhoneNumber(rawPhone);
+    await _launchWhatsApp(context, cleaned, messageText);
+  }
+
   /// Builds a friendly contract signature follow-up text in Romanian.
   static String buildContractFollowUpMessage({
     required String studentName,

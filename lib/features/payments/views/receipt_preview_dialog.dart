@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../../core/services/whatsapp_reminder_service.dart';
 import 'receipt_signature_dialog.dart';
 
 class ReceiptPreviewDialog extends StatefulWidget {
@@ -14,6 +15,15 @@ class ReceiptPreviewDialog extends StatefulWidget {
   final String title;
   final bool isSigned;
   final Future<Uint8List> Function(Uint8List signatureBytes)? onSignReceipt;
+  final String? studentName;
+  final String? studentPhone;
+  final String? programName;
+  final double? amount;
+  final String? currency;
+  final int? installmentNumber;
+  final int? totalInstallments;
+  final String? receiptNumber;
+  final String? receiptUrl;
 
   const ReceiptPreviewDialog({
     super.key,
@@ -22,6 +32,15 @@ class ReceiptPreviewDialog extends StatefulWidget {
     this.title = 'Chitanță Plată / Payment Receipt',
     this.isSigned = false,
     this.onSignReceipt,
+    this.studentName,
+    this.studentPhone,
+    this.programName,
+    this.amount,
+    this.currency,
+    this.installmentNumber,
+    this.totalInstallments,
+    this.receiptNumber,
+    this.receiptUrl,
   });
 
   @override
@@ -163,6 +182,24 @@ class _ReceiptPreviewDialogState extends State<ReceiptPreviewDialog> {
                     ),
                   ),
                 const SizedBox(width: 8),
+                IconButton(
+                  icon: Icon(Icons.chat, color: Colors.green.shade700),
+                  tooltip: 'Trimite pe WhatsApp / Send via WhatsApp',
+                  onPressed: () {
+                    WhatsAppReminderService.sendReceiptViaWhatsApp(
+                      context: context,
+                      phone: widget.studentPhone,
+                      studentName: widget.studentName ?? 'Cursant',
+                      programName: widget.programName ?? 'Program Mentorat',
+                      amount: widget.amount ?? 0.0,
+                      currency: widget.currency ?? 'RON',
+                      installmentNumber: widget.installmentNumber ?? 1,
+                      totalInstallments: widget.totalInstallments ?? 1,
+                      receiptNumber: widget.receiptNumber ?? widget.filename.replaceAll('.pdf', ''),
+                      receiptUrl: widget.receiptUrl,
+                    );
+                  },
+                ),
                 IconButton(
                   icon: const Icon(Icons.share),
                   tooltip: 'Share Receipt',

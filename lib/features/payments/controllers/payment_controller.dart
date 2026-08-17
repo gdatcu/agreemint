@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../core/services/notification_service.dart';
 import '../models/payment_model.dart';
 import '../repositories/payment_repository.dart';
 
@@ -55,7 +56,26 @@ class EnrollmentPaymentsController extends _$EnrollmentPaymentsController {
       // Invalidate the global pending payments controller to refresh the dashboard
       ref.invalidate(globalPendingPaymentsControllerProvider);
 
-      return repository.fetchPaymentsForEnrollment(enrollmentId);
+      final updatedList = await repository.fetchPaymentsForEnrollment(enrollmentId);
+
+      // Check if newly paid payment requires receipt signature
+      if (status == 'Paid') {
+        final target = updatedList.firstWhere(
+          (p) => p.id == paymentId,
+          orElse: () => updatedList.first,
+        );
+        if (!target.isReceiptSigned) {
+          final studentName = target.enrollment?.student?.name ?? 'Cursant';
+          final currency = target.enrollment?.program?.currency ?? 'RON';
+          NotificationService.showReceiptPendingNotification(
+            studentName: studentName,
+            amount: amountPaid,
+            currency: currency,
+          );
+        }
+      }
+
+      return updatedList;
     });
   }
 

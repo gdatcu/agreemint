@@ -1453,6 +1453,15 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
             pdfBytes: pdfBytes!,
             filename: 'Chitanta_$receiptNumber.pdf',
             isSigned: payment.isReceiptSigned,
+            studentName: student?.name,
+            studentPhone: student?.phone,
+            programName: program?.name,
+            amount: payment.amountPaid > 0 ? payment.amountPaid : payment.amountDue,
+            currency: currency,
+            installmentNumber: installmentIndex,
+            totalInstallments: totalInstallments,
+            receiptNumber: receiptNumber,
+            receiptUrl: payment.receiptUrl,
             onSignReceipt: (signatureBytes) async {
               final signedPdfBytes = await ReceiptGeneratorService().generateReceiptPdf(
                 receiptNumber: receiptNumber,

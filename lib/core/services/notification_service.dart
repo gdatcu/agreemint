@@ -203,6 +203,23 @@ class NotificationService {
     } catch (_) {}
   }
 
+  /// Triggers a push notification reminding the mentor to sign and issue a payment receipt.
+  static Future<void> showReceiptPendingNotification({
+    required String studentName,
+    required double amount,
+    required String currency,
+  }) async {
+    final title = '🧾 Plată Înregistrată - Semnează Chitanța';
+    final body =
+        'Plata de ${amount.toStringAsFixed(2)} $currency a fost marcată ca achitată de $studentName. Apasă pentru a semna și trimite chitanța.';
+
+    await showOverdueNotification(
+      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title: title,
+      body: body,
+    );
+  }
+
   /// Triggers a native heads-up notification banner with high priority, sound, and vibration.
   static Future<void> showOverdueNotification({
     required int id,
