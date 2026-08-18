@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.50 Release Notes
+# 🚀 Agreemint v1.0.51 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,15 +19,14 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.50
+## 🎨 What's New in Version 1.0.51
 
-- 📥 **Prominent Download PDF Buttons in PIN Web Gateway**:
-  - Added a prominent **`📥 Descarcă PDF`** button in the top navigation header and custom action bar when a document is unlocked.
-  - Allows clients to 1-tap download receipts, contracts, and invoices (`Chitanta_REC-2026.pdf`) directly to their phone or desktop.
-- 🧹 **Clean Custom Action Bar (No Confusing Toggle Switch)**:
-  - Replaced default PDF action controls with 3 clean, explicit actions: **`📥 Descarcă PDF`**, **`🖨️ Printează`**, and **`🔗 Deschide în Browser`**.
-- 🌐 **100% Production Domain Guarantee**:
-  - All WhatsApp delivery templates strictly generate `https://apps.qualiadept.eu/agreemint/#/view-doc?url=...`, ensuring client links never contain `localhost`.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.50` (`1.0.50+50`).
+- 📱 **Mobile Responsiveness Overhaul across All Core Views**:
+  - 🛠️ **Prospect Follow-ups (`ProspectsView`)**: Resolved 154px horizontal overflow error on narrow mobile screens (360px–420px) by wrapping follow-up dates, phone numbers, and action buttons in responsive flex layouts (`Wrap`).
+  - 🛠️ **Pending Dashboard (`PendingDashboardView`)**: Fixed 29px pixel overflow on due dates and status badges (`Overdue` / `Pending`).
+  - 🛠️ **Enrolled Students (`EnrolledStudentsView`)**:
+    - Converted cramped student roster list items into responsive card layouts to handle long business entity names (e.g. *BNET SYSTEMS EU S.R.L.*) without right-side clipping.
+    - Added horizontal touch scrolling for top summary metric cards (`Total`, `Signed`, `Fully Paid`, `Retired`).
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.51` (`1.0.51+51`).
 
 

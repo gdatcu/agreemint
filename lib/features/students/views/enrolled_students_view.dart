@@ -73,18 +73,19 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
     final fullyPaidCount = enrollments.where((e) => e.isFullyPaid).length;
     final retiredCount = enrollments.where((e) => e.isRetired).length;
 
-    return Container(
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
           _buildStatCard('Total', '$totalCount', Icons.people_alt, Colors.blue),
-          const SizedBox(width: 4),
+          const SizedBox(width: 8),
           _buildStatCard('Signed', '$signedCount', Icons.verified, Colors.green),
-          const SizedBox(width: 4),
+          const SizedBox(width: 8),
           _buildStatCard('No Plan', '$noPlanCount', Icons.warning_amber_rounded, Colors.red),
-          const SizedBox(width: 4),
+          const SizedBox(width: 8),
           _buildStatCard('Fully Paid', '$fullyPaidCount', Icons.payments, Colors.teal),
-          const SizedBox(width: 4),
+          const SizedBox(width: 8),
           _buildStatCard('Retired', '$retiredCount', Icons.replay_rounded, Colors.orange),
         ],
       ),
@@ -94,44 +95,43 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
   Widget _buildStatCard(
       String label, String value, IconData icon, Color color) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        decoration: BoxDecoration(
-          color: color.withAlpha(isDark ? 30 : 15),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withAlpha(80)),
-        ),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 14, color: color),
-                const SizedBox(width: 4),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? color : color.withAlpha(220),
-                  ),
+    return Container(
+      width: 92,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      decoration: BoxDecoration(
+        color: color.withAlpha(isDark ? 30 : 15),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withAlpha(80)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 14, color: color),
+              const SizedBox(width: 4),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? color : color.withAlpha(220),
                 ),
-              ],
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white70 : Colors.black87,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white70 : Colors.black87,
             ),
-          ],
-        ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
@@ -293,104 +293,116 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                           return Card(
                             elevation: 1,
                             margin: const EdgeInsets.only(bottom: 10),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 6),
-                              leading: CircleAvatar(
-                                backgroundColor: Theme.of(context)
-                                    .colorScheme
-                                    .primaryContainer,
-                                child: Text(
-                                  student.name.isNotEmpty
-                                      ? student.name[0].toUpperCase()
-                                      : 'S',
-                                  style: TextStyle(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onPrimaryContainer,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              title: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      student.name,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                  ),
-                                  if (student.clientType != 'PF') ...[
-                                    const SizedBox(width: 4),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: Colors.blue.shade50,
-                                        borderRadius: BorderRadius.circular(4),
-                                        border: Border.all(
-                                            color: Colors.blue.shade200),
-                                      ),
-                                      child: Text(
-                                        student.clientType,
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.blue.shade900,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              subtitle: Column(
+                            child: Padding(
+                              padding: const EdgeInsets.all(14.0),
+                              child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const SizedBox(height: 4),
                                   Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Icon(Icons.email_outlined,
-                                          size: 13,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .outline),
-                                      const SizedBox(width: 5),
-                                      Expanded(
+                                      CircleAvatar(
+                                        backgroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .primaryContainer,
                                         child: Text(
-                                          student.email,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium,
+                                          student.name.isNotEmpty
+                                              ? student.name[0].toUpperCase()
+                                              : 'S',
+                                          style: TextStyle(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onPrimaryContainer,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    student.name,
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .titleMedium
+                                                        ?.copyWith(
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                  ),
+                                                ),
+                                                if (student.clientType != 'PF') ...[
+                                                  const SizedBox(width: 4),
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(
+                                                        horizontal: 6, vertical: 2),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.blue.shade50,
+                                                      borderRadius: BorderRadius.circular(4),
+                                                      border: Border.all(
+                                                          color: Colors.blue.shade200),
+                                                    ),
+                                                    child: Text(
+                                                      student.clientType,
+                                                      style: TextStyle(
+                                                        fontSize: 10,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Colors.blue.shade900,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                Icon(Icons.email_outlined,
+                                                    size: 13,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .outline),
+                                                const SizedBox(width: 5),
+                                                Expanded(
+                                                  child: Text(
+                                                    student.email,
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyMedium,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            if (student.phone != null &&
+                                                student.phone!.isNotEmpty) ...[
+                                              const SizedBox(height: 2),
+                                              Row(
+                                                children: [
+                                                  Icon(Icons.phone_outlined,
+                                                      size: 13,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .outline),
+                                                  const SizedBox(width: 5),
+                                                  Text(
+                                                    student.phone!,
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyMedium,
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ],
                                         ),
                                       ),
                                     ],
                                   ),
-                                  if (student.phone != null &&
-                                      student.phone!.isNotEmpty) ...[
-                                    const SizedBox(height: 2),
-                                    Row(
-                                      children: [
-                                        Icon(Icons.phone_outlined,
-                                            size: 13,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .outline),
-                                        const SizedBox(width: 5),
-                                        Text(
-                                          student.phone!,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 10),
 
                                   // Status Badges Row (Contract + Payments)
                                   Wrap(
@@ -473,64 +485,64 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                         ),
                                     ],
                                   ),
-                                ],
-                              ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.description_outlined),
-                                    tooltip: 'Manage Contract',
-                                    onPressed: () {
-                                      context.go(
-                                          '/programs/${widget.program.id}/students/contract',
-                                          extra: enrollment);
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.payment_outlined),
-                                    tooltip: 'Payments',
-                                    onPressed: () {
-                                      context.go(
-                                          '/programs/${widget.program.id}/students/payments',
-                                          extra: enrollment);
-                                    },
-                                  ),
-                                  if (enrollment.contract?.status != 'Refunded' &&
-                                      enrollment.contract?.status != 'Cancelled')
-                                    IconButton(
-                                      icon: Icon(Icons.currency_exchange_outlined,
-                                          color: Colors.orange.shade700),
-                                      tooltip: 'Refund & Retire Client',
-                                      onPressed: () => _showRefundDialog(
-                                          context, ref, enrollment, student),
-                                    ),
-                                  if (canDelete)
-                                    IconButton(
-                                      icon: Icon(Icons.delete_outline,
-                                          color: Colors.red.shade400),
-                                      tooltip: 'Delete Student',
-                                      onPressed: () =>
-                                          _showDeleteConfirmationDialog(
+                                  const Divider(height: 16),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.description_outlined),
+                                        tooltip: 'Manage Contract',
+                                        onPressed: () {
+                                          context.go(
+                                              '/programs/${widget.program.id}/students/contract',
+                                              extra: enrollment);
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.payment_outlined),
+                                        tooltip: 'Payments',
+                                        onPressed: () {
+                                          context.go(
+                                              '/programs/${widget.program.id}/students/payments',
+                                              extra: enrollment);
+                                        },
+                                      ),
+                                      if (enrollment.contract?.status != 'Refunded' &&
+                                          enrollment.contract?.status != 'Cancelled')
+                                        IconButton(
+                                          icon: Icon(Icons.currency_exchange_outlined,
+                                              color: Colors.orange.shade700),
+                                          tooltip: 'Refund & Retire Client',
+                                          onPressed: () => _showRefundDialog(
                                               context, ref, enrollment, student),
-                                    )
-                                  else
-                                    IconButton(
-                                      icon: Icon(Icons.lock_outline,
-                                          color: Colors.grey.shade400),
-                                      tooltip:
-                                          'Cannot delete: Active signed contract',
-                                      onPressed: () {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                                'Cannot delete student while contract is active. Process a refund/cancellation first.'),
-                                            backgroundColor: Colors.orange,
-                                          ),
-                                        );
-                                      },
-                                    ),
+                                        ),
+                                      if (canDelete)
+                                        IconButton(
+                                          icon: Icon(Icons.delete_outline,
+                                              color: Colors.red.shade400),
+                                          tooltip: 'Delete Student',
+                                          onPressed: () =>
+                                              _showDeleteConfirmationDialog(
+                                                  context, ref, enrollment, student),
+                                        )
+                                      else
+                                        IconButton(
+                                          icon: Icon(Icons.lock_outline,
+                                              color: Colors.grey.shade400),
+                                          tooltip:
+                                              'Cannot delete: Active signed contract',
+                                          onPressed: () {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    'Cannot delete student with active signed contract or payment history.'),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),

@@ -137,129 +137,142 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
                         ),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: ListTile(
-                          title: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  prospect.name,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold, fontSize: 16),
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: badgeColor.withAlpha(25),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  prospect.status == 'Converted'
-                                      ? 'Converted'
-                                      : relativeText,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: badgeColor,
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    prospect.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 4),
-                              if (prospect.program != null)
-                                Text(
-                                  'Interested in: ${prospect.program!.name}',
-                                  style: TextStyle(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: badgeColor.withAlpha(25),
+                                    borderRadius: BorderRadius.circular(6),
                                   ),
-                                ),
-                              if (prospect.notes != null &&
-                                  prospect.notes!.trim().isNotEmpty) ...[
-                                const SizedBox(height: 4),
-                                Text(
-                                  '📝 ${prospect.notes}',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                  maxLines: 4,
-                                  overflow: TextOverflow.ellipsis,
+                                  child: Text(
+                                    prospect.status == 'Converted'
+                                        ? 'Converted'
+                                        : relativeText,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: badgeColor,
+                                    ),
+                                  ),
                                 ),
                               ],
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Icon(Icons.calendar_today,
-                                      size: 14, color: Colors.grey.shade600),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Follow-up: ${dueLocalDate.toString().split(' ')[0]}',
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                  ),
-                                  if (prospect.phone != null &&
-                                      prospect.phone!.isNotEmpty) ...[
-                                    const SizedBox(width: 12),
-                                    Icon(Icons.phone,
+                            ),
+                            const SizedBox(height: 6),
+                            if (prospect.program != null)
+                              Text(
+                                'Interested in: ${prospect.program!.name}',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            if (prospect.notes != null &&
+                                prospect.notes!.trim().isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                '📝 ${prospect.notes}',
+                                style: Theme.of(context).textTheme.bodySmall,
+                                maxLines: 4,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 12,
+                              runSpacing: 4,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.calendar_today,
                                         size: 14, color: Colors.grey.shade600),
                                     const SizedBox(width: 4),
                                     Text(
-                                      prospect.phone!,
+                                      'Follow-up: ${dueLocalDate.toString().split(' ')[0]}',
                                       style: Theme.of(context).textTheme.bodySmall,
                                     ),
                                   ],
-                                ],
-                              ),
-                            ],
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // WhatsApp Outreach Button
-                              IconButton(
-                                icon: Icon(Icons.chat_outlined,
-                                    size: 20, color: Colors.green.shade600),
-                                tooltip: 'Send WhatsApp Message',
-                                onPressed: () {
-                                  WhatsAppReminderService.sendProspectFollowUp(
-                                    context: context,
-                                    phone: prospect.phone,
-                                    prospectName: prospect.name,
-                                    programName: prospect.program?.name,
-                                  );
-                                },
-                              ),
-                              // Convert to Enrolled Student Button
-                              if (prospect.status != 'Converted')
-                                IconButton(
-                                  icon: const Icon(Icons.school,
-                                      size: 20, color: Colors.indigo),
-                                  tooltip: 'Convert to Enrolled Student',
-                                  onPressed: () => _showConvertToStudentDialog(
-                                      context, ref, prospect, programsState.value ?? []),
                                 ),
-                              // Edit Button
-                              IconButton(
-                                icon: const Icon(Icons.edit_outlined, size: 20),
-                                tooltip: 'Edit Prospect',
-                                onPressed: () => _showAddEditProspectDialog(
-                                    context, ref, prospect: prospect),
-                              ),
-                              // Delete Button
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline,
-                                    size: 20, color: Colors.redAccent),
-                                tooltip: 'Delete Prospect',
-                                onPressed: () =>
-                                    _showDeleteProspectDialog(context, ref, prospect),
-                              ),
-                            ],
-                          ),
+                                if (prospect.phone != null &&
+                                    prospect.phone!.isNotEmpty)
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.phone,
+                                          size: 14, color: Colors.grey.shade600),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        prospect.phone!,
+                                        style: Theme.of(context).textTheme.bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                            const Divider(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                // WhatsApp Outreach Button
+                                IconButton(
+                                  icon: Icon(Icons.chat_outlined,
+                                      size: 20, color: Colors.green.shade600),
+                                  tooltip: 'Send WhatsApp Message',
+                                  onPressed: () {
+                                    WhatsAppReminderService.sendProspectFollowUp(
+                                      context: context,
+                                      phone: prospect.phone,
+                                      prospectName: prospect.name,
+                                      programName: prospect.program?.name,
+                                    );
+                                  },
+                                ),
+                                // Convert to Enrolled Student Button
+                                if (prospect.status != 'Converted')
+                                  IconButton(
+                                    icon: const Icon(Icons.school,
+                                        size: 20, color: Colors.indigo),
+                                    tooltip: 'Convert to Enrolled Student',
+                                    onPressed: () => _showConvertToStudentDialog(
+                                        context, ref, prospect, programsState.value ?? []),
+                                  ),
+                                // Edit Button
+                                IconButton(
+                                  icon: const Icon(Icons.edit_outlined, size: 20),
+                                  tooltip: 'Edit Prospect',
+                                  onPressed: () => _showAddEditProspectDialog(
+                                      context, ref, prospect: prospect),
+                                ),
+                                // Delete Button
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline,
+                                      size: 20, color: Colors.redAccent),
+                                  tooltip: 'Delete Prospect',
+                                  onPressed: () =>
+                                      _showDeleteProspectDialog(context, ref, prospect),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     );

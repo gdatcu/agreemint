@@ -217,7 +217,10 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                           const SizedBox(height: 6),
-                          Row(
+                          Wrap(
+                            spacing: 16,
+                            runSpacing: 4,
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               Text(
                                 'Due: ${(payment.amountDue - payment.amountPaid).toStringAsFixed(2)} $currency',
@@ -226,7 +229,6 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                                   color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
-                              const SizedBox(width: 16),
                               Text(
                                 'Due Date: ${dueLocalDate.toString().split(' ')[0]}',
                                 style: TextStyle(
