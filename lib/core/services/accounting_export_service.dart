@@ -53,7 +53,7 @@ class AccountingExportService {
     final response = await client
         .from('payments')
         .select(
-            'amount_paid, paid_at, due_date, status, payment_method, installment_number, receipt_url, solo_invoice_url, solo_invoice_number, enrollments(programs(name, currency), students(name, client_type, cui, reg_com), contracts(status))')
+            'amount_paid, due_date, receipt_generated_at, status, payment_method, receipt_url, external_invoice_url, external_invoice_number, enrollments(programs(name, currency), students(name, client_type, cui, reg_com), contracts(status))')
         .or('status.eq.Paid,status.eq.Partial');
 
     final List<AccountingRecord> records = [];
@@ -87,7 +87,7 @@ class AccountingExportService {
         continue;
       }
 
-      final payDateStr = (row['paid_at'] as String?) ?? (row['due_date'] as String?);
+      final payDateStr = (row['receipt_generated_at'] as String?) ?? (row['due_date'] as String?);
       if (payDateStr == null || payDateStr.isEmpty) continue;
 
       final payDate = DateTime.tryParse(payDateStr);
@@ -125,10 +125,10 @@ class AccountingExportService {
       final amountPaid = (row['amount_paid'] as num?)?.toDouble() ?? 0.0;
       final amountInRon = currency == 'EUR' ? amountPaid * liveEurRate : amountPaid;
 
-      final instNum = (row['installment_number'] as num?)?.toInt() ?? 1;
+      final instNum = 1;
       final paymentMethod = (row['payment_method'] as String?) ?? 'Transfer Bancar';
-      final soloNum = (row['solo_invoice_number'] as String?) ?? '-';
-      final soloUrl = (row['solo_invoice_url'] as String?) ?? '';
+      final soloNum = (row['external_invoice_number'] as String?) ?? '-';
+      final soloUrl = (row['external_invoice_url'] as String?) ?? '';
       final receiptUrl = (row['receipt_url'] as String?) ?? '';
 
       records.add(AccountingRecord(

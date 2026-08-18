@@ -170,7 +170,7 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
       final paymentsResponse = await client
           .from('payments')
           .select(
-              'amount_paid, paid_at, due_date, status, enrollments(programs(currency), contracts(status))')
+              'amount_paid, due_date, receipt_generated_at, status, enrollments(programs(currency), contracts(status))')
           .or('status.eq.Paid,status.eq.Partial');
 
       final Map<String, double> revenueCollectedByCurrency = {};
@@ -203,7 +203,6 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
             continue;
           }
 
-          String currency = 'RON';
           final programRaw = enrollmentJson['programs'];
           Map<String, dynamic>? programJson;
           if (programRaw is Map<String, dynamic>) {
@@ -212,18 +211,18 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
             programJson = programRaw.first as Map<String, dynamic>?;
           }
 
-          if (programJson != null && programJson['currency'] != null) {
-            currency = (programJson['currency'] as String).toUpperCase();
-          }
-
-          final amount = (row['amount_paid'] as num?)?.toDouble() ?? 0.0;
+          final currency =
+              (programJson?['currency'] as String? ?? 'RON').toUpperCase();
+          final amountPaid = (row['amount_paid'] as num?)?.toDouble() ?? 0.0;
           revenueCollectedByCurrency[currency] =
-              (revenueCollectedByCurrency[currency] ?? 0.0) + amount;
+              (revenueCollectedByCurrency[currency] ?? 0.0) + amountPaid;
 
-          final amountInRon = currency == 'EUR' ? amount * liveEurRate : amount;
-          final payDateStr = (row['paid_at'] as String?) ?? (row['due_date'] as String?);
-          if (payDateStr != null && payDateStr.length >= 7) {
-            final monthKey = payDateStr.substring(0, 7);
+          final amountInRon =
+              currency == 'EUR' ? amountPaid * liveEurRate : amountPaid;
+          final dateStr = (row['receipt_generated_at'] as String?) ??
+              (row['due_date'] as String?);
+          if (dateStr != null && dateStr.length >= 7) {
+            final monthKey = dateStr.substring(0, 7);
             monthlyCollectedMap[monthKey] = (monthlyCollectedMap[monthKey] ?? 0.0) + amountInRon;
           }
         }
