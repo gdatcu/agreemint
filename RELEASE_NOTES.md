@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.57 Release Notes
+# 🚀 Agreemint v1.0.58 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,10 +19,13 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.57
+## 🎨 What's New in Version 1.0.58
 
-- 🌐 **SFTP Web Deployment Action**:
-  - Updated GitHub Actions workflow (`release.yml`) to use `wlixcc/SFTP-Deploy-Action@v1.2.4` on port 22 for secure SSH/SFTP web deployments to `apps.qualiadept.eu`.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.57` (`1.0.57+57`).
+- 📊 **Monthly Revenue & Student Growth Charts (`MonthlyRevenueChartWidget`)**:
+  - Added interactive 6-month visual bar chart breakdown in **Analytics Summary**.
+  - Side-by-side monthly comparison of **Revenue Collected** (Teal) vs **Expected Revenue** (Amber) in RON equivalent.
+  - Interactive Segmented View toggle to switch between **Revenue (RON)** and **Student Growth (Enrollments)**.
+  - Interactive touch/click tooltips showing exact monthly RON figures and new enrollment counts.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.58` (`1.0.58+58`).
 
 

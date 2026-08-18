@@ -25,6 +25,20 @@ String formatCurrencyAmount(double amount, String currency) {
   }
 }
 
+class MonthlyRevenueData {
+  final String monthLabel;
+  final double collectedInRon;
+  final double expectedInRon;
+  final int newEnrollments;
+
+  const MonthlyRevenueData({
+    required this.monthLabel,
+    required this.collectedInRon,
+    required this.expectedInRon,
+    required this.newEnrollments,
+  });
+}
+
 class AnalyticsSummary {
   final int totalStudents;
   final Map<String, double> expectedRevenueByCurrency;
@@ -32,6 +46,7 @@ class AnalyticsSummary {
   final double totalExpectedInRon;
   final double totalCollectedInRon;
   final double liveEurRate;
+  final List<MonthlyRevenueData> monthlyBreakdown;
 
   const AnalyticsSummary({
     required this.totalStudents,
@@ -40,6 +55,7 @@ class AnalyticsSummary {
     required this.totalExpectedInRon,
     required this.totalCollectedInRon,
     required this.liveEurRate,
+    this.monthlyBreakdown = const [],
   });
 
   /// Formatted string display for expected revenue per currency.
@@ -93,10 +109,12 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
       // 1 & 2. Fetch Active Enrollments, Program Total Price & Currency, and Contract Status
       final enrollmentsResponse = await client
           .from('enrollments')
-          .select('id, programs(total_price, currency), contracts(status)');
+          .select('id, enrolled_at, created_at, programs(total_price, currency), contracts(status)');
 
       int totalStudents = 0;
       final Map<String, double> expectedRevenueByCurrency = {};
+      final Map<String, int> monthlyEnrollmentsMap = {};
+      final Map<String, double> monthlyExpectedMap = {};
 
       for (final row in enrollmentsResponse as List<dynamic>) {
         final contractRaw = row['contracts'];
@@ -118,6 +136,13 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
 
         totalStudents++;
 
+        // Track enrollment month
+        final dateStr = (row['enrolled_at'] as String?) ?? (row['created_at'] as String?);
+        if (dateStr != null && dateStr.length >= 7) {
+          final monthKey = dateStr.substring(0, 7); // e.g. "2026-08"
+          monthlyEnrollmentsMap[monthKey] = (monthlyEnrollmentsMap[monthKey] ?? 0) + 1;
+        }
+
         final programRaw = row['programs'];
         Map<String, dynamic>? programJson;
         if (programRaw is Map<String, dynamic>) {
@@ -132,6 +157,12 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
               (programJson['currency'] as String? ?? 'RON').toUpperCase();
           expectedRevenueByCurrency[currency] =
               (expectedRevenueByCurrency[currency] ?? 0.0) + price;
+
+          final priceInRon = currency == 'EUR' ? price * liveEurRate : price;
+          if (dateStr != null && dateStr.length >= 7) {
+            final monthKey = dateStr.substring(0, 7);
+            monthlyExpectedMap[monthKey] = (monthlyExpectedMap[monthKey] ?? 0.0) + priceInRon;
+          }
         }
       }
 
@@ -139,10 +170,12 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
       final paymentsResponse = await client
           .from('payments')
           .select(
-              'amount_paid, status, enrollments(programs(currency), contracts(status))')
+              'amount_paid, paid_at, due_date, status, enrollments(programs(currency), contracts(status))')
           .or('status.eq.Paid,status.eq.Partial');
 
       final Map<String, double> revenueCollectedByCurrency = {};
+      final Map<String, double> monthlyCollectedMap = {};
+
       for (final row in paymentsResponse as List<dynamic>) {
         final enrollmentRaw = row['enrollments'];
         Map<String, dynamic>? enrollmentJson;
@@ -186,6 +219,13 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
           final amount = (row['amount_paid'] as num?)?.toDouble() ?? 0.0;
           revenueCollectedByCurrency[currency] =
               (revenueCollectedByCurrency[currency] ?? 0.0) + amount;
+
+          final amountInRon = currency == 'EUR' ? amount * liveEurRate : amount;
+          final payDateStr = (row['paid_at'] as String?) ?? (row['due_date'] as String?);
+          if (payDateStr != null && payDateStr.length >= 7) {
+            final monthKey = payDateStr.substring(0, 7);
+            monthlyCollectedMap[monthKey] = (monthlyCollectedMap[monthKey] ?? 0.0) + amountInRon;
+          }
         }
       }
 
@@ -208,6 +248,26 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
         }
       });
 
+      // 5. Generate 6-month breakdown list
+      final monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      final now = DateTime.now();
+      final List<MonthlyRevenueData> monthlyBreakdown = [];
+
+      for (int i = 5; i >= 0; i--) {
+        final d = DateTime(now.year, now.month - i, 1);
+        final yearStr = d.year.toString();
+        final mNumStr = d.month.toString().padLeft(2, '0');
+        final monthKey = '$yearStr-$mNumStr';
+        final monthLabel = '${monthNames[d.month - 1]} ${d.year.toString().substring(2)}';
+
+        monthlyBreakdown.add(MonthlyRevenueData(
+          monthLabel: monthLabel,
+          collectedInRon: monthlyCollectedMap[monthKey] ?? 0.0,
+          expectedInRon: monthlyExpectedMap[monthKey] ?? 0.0,
+          newEnrollments: monthlyEnrollmentsMap[monthKey] ?? 0,
+        ));
+      }
+
       return AnalyticsSummary(
         totalStudents: totalStudents,
         expectedRevenueByCurrency: expectedRevenueByCurrency,
@@ -215,6 +275,7 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
         totalExpectedInRon: totalExpectedInRon,
         totalCollectedInRon: totalCollectedInRon,
         liveEurRate: liveEurRate,
+        monthlyBreakdown: monthlyBreakdown,
       );
     } catch (e) {
       throw Exception('Failed to calculate analytics metrics: $e');

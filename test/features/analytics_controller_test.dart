@@ -73,5 +73,29 @@ void main() {
       expect(summary.collectionProgress, equals(1.0));
       expect(summary.pendingBalanceInRon, equals(0.0));
     });
+
+    test('MonthlyRevenueData initializes correctly with monthlyBreakdown', () {
+      const item = MonthlyRevenueData(
+        monthLabel: 'Aug 26',
+        collectedInRon: 5500.0,
+        expectedInRon: 19000.0,
+        newEnrollments: 19,
+      );
+
+      const summary = AnalyticsSummary(
+        totalStudents: 19,
+        expectedRevenueByCurrency: {'RON': 19000.0},
+        revenueCollectedByCurrency: {'RON': 5500.0},
+        totalExpectedInRon: 19000.0,
+        totalCollectedInRon: 5500.0,
+        liveEurRate: 4.975,
+        monthlyBreakdown: [item],
+      );
+
+      expect(summary.monthlyBreakdown.length, 1);
+      expect(summary.monthlyBreakdown.first.monthLabel, 'Aug 26');
+      expect(summary.monthlyBreakdown.first.collectedInRon, 5500.0);
+      expect(summary.monthlyBreakdown.first.newEnrollments, 19);
+    });
   });
 }

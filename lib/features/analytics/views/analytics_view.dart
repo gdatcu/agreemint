@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/analytics_controller.dart';
+import 'monthly_revenue_chart_widget.dart';
 
 class AnalyticsView extends ConsumerWidget {
   const AnalyticsView({super.key});
@@ -69,10 +70,16 @@ class AnalyticsView extends ConsumerWidget {
 
                 // 4. Collection Progress Card
                 _buildCollectionProgressCard(context, summary),
+                const SizedBox(height: 16),
 
-                // 5. Exchange Rate Banner if EUR is present
-                if (summary.hasMultipleCurrenciesOrEur) ...[
+                // 5. Monthly Revenue & Student Growth Chart
+                if (summary.monthlyBreakdown.isNotEmpty) ...[
+                  MonthlyRevenueChartWidget(monthlyData: summary.monthlyBreakdown),
                   const SizedBox(height: 16),
+                ],
+
+                // 6. Exchange Rate Banner if EUR is present
+                if (summary.hasMultipleCurrenciesOrEur) ...[
                   _buildExchangeRateBanner(context, summary.liveEurRate),
                 ],
               ],
