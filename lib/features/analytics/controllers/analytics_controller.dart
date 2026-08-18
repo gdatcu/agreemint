@@ -109,7 +109,7 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
       // 1 & 2. Fetch Active Enrollments, Program Total Price & Currency, and Contract Status
       final enrollmentsResponse = await client
           .from('enrollments')
-          .select('id, enrolled_at, created_at, programs(total_price, currency), contracts(status)');
+          .select('id, created_at, programs(total_price, currency), contracts(status)');
 
       int totalStudents = 0;
       final Map<String, double> expectedRevenueByCurrency = {};
@@ -137,7 +137,7 @@ class AnalyticsSummaryController extends _$AnalyticsSummaryController {
         totalStudents++;
 
         // Track enrollment month
-        final dateStr = (row['enrolled_at'] as String?) ?? (row['created_at'] as String?);
+        final dateStr = row['created_at'] as String?;
         if (dateStr != null && dateStr.length >= 7) {
           final monthKey = dateStr.substring(0, 7); // e.g. "2026-08"
           monthlyEnrollmentsMap[monthKey] = (monthlyEnrollmentsMap[monthKey] ?? 0) + 1;

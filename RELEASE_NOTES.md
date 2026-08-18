@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.59 Release Notes
+# 🚀 Agreemint v1.0.60 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,14 +19,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.59
+## 🎨 What's New in Version 1.0.60
 
-- 🧾 **1-Tap Accounting & ANAF Batch CSV Export (`AccountingExportService`)**:
-  - Added an **Export Accounting CSV (ANAF)** button to the **Analytics Summary** header.
-  - Interactive Date Range Selector dialog (*All Time*, *Current Month*, *Last Month*, *Year to Date*).
-  - Encoded with **UTF-8 BOM** so Romanian diacritics (`ă`, `î`, `ș`, `ț`, `â`) open natively in Microsoft Excel.
-  - Complete Romanian tax/accounting fields included: `Data Platii`, `Nume Client / Firma`, `Tip Client`, `CUI / CIF`, `Reg. Com.`, `Program Mentorat`, `Transa`, `Suma Platita`, `Moneda`, `Echivalent RON`, `Metoda Plata`, `Numar Factura SOLO`, `URL Factura SOLO`, `URL Chitanta`.
-  - 1-click direct download on Web and native share sheet on Mobile.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.59` (`1.0.59+59`).
+- 🐛 **Fixed Supabase Query Schema Alignment (`AnalyticsSummaryController`)**:
+  - Removed non-existent `enrolled_at` column from `enrollments` query in `AnalyticsSummaryController`.
+  - Uses `created_at` timestamp for accurate enrollment date resolution and monthly revenue calculation, resolving HTTP 400 Bad Request error.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.60` (`1.0.60+60`).
 
 
