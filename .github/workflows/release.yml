@@ -35,12 +35,22 @@ jobs:
       - name: Run Tests
         run: flutter test
 
+      - name: Decode Android Release Keystore
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/upload-keystore.jks
+          fi
+
       - name: Build Android APK
         run: |
           flutter build apk --release \
             --android-skip-build-dependency-validation \
             --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
             --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || 'agreemint123' }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS || 'upload' }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || 'agreemint123' }}
 
       - name: Build Web Release
         run: |

@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.53 Release Notes
+# 🚀 Agreemint v1.0.54 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,12 +19,12 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.53
+## 🎨 What's New in Version 1.0.54
 
-- 📁 **External Storage APK Provider & Installation Fix**:
-  - Saved in-app update APK downloads directly to External App Storage (`getExternalStorageDirectory()`) so Android PackageInstaller can access and parse the update binary across all devices (Samsung, Xiaomi, Pixel, etc.).
-  - Added `<external-cache-path>` and `<external-files-path>` XML declarations to `provider_paths.xml`.
-  - Added `FLAG_ACTIVITY_CLEAR_TOP` and `EXTRA_NOT_UNKNOWN_SOURCE` intent flags in `MainActivity.kt` to ensure seamless 1-tap installation.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.53` (`1.0.53+53`).
+- 🔑 **Permanent Android Release Keystore Signing**:
+  - Configured permanent release keystore (`upload-keystore.jks`) in `android/app/build.gradle.kts` and `.github/workflows/release.yml`.
+  - Ensures every GitHub release APK is signed with the exact same cryptographic signature certificate, permanently fixing Android signature mismatch blocks ("App not installed").
+  - Guarantees seamless 1-tap in-app updates for all future releases!
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.54` (`1.0.54+54`).
 
 
