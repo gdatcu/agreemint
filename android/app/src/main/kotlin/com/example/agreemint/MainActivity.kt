@@ -27,6 +27,8 @@ class MainActivity : FlutterActivity() {
                             setDataAndType(uri, "application/vnd.android.package-archive")
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                            putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
                         }
                         startActivity(intent)
                         result.success(true)

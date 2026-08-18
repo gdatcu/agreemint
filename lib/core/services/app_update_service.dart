@@ -293,8 +293,9 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
         final totalBytes = response.contentLength ?? 0;
         int receivedBytes = 0;
 
-        final tempDir = await getTemporaryDirectory();
-        final filePath = '${tempDir.path}/agreemint_update.apk';
+        final extDir =
+            await getExternalStorageDirectory() ?? await getTemporaryDirectory();
+        final filePath = '${extDir.path}/agreemint_update.apk';
         final file = File(filePath);
         final sink = file.openWrite();
 
