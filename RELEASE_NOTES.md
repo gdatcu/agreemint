@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.56 Release Notes
+# 🚀 Agreemint v1.0.57 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,12 +19,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.56
+## 🎨 What's New in Version 1.0.57
 
-- 🚀 **Native Android Browser In-App APK Download (`LaunchMode.externalApplication`)**:
-  - Replaced custom streaming logic in `AppUpdateService` with clean native browser launch.
-  - Tapping **Update APK** immediately opens the official release APK URL in default mobile browser (Chrome/Samsung Internet).
-  - Chrome processes the HTTP 302 AWS S3 redirect instantly, downloads `app-release.apk`, and Android pops up the package installer prompt cleanly!
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.56` (`1.0.56+56`).
+- 🌐 **SFTP Web Deployment Action**:
+  - Updated GitHub Actions workflow (`release.yml`) to use `wlixcc/SFTP-Deploy-Action@v1.2.4` on port 22 for secure SSH/SFTP web deployments to `apps.qualiadept.eu`.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.57` (`1.0.57+57`).
 
 
