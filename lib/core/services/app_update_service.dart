@@ -85,12 +85,14 @@ class AppUpdateService {
         final htmlUrl = data['html_url'] as String? ?? '';
 
         String apkUrl = htmlUrl;
+        bool hasApkAsset = false;
         final assets = data['assets'] as List<dynamic>?;
         if (assets != null) {
           for (final asset in assets) {
             if (asset is Map<String, dynamic> &&
-                (asset['name'] as String? ?? '').endsWith('.apk')) {
+                (asset['name'] as String? ?? '').toLowerCase().endsWith('.apk')) {
               apkUrl = asset['browser_download_url'] as String? ?? htmlUrl;
+              hasApkAsset = true;
               break;
             }
           }
@@ -98,7 +100,8 @@ class AppUpdateService {
 
         final fullTag = rawTag.isNotEmpty ? rawTag : 'v$tagName';
         final isDismissed = await isVersionDismissed(fullTag);
-        final hasUpdate = !isDismissed && isVersionHigher(tagName, currentVer);
+        final isHigher = isVersionHigher(tagName, currentVer);
+        final hasUpdate = !isDismissed && isHigher && (kIsWeb || hasApkAsset);
 
         return AppUpdateInfo(
           latestVersion: fullTag,
@@ -196,7 +199,7 @@ class _UpdateCheckBannerState extends ConsumerState<UpdateCheckBanner> {
   void _handleUpdateClick() async {
     if (_updateInfo == null) return;
 
-    if (kIsWeb) {
+    if (kIsWeb || !_updateInfo!.apkDownloadUrl.toLowerCase().endsWith('.apk')) {
       AppUpdateService.launchUpdate(_updateInfo!.releaseUrl);
       return;
     }

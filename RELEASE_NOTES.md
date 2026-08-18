@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.51 Release Notes
+# 🚀 Agreemint v1.0.52 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,14 +19,12 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.51
+## 🎨 What's New in Version 1.0.52
 
-- 📱 **Mobile Responsiveness Overhaul across All Core Views**:
-  - 🛠️ **Prospect Follow-ups (`ProspectsView`)**: Resolved 154px horizontal overflow error on narrow mobile screens (360px–420px) by wrapping follow-up dates, phone numbers, and action buttons in responsive flex layouts (`Wrap`).
-  - 🛠️ **Pending Dashboard (`PendingDashboardView`)**: Fixed 29px pixel overflow on due dates and status badges (`Overdue` / `Pending`).
-  - 🛠️ **Enrolled Students (`EnrolledStudentsView`)**:
-    - Converted cramped student roster list items into responsive card layouts to handle long business entity names (e.g. *BNET SYSTEMS EU S.R.L.*) without right-side clipping.
-    - Added horizontal touch scrolling for top summary metric cards (`Total`, `Signed`, `Fully Paid`, `Retired`).
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.51` (`1.0.51+51`).
+- 🛡️ **In-App Updater Guardrail & APK Validation**:
+  - `AppUpdateService` now verifies that a valid compiled `.apk` asset file is actually attached to the GitHub release before showing the `New Update Available` banner on Android devices.
+  - Prevents premature update prompts while GitHub Actions is building the release APK.
+  - If a download URL is not a direct `.apk` asset, `launchUpdate` automatically opens the official GitHub release web page for 1-click manual download.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.52` (`1.0.52+52`).
 
 
