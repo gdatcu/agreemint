@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.60 Release Notes
+# 🚀 Agreemint v1.0.61 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,11 +19,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.60
+## 🎨 What's New in Version 1.0.61
 
-- 🐛 **Fixed Supabase Query Schema Alignment (`AnalyticsSummaryController`)**:
-  - Removed non-existent `enrolled_at` column from `enrollments` query in `AnalyticsSummaryController`.
-  - Uses `created_at` timestamp for accurate enrollment date resolution and monthly revenue calculation, resolving HTTP 400 Bad Request error.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.60` (`1.0.60+60`).
+- 🐛 **Fixed Exact Database Column Name (`enrollment_date`)**:
+  - Aligned `AnalyticsSummaryController` Supabase select query with exact schema column `enrollment_date` in `enrollments`.
+  - Fully resolves HTTP 400 Bad Request error on live Web and Mobile environments.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.61` (`1.0.61+61`).
 
 
