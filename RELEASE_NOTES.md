@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.58 Release Notes
+# 🚀 Agreemint v1.0.59 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,13 +19,14 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.58
+## 🎨 What's New in Version 1.0.59
 
-- 📊 **Monthly Revenue & Student Growth Charts (`MonthlyRevenueChartWidget`)**:
-  - Added interactive 6-month visual bar chart breakdown in **Analytics Summary**.
-  - Side-by-side monthly comparison of **Revenue Collected** (Teal) vs **Expected Revenue** (Amber) in RON equivalent.
-  - Interactive Segmented View toggle to switch between **Revenue (RON)** and **Student Growth (Enrollments)**.
-  - Interactive touch/click tooltips showing exact monthly RON figures and new enrollment counts.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.58` (`1.0.58+58`).
+- 🧾 **1-Tap Accounting & ANAF Batch CSV Export (`AccountingExportService`)**:
+  - Added an **Export Accounting CSV (ANAF)** button to the **Analytics Summary** header.
+  - Interactive Date Range Selector dialog (*All Time*, *Current Month*, *Last Month*, *Year to Date*).
+  - Encoded with **UTF-8 BOM** so Romanian diacritics (`ă`, `î`, `ș`, `ț`, `â`) open natively in Microsoft Excel.
+  - Complete Romanian tax/accounting fields included: `Data Platii`, `Nume Client / Firma`, `Tip Client`, `CUI / CIF`, `Reg. Com.`, `Program Mentorat`, `Transa`, `Suma Platita`, `Moneda`, `Echivalent RON`, `Metoda Plata`, `Numar Factura SOLO`, `URL Factura SOLO`, `URL Chitanta`.
+  - 1-click direct download on Web and native share sheet on Mobile.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.59` (`1.0.59+59`).
 
 
