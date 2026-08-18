@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.54 Release Notes
+# 🚀 Agreemint v1.0.55 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,12 +19,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.54
+## 🎨 What's New in Version 1.0.55
 
-- 🔑 **Permanent Android Release Keystore Signing**:
-  - Configured permanent release keystore (`upload-keystore.jks`) in `android/app/build.gradle.kts` and `.github/workflows/release.yml`.
-  - Ensures every GitHub release APK is signed with the exact same cryptographic signature certificate, permanently fixing Android signature mismatch blocks ("App not installed").
-  - Guarantees seamless 1-tap in-app updates for all future releases!
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.54` (`1.0.54+54`).
+- 🏷️ **Dynamic Header App Version Badge (`AppVersionChip`)**:
+  - Added a sleek, subtle version pill chip (`v1.0.55`) directly in the top **AppBar** header of the main screen (`ProgramsView`).
+  - Powered by `PackageInfo.fromPlatform()`, dynamically reflecting the installed app version on mobile and web without hardcoding.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.55` (`1.0.55+55`).
 
 

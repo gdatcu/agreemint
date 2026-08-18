@@ -5,6 +5,8 @@ import '../controllers/program_controller.dart';
 import '../models/program_model.dart';
 import '../../analytics/controllers/analytics_controller.dart';
 
+import '../../../core/widgets/app_version_chip.dart';
+
 class ProgramsView extends ConsumerWidget {
   const ProgramsView({super.key});
 
@@ -28,6 +30,7 @@ class ProgramsView extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Mentoring Programs'),
         actions: [
+          const AppVersionChip(),
           IconButton(
             icon: const Icon(Icons.history_edu),
             tooltip: 'Archived Program History',
