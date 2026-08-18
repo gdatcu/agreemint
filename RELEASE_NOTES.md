@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.55 Release Notes
+# 🚀 Agreemint v1.0.56 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -19,11 +19,12 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.55
+## 🎨 What's New in Version 1.0.56
 
-- 🏷️ **Dynamic Header App Version Badge (`AppVersionChip`)**:
-  - Added a sleek, subtle version pill chip (`v1.0.55`) directly in the top **AppBar** header of the main screen (`ProgramsView`).
-  - Powered by `PackageInfo.fromPlatform()`, dynamically reflecting the installed app version on mobile and web without hardcoding.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.55` (`1.0.55+55`).
+- 🚀 **Native Android Browser In-App APK Download (`LaunchMode.externalApplication`)**:
+  - Replaced custom streaming logic in `AppUpdateService` with clean native browser launch.
+  - Tapping **Update APK** immediately opens the official release APK URL in default mobile browser (Chrome/Samsung Internet).
+  - Chrome processes the HTTP 302 AWS S3 redirect instantly, downloads `app-release.apk`, and Android pops up the package installer prompt cleanly!
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.56` (`1.0.56+56`).
 
 
