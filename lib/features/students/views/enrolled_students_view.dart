@@ -18,13 +18,39 @@ class EnrolledStudentsView extends ConsumerStatefulWidget {
 }
 
 class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
-  String _selectedFilter = 'All'; // 'All', 'Signed', 'Unsigned', 'Fully Paid', 'Retired'
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  String _selectedFilter = 'All'; // 'All', 'Signed', 'Unsigned', 'No Plan', 'Missing SOLO', 'Fully Paid', 'Refunded', 'Retired', 'Archived'
   String _selectedSort =
       'Enrolled: Newest First'; // 'Enrolled: Newest First', 'Enrolled: Oldest First', 'Signed Date: Newest First', 'Name: A-Z'
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   List<EnrollmentModel> _filterAndSortEnrollments(
       List<EnrollmentModel> enrollments) {
     final list = enrollments.where((e) {
+      if (_searchQuery.isNotEmpty) {
+        final q = _searchQuery.toLowerCase().trim();
+        final student = e.student;
+        if (student == null) return false;
+        final matchesName = student.name.toLowerCase().contains(q);
+        final matchesEmail = student.email.toLowerCase().contains(q);
+        final matchesPhone = (student.phone?.toLowerCase() ?? '').contains(q);
+        final matchesCui = (student.cui?.toLowerCase() ?? '').contains(q);
+        final matchesRegCom = (student.regCom?.toLowerCase() ?? '').contains(q);
+        if (!matchesName &&
+            !matchesEmail &&
+            !matchesPhone &&
+            !matchesCui &&
+            !matchesRegCom) {
+          return false;
+        }
+      }
+
       if (_selectedFilter == 'Signed') {
         return e.isSignedByBeneficiary;
       } else if (_selectedFilter == 'Unsigned') {
@@ -35,6 +61,10 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
         return !e.hasPaymentPlan;
       } else if (_selectedFilter == 'Missing SOLO') {
         return e.hasMissingSoloInvoice;
+      } else if (_selectedFilter == 'Refunded') {
+        return e.contract?.status == 'Refunded' || e.contract?.status == 'Cancelled';
+      } else if (_selectedFilter == 'Archived') {
+        return e.contract?.status == 'Archived';
       } else if (_selectedFilter == 'Retired') {
         return e.isRetired;
       }
@@ -228,9 +258,53 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
               // Summary Header Cards
               _buildSummaryHeader(enrollments),
 
-              // Filter Chips & Sort Info Row
+              // Live Search Bar
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 6),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (val) {
+                    setState(() {
+                      _searchQuery = val;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Search by Name, Email, Phone, CUI/CIF...',
+                    hintStyle: TextStyle(
+                      fontSize: 13,
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                    prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded, size: 18),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {
+                                _searchQuery = '';
+                              });
+                            },
+                          )
+                        : null,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    isDense: true,
+                    filled: true,
+                    fillColor: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest
+                        .withAlpha(80),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+
+              // Filter Chips & Results Count Row
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                 child: Row(
                   children: [
                     Expanded(
@@ -250,7 +324,11 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                             const SizedBox(width: 6),
                             _buildFilterChip('Fully Paid'),
                             const SizedBox(width: 6),
+                            _buildFilterChip('Refunded'),
+                            const SizedBox(width: 6),
                             _buildFilterChip('Retired'),
+                            const SizedBox(width: 6),
+                            _buildFilterChip('Archived'),
                           ],
                         ),
                       ),
@@ -259,16 +337,84 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                 ),
               ),
 
+              if (_searchQuery.isNotEmpty || _selectedFilter != 'All')
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Showing ${filtered.length} of ${enrollments.length} students',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () {
+                          _searchController.clear();
+                          setState(() {
+                            _searchQuery = '';
+                            _selectedFilter = 'All';
+                          });
+                        },
+                        child: Text(
+                          'Reset Filters',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               const Divider(height: 1),
 
               // Student List
               Expanded(
                 child: filtered.isEmpty
                     ? Center(
-                        child: Text(
-                          'No students matching "$_selectedFilter" filter.',
-                          style: TextStyle(
-                              color: Theme.of(context).colorScheme.outline),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.search_off_rounded,
+                                size: 48,
+                                color: Theme.of(context).colorScheme.outline,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                _searchQuery.isNotEmpty
+                                    ? 'No students found matching "$_searchQuery"'
+                                    : 'No students matching "$_selectedFilter" filter',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.outline,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              OutlinedButton.icon(
+                                icon: const Icon(Icons.refresh_rounded, size: 16),
+                                label: const Text('Reset Search & Filters'),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() {
+                                    _searchQuery = '';
+                                    _selectedFilter = 'All';
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       )
                     : ListView.builder(
