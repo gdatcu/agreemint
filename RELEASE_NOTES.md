@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.67 Release Notes
+# 🚀 Agreemint v1.0.68 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -21,13 +21,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.67
+## 🎨 What's New in Version 1.0.68
 
-- 📜 **Session Duration Customization & Clean Bilingual Translations**:
-  - **Customizable Session Duration**: Added input field for `Hrs/Session` (e.g. `2.5`h) in the preview dialog header.
-  - **Clean Bilingual Translation**: Formatted duration on PDF into two distinct, professional lines:
-    - *Durată totală: 50 ore (20 sesiuni x 2.5h) de consultanță live și practică aplicată*
-    - *Total duration: 50 hours (20 sessions x 2.5h) of live mentorship and hands-on practice*
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.67` (`1.0.67+67`).
+- 🔓 **Public QR Code Verification Router Whitelist Fix**:
+  - Whitelisted `/verify-cert` in `GoRouter`'s `isPublic` check so public mobile users and employers scanning the QR code reach the authentic verification portal without being redirected to `/access-denied`.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.68` (`1.0.68+68`).
 
 

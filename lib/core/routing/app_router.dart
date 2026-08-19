@@ -74,7 +74,10 @@ GoRouter appRouter(Ref ref) {
     initialLocation: '/programs',
     redirect: (context, state) {
       final loc = state.matchedLocation;
-      final isPublic = loc.startsWith('/sign/') || loc.startsWith('/view-doc') || loc == '/access-denied';
+      final isPublic = loc.startsWith('/sign/') ||
+          loc.startsWith('/view-doc') ||
+          loc.startsWith('/verify-cert') ||
+          loc == '/access-denied';
       if (isPublic) return null;
 
       final isAuth = authState.value ?? false;
