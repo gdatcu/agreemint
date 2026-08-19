@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.69 Release Notes
+# 🚀 Agreemint v1.0.70 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -8,6 +8,7 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 * **Mentorship Cohort Management**: Create, edit, and track mentorship cohorts in **RON** and **EUR**.
 * **Student & Enrollment Roster**: Manage active students and enrollments with automatic history archiving upon program deletion.
+* **Prospect Follow-ups & Lead Pipeline CRM**: Lead tracking with top KPI metrics (Total Leads, Due/Overdue, Contacted, Converted & Conversion Rate %, Lost), live search, sorting, filter chips, 1-tap contact logging with date shortcuts (`+2d`, `+7d`, `Next Week`), and WhatsApp outreach.
 * **1-Tap Mentorship Graduation Certificate Generator**: Official, branded QualiAdept Mentorship Completion Certificates with customizable course hours, sessions count, session duration (e.g. 2.5h), clean bilingual RO & EN translations, public QR verification portal (`/verify-cert`), mentor signature auto-fill, PDF preview, and WhatsApp sharing.
 * **Live Search & Multi-Filter Roster**: Real-time instant search by Student Name, Email, Phone, and CUI/CIF, with multi-status filter chips (Signed, Unsigned, Refunded, Archived, No Plan, Missing SOLO).
 * **Custom Contract & Business Settings Screen**: Configure company details (CUI/CIF, Reg. Com., Sediu, IBAN, Bank Name), default contract terms, and default mentor signature PNG directly inside the app without re-deploying code.
@@ -21,10 +22,13 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.69
+## 🎨 What's New in Version 1.0.70
 
-- 🛠️ **GitHub Actions SFTP Workflow Fix**:
-  - Fixed SFTP Deploy Action input key from `host:` to `server:` in `.github/workflows/release.yml` so automated SFTP deployment to `apps.qualiadept.eu` successfully resolves the target server host.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.69` (`1.0.69+69`).
+- 📊 **Prospect Follow-ups CRM Pipeline & Quick Contact Logging**:
+  - **KPI Metrics Header Bar**: Total Leads, Due/Overdue, Contacted, Converted (Conversion Rate %), and Lost.
+  - **Live Search & Sorting**: Instant search bar by name, email, phone, or program, plus sorting by Earliest Due, Latest Due, Name A-Z, or Newest.
+  - **1-Tap Log Contact Dialog**: Quick outreach logger with date preset shortcuts (`+2 Days`, `+7 Days`, `Next Week`, `Custom`). Automatically sets lead status to **Contacted**.
+  - **Mark as Lost & Status Badges**: Added 1-tap "Mark as Lost" quick action and visual color badges for `Pending`, `Contacted`, `Converted`, and `Lost`.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.70` (`1.0.70+70`).
 
 
