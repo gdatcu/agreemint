@@ -12,6 +12,7 @@ class CertificateGeneratorService {
     required DateTime completionDate,
     int courseHours = 50,
     int sessionCount = 20,
+    String sessionDuration = '2.5',
     String? certificateId,
     String mentorName = 'DATCU GEORGE-CRISTIAN',
     String companyName = 'QUALIADEPT',
@@ -219,13 +220,26 @@ class CertificateGeneratorService {
 
                   pw.SizedBox(height: 6),
 
-                  pw.Text(
-                    'Durată totală / Total duration: $courseHours ore ($sessionCount sesiuni x 2.5h) de consultanță live și practică aplicată / hours',
-                    style: pw.TextStyle(
-                      fontSize: 10,
-                      fontWeight: pw.FontWeight.bold,
-                      color: PdfColors.grey800,
-                    ),
+                  pw.Column(
+                    children: [
+                      pw.Text(
+                        'Durată totală: $courseHours ore ($sessionCount sesiuni x ${sessionDuration}h) de consultanță live și practică aplicată',
+                        style: pw.TextStyle(
+                          fontSize: 10,
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColors.grey800,
+                        ),
+                      ),
+                      pw.SizedBox(height: 2),
+                      pw.Text(
+                        'Total duration: $courseHours hours ($sessionCount sessions x ${sessionDuration}h) of live mentorship and hands-on practice',
+                        style: pw.TextStyle(
+                          fontSize: 9,
+                          fontStyle: pw.FontStyle.italic,
+                          color: PdfColors.grey600,
+                        ),
+                      ),
+                    ],
                   ),
 
                   pw.SizedBox(height: 16),

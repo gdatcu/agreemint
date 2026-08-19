@@ -28,18 +28,21 @@ class _CertificatePreviewDialogState
     extends ConsumerState<CertificatePreviewDialog> {
   late TextEditingController _hoursController;
   late TextEditingController _sessionsController;
+  late TextEditingController _sessionDurationController;
 
   @override
   void initState() {
     super.initState();
     _hoursController = TextEditingController(text: '50');
     _sessionsController = TextEditingController(text: '20');
+    _sessionDurationController = TextEditingController(text: '2.5');
   }
 
   @override
   void dispose() {
     _hoursController.dispose();
     _sessionsController.dispose();
+    _sessionDurationController.dispose();
     super.dispose();
   }
 
@@ -161,8 +164,31 @@ class _CertificatePreviewDialogState
                       onChanged: (_) => setState(() {}),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 14),
                   const Text('Sessions:',
+                      style:
+                          TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 6),
+                  SizedBox(
+                    width: 50,
+                    height: 36,
+                    child: TextField(
+                      controller: _sessionsController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.bold),
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  const Text('Hrs/Session:',
                       style:
                           TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                   const SizedBox(width: 6),
@@ -170,8 +196,9 @@ class _CertificatePreviewDialogState
                     width: 54,
                     height: 36,
                     child: TextField(
-                      controller: _sessionsController,
-                      keyboardType: TextInputType.number,
+                      controller: _sessionDurationController,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                           fontSize: 13, fontWeight: FontWeight.bold),
@@ -226,13 +253,17 @@ class _CertificatePreviewDialogState
             // Live PDF Certificate Preview
             Expanded(
               child: PdfPreview(
-                key: ValueKey('cert_${hours}_$sessions'),
+                key: ValueKey(
+                    'cert_${hours}_${sessions}_${_sessionDurationController.text}'),
                 build: (format) => certService.generateCertificatePdf(
                   studentName: widget.student.name,
                   programName: widget.program.name,
                   completionDate: DateTime.now(),
                   courseHours: hours,
                   sessionCount: sessions,
+                  sessionDuration: _sessionDurationController.text.trim().isNotEmpty
+                      ? _sessionDurationController.text.trim()
+                      : '2.5',
                   mentorSignatureBytes: settings?.mentorSignatureBytes,
                   mentorName: settings?.companyName ?? 'DATCU GEORGE-CRISTIAN',
                 ),

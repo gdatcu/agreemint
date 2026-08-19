@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.66 Release Notes
+# 🚀 Agreemint v1.0.67 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -8,7 +8,7 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 * **Mentorship Cohort Management**: Create, edit, and track mentorship cohorts in **RON** and **EUR**.
 * **Student & Enrollment Roster**: Manage active students and enrollments with automatic history archiving upon program deletion.
-* **1-Tap Mentorship Graduation Certificate Generator**: Official, branded QualiAdept Mentorship Completion Certificates (RO/EN) with customizable course hours & sessions (default 50h: 20 sessions x 2.5h), public QR verification portal (`/verify-cert`), mentor signature auto-fill, PDF preview, and WhatsApp sharing.
+* **1-Tap Mentorship Graduation Certificate Generator**: Official, branded QualiAdept Mentorship Completion Certificates with customizable course hours, sessions count, session duration (e.g. 2.5h), clean bilingual RO & EN translations, public QR verification portal (`/verify-cert`), mentor signature auto-fill, PDF preview, and WhatsApp sharing.
 * **Live Search & Multi-Filter Roster**: Real-time instant search by Student Name, Email, Phone, and CUI/CIF, with multi-status filter chips (Signed, Unsigned, Refunded, Archived, No Plan, Missing SOLO).
 * **Custom Contract & Business Settings Screen**: Configure company details (CUI/CIF, Reg. Com., Sediu, IBAN, Bank Name), default contract terms, and default mentor signature PNG directly inside the app without re-deploying code.
 * **B2B & Individual Client Support (PF / PFA / SRL)**: Native support for both standard individual clients and business entities (PFA/SRL) with automated CUI/CIF, Reg. Com., and Billing Address management.
@@ -21,12 +21,13 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.66
+## 🎨 What's New in Version 1.0.67
 
-- 📜 **Certificate Customization & Fixes**:
-  - **Customizable Hours & Sessions**: Added interactive input fields for Course Hours (default 50h) and Sessions (default 20 sessions x 2.5h) with live PDF re-rendering.
-  - **Public QR Code Verification Page (`/verify-cert`)**: Scanning certificate QR code opens a standalone public web page confirming official certificate validation and graduate details.
-  - **Mentor Signature PNG Integration**: Automatic signature binding from Settings with quick "Add Signature" shortcut if missing.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.66` (`1.0.66+66`).
+- 📜 **Session Duration Customization & Clean Bilingual Translations**:
+  - **Customizable Session Duration**: Added input field for `Hrs/Session` (e.g. `2.5`h) in the preview dialog header.
+  - **Clean Bilingual Translation**: Formatted duration on PDF into two distinct, professional lines:
+    - *Durată totală: 50 ore (20 sesiuni x 2.5h) de consultanță live și practică aplicată*
+    - *Total duration: 50 hours (20 sessions x 2.5h) of live mentorship and hands-on practice*
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.67` (`1.0.67+67`).
 
 

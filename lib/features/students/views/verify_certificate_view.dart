@@ -104,7 +104,7 @@ class VerifyCertificateView extends StatelessWidget {
                     context, 'Program Absolvit / Program', displayProgram),
                 const SizedBox(height: 12),
                 _buildDetailRow(context, 'Durată Totală / Duration',
-                    '$displayHours ore (20 sesiuni x 2.5h)'),
+                    '$displayHours ore de consultanță live și practică / hours'),
                 const SizedBox(height: 12),
                 _buildDetailRow(
                     context, 'Cod Certificat / ID', certificateId),
