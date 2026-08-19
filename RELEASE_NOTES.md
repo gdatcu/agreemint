@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.64 Release Notes
+# 🚀 Agreemint v1.0.65 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -8,6 +8,7 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 * **Mentorship Cohort Management**: Create, edit, and track mentorship cohorts in **RON** and **EUR**.
 * **Student & Enrollment Roster**: Manage active students and enrollments with automatic history archiving upon program deletion.
+* **1-Tap Mentorship Graduation Certificate Generator**: Official, branded QualiAdept Mentorship Completion Certificates (RO/EN) with landscape gold/navy styling, mentor signature embedding, dynamic QR verification code, PDF preview, and WhatsApp sharing.
 * **Live Search & Multi-Filter Roster**: Real-time instant search by Student Name, Email, Phone, and CUI/CIF, with multi-status filter chips (Signed, Unsigned, Refunded, Archived, No Plan, Missing SOLO).
 * **Custom Contract & Business Settings Screen**: Configure company details (CUI/CIF, Reg. Com., Sediu, IBAN, Bank Name), default contract terms, and default mentor signature PNG directly inside the app without re-deploying code.
 * **B2B & Individual Client Support (PF / PFA / SRL)**: Native support for both standard individual clients and business entities (PFA/SRL) with automated CUI/CIF, Reg. Com., and Billing Address management.
@@ -20,13 +21,13 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.64
+## 🎨 What's New in Version 1.0.65
 
-- ⚙️ **Custom Contract & Business Settings Screen (`/settings`)**:
-  - Full company profile management (Company Name, Sediu, CUI/CIF, Reg. Com., IBAN, Bank Name).
-  - Configurable default contract terms (Beneficiary Entity, Service Description, Payment Term, Refund Deadline).
-  - Interactive default mentor signature drawing pad with PNG storage & auto-fill.
-  - Quick Settings action buttons added to `ProgramsView` and `AnalyticsView` AppBars.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.64` (`1.0.64+64`).
+- 📜 **1-Tap Mentorship Graduation Certificate Generator (Bilingual PDF)**:
+  - Official landscape A4 PDF certificate generator with gold/navy framing & QualiAdept logo.
+  - Auto-embeds default **Mentor Signature PNG** and unique **Certificate Verification ID** / QR code.
+  - Interactive `PdfPreview` dialog with instant PDF download, printing, and 1-tap **WhatsApp Congratulation** trigger.
+  - Added Certificate action button (`Icons.workspace_premium_rounded`) to student roster cards.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.65` (`1.0.65+65`).
 
 

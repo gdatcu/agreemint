@@ -6,6 +6,7 @@ import '../../contracts/controllers/contract_controller.dart';
 import '../controllers/student_controller.dart';
 import '../models/enrollment_model.dart';
 import '../models/student_model.dart';
+import 'certificate_preview_dialog.dart';
 
 class EnrolledStudentsView extends ConsumerStatefulWidget {
   final ProgramModel program;
@@ -632,12 +633,28 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                     ],
                                   ),
                                   const Divider(height: 16),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.description_outlined),
-                                        tooltip: 'Manage Contract',
+                                   Row(
+                                     mainAxisAlignment: MainAxisAlignment.end,
+                                     children: [
+                                       IconButton(
+                                         icon: const Icon(
+                                             Icons.workspace_premium_rounded,
+                                             color: Colors.amber),
+                                         tooltip: 'Graduation Certificate (PDF)',
+                                         onPressed: () {
+                                           showDialog(
+                                             context: context,
+                                             builder: (ctx) =>
+                                                 CertificatePreviewDialog(
+                                               student: student,
+                                               program: widget.program,
+                                             ),
+                                           );
+                                         },
+                                       ),
+                                       IconButton(
+                                         icon: const Icon(Icons.description_outlined),
+                                         tooltip: 'Manage Contract',
                                         onPressed: () {
                                           context.go(
                                               '/programs/${widget.program.id}/students/contract',
