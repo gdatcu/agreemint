@@ -32,6 +32,11 @@ class ProgramsView extends ConsumerWidget {
         actions: [
           const AppVersionChip(),
           IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Business & Contract Settings',
+            onPressed: () => context.push('/settings'),
+          ),
+          IconButton(
             icon: const Icon(Icons.history_edu),
             tooltip: 'Archived Program History',
             onPressed: () => _showHistoryDialog(context, ref),

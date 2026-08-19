@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../controllers/analytics_controller.dart';
 import 'monthly_revenue_chart_widget.dart';
 
@@ -27,6 +28,11 @@ class AnalyticsView extends ConsumerWidget {
             icon: const Icon(Icons.download_for_offline_outlined),
             tooltip: 'Export Accounting CSV (ANAF)',
             onPressed: () => _showExportDialog(context),
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Business & Contract Settings',
+            onPressed: () => context.push('/settings'),
           ),
           IconButton(
             icon: const Icon(Icons.refresh),

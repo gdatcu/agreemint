@@ -17,6 +17,7 @@ import '../../features/payments/views/payment_tracker_view.dart';
 import '../../features/analytics/views/analytics_view.dart';
 import '../../features/prospects/views/prospects_view.dart';
 import '../../features/documents/views/doc_gateway_view.dart';
+import '../../features/settings/views/business_settings_view.dart';
 
 part 'app_router.g.dart';
 
@@ -240,6 +241,11 @@ GoRouter appRouter(Ref ref) {
             docTitle: title,
           );
         },
+      ),
+      // Root-level route for Business & Contract Settings
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const BusinessSettingsView(),
       ),
     ],
   );

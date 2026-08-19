@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.63 Release Notes
+# 🚀 Agreemint v1.0.64 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -9,6 +9,7 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 * **Mentorship Cohort Management**: Create, edit, and track mentorship cohorts in **RON** and **EUR**.
 * **Student & Enrollment Roster**: Manage active students and enrollments with automatic history archiving upon program deletion.
 * **Live Search & Multi-Filter Roster**: Real-time instant search by Student Name, Email, Phone, and CUI/CIF, with multi-status filter chips (Signed, Unsigned, Refunded, Archived, No Plan, Missing SOLO).
+* **Custom Contract & Business Settings Screen**: Configure company details (CUI/CIF, Reg. Com., Sediu, IBAN, Bank Name), default contract terms, and default mentor signature PNG directly inside the app without re-deploying code.
 * **B2B & Individual Client Support (PF / PFA / SRL)**: Native support for both standard individual clients and business entities (PFA/SRL) with automated CUI/CIF, Reg. Com., and Billing Address management.
 * **Legal Data Integrity & Protected Records**: Deletion guardrails preventing accidental removal of programs or students with active signed contracts or payment history.
 * **Bilingual Legal Contracts (RO/EN)**: Native PDF contract generation, dynamic sequence numbering (`is_custom` one-off isolation), and on-screen student signature capture.
@@ -19,12 +20,13 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.63
+## 🎨 What's New in Version 1.0.64
 
-- 🔍 **Student Roster Live Search & Smart Multi-Filter**:
-  - Live search bar matching Student Name, Email, Phone, CUI/CIF, and Reg. Com. numbers.
-  - Expanded filter chips: `All`, `Signed`, `Unsigned`, `No Plan`, `Missing SOLO`, `Fully Paid`, `Refunded`, `Retired`, `Archived`.
-  - Active result count badge ("Showing X of Y students") and 1-tap "Reset Filters" action.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.63` (`1.0.63+63`).
+- ⚙️ **Custom Contract & Business Settings Screen (`/settings`)**:
+  - Full company profile management (Company Name, Sediu, CUI/CIF, Reg. Com., IBAN, Bank Name).
+  - Configurable default contract terms (Beneficiary Entity, Service Description, Payment Term, Refund Deadline).
+  - Interactive default mentor signature drawing pad with PNG storage & auto-fill.
+  - Quick Settings action buttons added to `ProgramsView` and `AnalyticsView` AppBars.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.64` (`1.0.64+64`).
 
 

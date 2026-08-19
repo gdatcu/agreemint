@@ -12,6 +12,7 @@ import '../controllers/contract_controller.dart';
 import '../models/contract_model.dart';
 import '../../../core/constants.dart';
 import '../../../core/services/frankfurter_service.dart';
+import '../../settings/controllers/business_settings_controller.dart';
 
 class ContractSigningView extends ConsumerStatefulWidget {
   final EnrollmentModel enrollment;
@@ -82,6 +83,22 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
     );
     _dataIncepereController.text =
         DateTime.now().toIso8601String().split('T')[0];
+
+    final settings =
+        ref.read(businessSettingsControllerProvider).asData?.value ??
+            ref.read(businessSettingsControllerProvider).value;
+    if (settings != null) {
+      _prestatorNumeController.text = settings.companyName;
+      _prestatorSediuController.text = settings.companyAddress;
+      _prestatorRegComController.text = settings.regCom;
+      _prestatorCifController.text = settings.cuiCif;
+      _prestatorIbanController.text = settings.iban;
+      _prestatorBancaController.text = settings.bankName;
+      _beneficiaryEntityController.text = settings.beneficiaryEntity;
+      _serviceDescriptionController.text = settings.serviceDescription;
+      _paymentTermController.text = settings.paymentTerm;
+      _refundDeadlineController.text = settings.refundDeadline;
+    }
 
     final program = widget.enrollment.program;
     final initialPrice = program?.totalPrice ?? 1000.00;
