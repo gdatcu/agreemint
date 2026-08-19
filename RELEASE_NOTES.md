@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.70 Release Notes
+# 🚀 Agreemint v1.0.71 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,13 +22,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.70
+## 🎨 What's New in Version 1.0.71
 
-- 📊 **Prospect Follow-ups CRM Pipeline & Quick Contact Logging**:
-  - **KPI Metrics Header Bar**: Total Leads, Due/Overdue, Contacted, Converted (Conversion Rate %), and Lost.
-  - **Live Search & Sorting**: Instant search bar by name, email, phone, or program, plus sorting by Earliest Due, Latest Due, Name A-Z, or Newest.
-  - **1-Tap Log Contact Dialog**: Quick outreach logger with date preset shortcuts (`+2 Days`, `+7 Days`, `Next Week`, `Custom`). Automatically sets lead status to **Contacted**.
-  - **Mark as Lost & Status Badges**: Added 1-tap "Mark as Lost" quick action and visual color badges for `Pending`, `Contacted`, `Converted`, and `Lost`.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.70` (`1.0.70+70`).
+- 🧹 **Cleaned Up SFTP Deploy Workflow Inputs**:
+  - Removed redundant `host` parameter from `.github/workflows/release.yml` so only `server` is passed to `wlixcc/SFTP-Deploy-Action@v1.2.4`.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.71` (`1.0.71+71`).
 
 
