@@ -421,18 +421,22 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
                                                   programsState.value ?? []),
                                         ),
 
-                                      // Quick Mark as Lost
-                                      if (prospect.status != 'Lost' &&
-                                          prospect.status != 'Converted')
-                                        IconButton(
-                                          icon: Icon(
-                                              Icons.do_not_disturb_on_outlined,
-                                              size: 20,
-                                              color: Colors.grey.shade600),
-                                          tooltip: 'Mark as Lost',
-                                          onPressed: () =>
-                                              _markAsLost(context, ref, prospect),
-                                        ),
+                                      // Quick Mark as Lost / Toggle Lost
+                                      IconButton(
+                                        icon: Icon(
+                                            prospect.status == 'Lost'
+                                                ? Icons.restore_rounded
+                                                : Icons.do_not_disturb_on_outlined,
+                                            size: 20,
+                                            color: prospect.status == 'Lost'
+                                                ? Colors.amber.shade700
+                                                : Colors.grey.shade600),
+                                        tooltip: prospect.status == 'Lost'
+                                            ? 'Reactivate Prospect (Set to Pending)'
+                                            : 'Mark as Lost',
+                                        onPressed: () =>
+                                            _toggleLostStatus(context, ref, prospect),
+                                      ),
 
                                       // Edit Button
                                       IconButton(
@@ -599,8 +603,9 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
 
   void _showLogContactDialog(
       BuildContext context, WidgetRef ref, ProspectModel prospect) {
-    final notesController = TextEditingController(text: prospect.notes ?? '');
+    final newNoteController = TextEditingController();
     DateTime selectedDate = DateTime.now().add(const Duration(days: 7));
+    final existingNotes = prospect.notes?.trim() ?? '';
 
     showDialog(
       context: context,
@@ -612,84 +617,129 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
 
             return AlertDialog(
               title: Text('Log Contact - ${prospect.name}'),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Conversation Notes / Call Result:',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: notesController,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        hintText: 'e.g., Discussed requirements, interested in next cohort...',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text('Set Next Follow-up Date:',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-
-                    // Quick Date Preset Chips
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: [
-                        ActionChip(
-                          label: const Text('+2 Days'),
-                          onPressed: () {
-                            setState(() {
-                              selectedDate = DateTime.now().add(const Duration(days: 2));
-                            });
-                          },
+              content: SizedBox(
+                width: 480,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (existingNotes.isNotEmpty) ...[
+                        const Row(
+                          children: [
+                            Icon(Icons.history, size: 16, color: Colors.grey),
+                            SizedBox(width: 6),
+                            Text('Previous Conversation History:',
+                                style: TextStyle(
+                                    fontSize: 12, fontWeight: FontWeight.bold)),
+                          ],
                         ),
-                        ActionChip(
-                          label: const Text('+7 Days'),
-                          onPressed: () {
-                            setState(() {
-                              selectedDate = DateTime.now().add(const Duration(days: 7));
-                            });
-                          },
+                        const SizedBox(height: 6),
+                        Container(
+                          width: double.infinity,
+                          constraints: const BoxConstraints(maxHeight: 120),
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withAlpha(120),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .outlineVariant),
+                          ),
+                          child: SingleChildScrollView(
+                            child: Text(
+                              existingNotes,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
                         ),
-                        ActionChip(
-                          label: const Text('Next Week'),
-                          onPressed: () {
-                            setState(() {
-                              selectedDate = DateTime.now().add(const Duration(days: 14));
-                            });
-                          },
-                        ),
+                        const SizedBox(height: 14),
                       ],
-                    ),
-                    const SizedBox(height: 8),
-
-                    InkWell(
-                      onTap: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: selectedDate,
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime(2035),
-                        );
-                        if (picked != null) {
-                          setState(() {
-                            selectedDate = picked;
-                          });
-                        }
-                      },
-                      child: InputDecorator(
+                      const Text('Add New Update / Note Entry:',
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: newNoteController,
+                        maxLines: 3,
                         decoration: const InputDecoration(
-                          labelText: 'Custom Follow-up Date',
-                          prefixIcon: Icon(Icons.calendar_today),
+                          hintText:
+                              'e.g., Discussed requirements on phone, requested info...',
+                          border: OutlineInputBorder(),
                         ),
-                        child: Text(formattedDate,
-                            style: const TextStyle(fontWeight: FontWeight.bold)),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      const Text('Set Next Follow-up Date:',
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+
+                      // Quick Date Preset Chips
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          ActionChip(
+                            label: const Text('+2 Days'),
+                            onPressed: () {
+                              setState(() {
+                                selectedDate =
+                                    DateTime.now().add(const Duration(days: 2));
+                              });
+                            },
+                          ),
+                          ActionChip(
+                            label: const Text('+7 Days'),
+                            onPressed: () {
+                              setState(() {
+                                selectedDate =
+                                    DateTime.now().add(const Duration(days: 7));
+                              });
+                            },
+                          ),
+                          ActionChip(
+                            label: const Text('Next Week'),
+                            onPressed: () {
+                              setState(() {
+                                selectedDate =
+                                    DateTime.now().add(const Duration(days: 14));
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+
+                      InkWell(
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: selectedDate,
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime(2035),
+                          );
+                          if (picked != null) {
+                            setState(() {
+                              selectedDate = picked;
+                            });
+                          }
+                        },
+                        child: InputDecorator(
+                          decoration: const InputDecoration(
+                            labelText: 'Custom Follow-up Date',
+                            prefixIcon: Icon(Icons.calendar_today),
+                          ),
+                          child: Text(formattedDate,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               actions: [
@@ -706,6 +756,19 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
                   label: const Text('Save & Mark Contacted'),
                   onPressed: () async {
                     final navigator = Navigator.pop;
+                    final newEntry = newNoteController.text.trim();
+                    final now = DateTime.now();
+                    final dateTag =
+                        '${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}';
+
+                    String finalNotes = existingNotes;
+                    if (newEntry.isNotEmpty) {
+                      final formattedEntry = '[$dateTag] $newEntry';
+                      finalNotes = existingNotes.isNotEmpty
+                          ? '$existingNotes\n$formattedEntry'
+                          : formattedEntry;
+                    }
+
                     await ref
                         .read(prospectsControllerProvider.notifier)
                         .updateProspect(
@@ -714,9 +777,7 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
                           phone: prospect.phone,
                           email: prospect.email,
                           programId: prospect.programId,
-                          notes: notesController.text.trim().isNotEmpty
-                              ? notesController.text.trim()
-                              : prospect.notes,
+                          notes: finalNotes.isNotEmpty ? finalNotes : null,
                           followUpDate: selectedDate,
                           status: 'Contacted',
                         );
@@ -725,7 +786,7 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                              'Updated follow-up for ${prospect.name} to $formattedDate'),
+                              'Logged contact & updated follow-up for ${prospect.name} to $formattedDate'),
                           backgroundColor: Colors.purple.shade700,
                         ),
                       );
@@ -741,8 +802,10 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
     );
   }
 
-  Future<void> _markAsLost(
+  Future<void> _toggleLostStatus(
       BuildContext context, WidgetRef ref, ProspectModel prospect) async {
+    final newStatus = prospect.status == 'Lost' ? 'Pending' : 'Lost';
+
     await ref.read(prospectsControllerProvider.notifier).updateProspect(
           prospectId: prospect.id,
           name: prospect.name,
@@ -751,14 +814,17 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
           programId: prospect.programId,
           notes: prospect.notes,
           followUpDate: prospect.followUpDate,
-          status: 'Lost',
+          status: newStatus,
         );
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Marked "${prospect.name}" as Lost.'),
-          backgroundColor: Colors.grey.shade800,
+          content: Text(newStatus == 'Lost'
+              ? 'Marked "${prospect.name}" as Lost.'
+              : 'Reactivated "${prospect.name}" to Pending.'),
+          backgroundColor:
+              newStatus == 'Lost' ? Colors.grey.shade800 : Colors.green.shade700,
         ),
       );
     }
