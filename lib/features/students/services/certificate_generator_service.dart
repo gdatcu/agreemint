@@ -10,7 +10,8 @@ class CertificateGeneratorService {
     required String studentName,
     required String programName,
     required DateTime completionDate,
-    int courseHours = 120,
+    int courseHours = 50,
+    int sessionCount = 20,
     String? certificateId,
     String mentorName = 'DATCU GEORGE-CRISTIAN',
     String companyName = 'QUALIADEPT',
@@ -219,7 +220,7 @@ class CertificateGeneratorService {
                   pw.SizedBox(height: 6),
 
                   pw.Text(
-                    'Durată totală / Total duration: $courseHours ore de consultanță live și practică aplicată / hours',
+                    'Durată totală / Total duration: $courseHours ore ($sessionCount sesiuni x 2.5h) de consultanță live și practică aplicată / hours',
                     style: pw.TextStyle(
                       fontSize: 10,
                       fontWeight: pw.FontWeight.bold,
@@ -240,7 +241,7 @@ class CertificateGeneratorService {
                         children: [
                           pw.BarcodeWidget(
                             data:
-                                'https://apps.qualiadept.eu/agreemint/#/verify-cert?id=$certCode',
+                                'https://apps.qualiadept.eu/agreemint/#/verify-cert?id=$certCode&name=${Uri.encodeComponent(studentName)}&prog=${Uri.encodeComponent(programName)}&date=$formattedDate&hours=$courseHours',
                             barcode: pw.Barcode.qrCode(),
                             width: 50,
                             height: 50,

@@ -18,6 +18,7 @@ import '../../features/analytics/views/analytics_view.dart';
 import '../../features/prospects/views/prospects_view.dart';
 import '../../features/documents/views/doc_gateway_view.dart';
 import '../../features/settings/views/business_settings_view.dart';
+import '../../features/students/views/verify_certificate_view.dart';
 
 part 'app_router.g.dart';
 
@@ -246,6 +247,24 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const BusinessSettingsView(),
+      ),
+      // Root-level route for Public Certificate Verification
+      GoRoute(
+        path: '/verify-cert',
+        builder: (context, state) {
+          final certId = state.uri.queryParameters['id'] ?? 'CERT-VALID';
+          final name = state.uri.queryParameters['name'] ?? '';
+          final prog = state.uri.queryParameters['prog'] ?? '';
+          final date = state.uri.queryParameters['date'] ?? '';
+          final hours = state.uri.queryParameters['hours'] ?? '50';
+          return VerifyCertificateView(
+            certificateId: certId,
+            studentName: name,
+            programName: prog,
+            issueDate: date,
+            courseHours: hours,
+          );
+        },
       ),
     ],
   );

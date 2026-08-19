@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -8,7 +9,7 @@ import '../../settings/controllers/business_settings_controller.dart';
 import '../models/student_model.dart';
 import '../../programs/models/program_model.dart';
 
-class CertificatePreviewDialog extends ConsumerWidget {
+class CertificatePreviewDialog extends ConsumerStatefulWidget {
   final StudentModel student;
   final ProgramModel program;
 
@@ -18,15 +19,40 @@ class CertificatePreviewDialog extends ConsumerWidget {
     required this.program,
   });
 
+  @override
+  ConsumerState<CertificatePreviewDialog> createState() =>
+      _CertificatePreviewDialogState();
+}
+
+class _CertificatePreviewDialogState
+    extends ConsumerState<CertificatePreviewDialog> {
+  late TextEditingController _hoursController;
+  late TextEditingController _sessionsController;
+
+  @override
+  void initState() {
+    super.initState();
+    _hoursController = TextEditingController(text: '50');
+    _sessionsController = TextEditingController(text: '20');
+  }
+
+  @override
+  void dispose() {
+    _hoursController.dispose();
+    _sessionsController.dispose();
+    super.dispose();
+  }
+
   Future<void> _sendWhatsAppCertificateNotification(
       BuildContext context) async {
-    final phone = student.phone?.replaceAll(RegExp(r'\D'), '') ?? '';
+    final phone = widget.student.phone?.replaceAll(RegExp(r'\D'), '') ?? '';
     final cleanPhone =
         phone.startsWith('0') ? '40${phone.substring(1)}' : phone;
 
+    final hours = _hoursController.text.trim();
     final message =
-        'Felicitări, ${student.name}! 🎓✨\n\n'
-        'Ai absolvit cu succes programul de mentorat "${program.name}" la QualiAdept!\n\n'
+        'Felicitări, ${widget.student.name}! 🎓✨\n\n'
+        'Ai absolvit cu succes programul de mentorat "${widget.program.name}" ($hours ore de consultanță & pregătire) la QualiAdept!\n\n'
         'Certificatul tău oficial de absolvire a fost generat și este disponibil. Îți mulțumim pentru implicare și îți dorim mult succes în carieră! 🚀';
 
     final encodedMsg = Uri.encodeComponent(message);
@@ -45,21 +71,28 @@ class CertificatePreviewDialog extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final settings =
-        ref.read(businessSettingsControllerProvider).asData?.value ??
-            ref.read(businessSettingsControllerProvider).value;
+  Widget build(BuildContext context) {
+    final settingsState = ref.watch(businessSettingsControllerProvider);
+    final settings = settingsState.asData?.value ?? settingsState.value;
 
     final certService = CertificateGeneratorService();
+
+    final hours = int.tryParse(_hoursController.text.trim()) ?? 50;
+    final sessions = int.tryParse(_sessionsController.text.trim()) ?? 20;
+
+    final hasSignature =
+        settings?.mentorSignatureBytes != null &&
+            settings!.mentorSignatureBytes!.isNotEmpty;
 
     return Dialog(
       insetPadding: const EdgeInsets.all(16),
       child: Container(
-        width: 900,
-        height: 650,
+        width: 920,
+        height: 700,
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            // Dialog Header Row
             Row(
               children: [
                 const Icon(Icons.workspace_premium_rounded,
@@ -70,13 +103,13 @@ class CertificatePreviewDialog extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Graduation Certificate - ${student.name}',
+                        'Graduation Certificate - ${widget.student.name}',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                       ),
                       Text(
-                        'Program: ${program.name}',
+                        'Program: ${widget.program.name}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: Theme.of(context).colorScheme.outline,
                             ),
@@ -90,14 +123,116 @@ class CertificatePreviewDialog extends ConsumerWidget {
                 ),
               ],
             ),
-            const Divider(height: 20),
+            const SizedBox(height: 12),
+
+            // Controls Bar (Customizable Hours & Sessions + Signature Alert)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Theme.of(context)
+                    .colorScheme
+                    .surfaceContainerHighest
+                    .withAlpha(80),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.timer_outlined, size: 18),
+                  const SizedBox(width: 8),
+                  const Text('Hours Spent:',
+                      style:
+                          TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 6),
+                  SizedBox(
+                    width: 64,
+                    height: 36,
+                    child: TextField(
+                      controller: _hoursController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.bold),
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  const Text('Sessions:',
+                      style:
+                          TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 6),
+                  SizedBox(
+                    width: 54,
+                    height: 36,
+                    child: TextField(
+                      controller: _sessionsController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.bold),
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                  const Spacer(),
+                  if (!hasSignature)
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.orange.shade700,
+                        side: BorderSide(color: Colors.orange.shade300),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                      ),
+                      icon: const Icon(Icons.draw_rounded, size: 16),
+                      label: const Text('Add Signature in Settings',
+                          style: TextStyle(fontSize: 11)),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        context.push('/settings');
+                      },
+                    )
+                  else
+                    Row(
+                      children: [
+                        const Icon(Icons.check_circle_rounded,
+                            color: Colors.green, size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Signature Embedded',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.green.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // Live PDF Certificate Preview
             Expanded(
               child: PdfPreview(
+                key: ValueKey('cert_${hours}_$sessions'),
                 build: (format) => certService.generateCertificatePdf(
-                  studentName: student.name,
-                  programName: program.name,
+                  studentName: widget.student.name,
+                  programName: widget.program.name,
                   completionDate: DateTime.now(),
-                  courseHours: 120,
+                  courseHours: hours,
+                  sessionCount: sessions,
                   mentorSignatureBytes: settings?.mentorSignatureBytes,
                   mentorName: settings?.companyName ?? 'DATCU GEORGE-CRISTIAN',
                 ),
@@ -107,10 +242,13 @@ class CertificatePreviewDialog extends ConsumerWidget {
                 canChangeOrientation: false,
                 initialPageFormat: PdfPageFormat.a4.landscape,
                 pdfFileName:
-                    'Certificat_Absolvire_${student.name.replaceAll(' ', '_')}.pdf',
+                    'Certificat_Absolvire_${widget.student.name.replaceAll(' ', '_')}.pdf',
               ),
             ),
+
             const SizedBox(height: 12),
+
+            // Bottom Actions Row
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [

@@ -6,14 +6,15 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('CertificateGeneratorService Unit Tests', () {
-    test('generateCertificatePdf builds non-empty landscape PDF bytes', () async {
+    test('generateCertificatePdf builds non-empty landscape PDF bytes with 50h default', () async {
       final service = CertificateGeneratorService();
 
       final pdfBytes = await service.generateCertificatePdf(
         studentName: 'Alex Ionescu',
         programName: 'TypeScript & Playwright Automation',
         completionDate: DateTime(2026, 8, 19),
-        courseHours: 120,
+        courseHours: 50,
+        sessionCount: 20,
         certificateId: 'CERT-2026-9999',
         mentorName: 'Datcu George-Cristian',
       );
@@ -22,7 +23,7 @@ void main() {
       expect(pdfBytes.length, greaterThan(1000));
     });
 
-    test('generateCertificatePdf handles mentor signature bytes cleanly', () async {
+    test('generateCertificatePdf handles custom hours and mentor signature bytes cleanly', () async {
       final service = CertificateGeneratorService();
 
       final fakeSigBytes = Uint8List.fromList([
@@ -41,6 +42,8 @@ void main() {
         studentName: 'Elena Popa',
         programName: 'Flutter Mastery 2026',
         completionDate: DateTime.now(),
+        courseHours: 60,
+        sessionCount: 24,
         mentorSignatureBytes: fakeSigBytes,
       );
 
