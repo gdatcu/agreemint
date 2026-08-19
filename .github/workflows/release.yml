@@ -75,13 +75,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Deploy Web Build to Server via SFTP
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+      - name: Deploy Web Build to Server via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
-          port: ${{ secrets.SERVER_PORT || '22' }}
-          local_path: './build/web/*'
-          remote_path: ${{ secrets.SERVER_DIR || './' }}
+          server-dir: ${{ secrets.SERVER_DIR || './' }}
+          local-dir: './build/web/'
         continue-on-error: true

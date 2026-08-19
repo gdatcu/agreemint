@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.72 Release Notes
+# 🚀 Agreemint v1.0.73 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,14 +22,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.72
+## 🎨 What's New in Version 1.0.73
 
-- 📜 **Prospect Conversation Notes History Preserved**:
-  - Updated **Log Contact** dialog to display previous conversation notes in a dedicated scrollable history box.
-  - New note entries automatically append with date tags (`[DD.MM.YYYY]`) so complete lead outreach history is preserved.
-- 🔄 **Active Buttons & Prospect Reactivation**:
-  - Kept all action buttons active on lead cards even when status is **Lost**.
-  - Tapping the Lost icon on a lost lead reactivates them back to **Pending**, or logging a new contact re-engages them cleanly.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.72` (`1.0.72+72`).
+- 🚀 **Switched Automated Deployment to FTP-Deploy-Action**:
+  - Replaced `SFTP-Deploy-Action` with `SamKirkland/FTP-Deploy-Action@v4.3.5` in `.github/workflows/release.yml` for fast (~7 sec), differential file synchronization directly to `apps.qualiadept.eu`.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.73` (`1.0.73+73`).
 
 
