@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.74 Release Notes
+# 🚀 Agreemint v1.0.75 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,10 +22,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.74
+## 🎨 What's New in Version 1.0.75
 
-- 🔢 **Live Item Counts on Filter Tabs**:
-  - Each filter tab/chip on the Prospect Follow-ups screen now displays its exact live item count: `Due / Overdue (0)`, `Upcoming (12)`, `Contacted (0)`, `Converted (1)`, `Lost (2)`, and `All (15)`.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.74` (`1.0.74+74`).
+- 📐 **Responsive Layout Overflow Fixes**:
+  - Converted rigid `Row` layouts to responsive `Wrap` layouts in `CertificatePreviewDialog` (top controls bar & bottom action buttons) and `ProspectsView` (card action buttons), completely eliminating RenderFlex layout overflow errors on narrow screens.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.75` (`1.0.75+75`).
 
 

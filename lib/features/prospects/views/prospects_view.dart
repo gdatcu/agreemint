@@ -383,8 +383,10 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
                                   const Divider(height: 16),
 
                                   // Quick Action Buttons Row
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
+                                  Wrap(
+                                    alignment: WrapAlignment.end,
+                                    spacing: 4,
+                                    runSpacing: 4,
                                     children: [
                                       // 1-Tap Log Contact & Reschedule
                                       IconButton(

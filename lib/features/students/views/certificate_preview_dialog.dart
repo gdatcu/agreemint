@@ -138,80 +138,96 @@ class _CertificatePreviewDialogState
                     .withAlpha(80),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Row(
+              child: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                alignment: WrapAlignment.spaceBetween,
+                spacing: 10,
+                runSpacing: 8,
                 children: [
-                  const Icon(Icons.timer_outlined, size: 18),
-                  const SizedBox(width: 8),
-                  const Text('Hours Spent:',
-                      style:
-                          TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                  const SizedBox(width: 6),
-                  SizedBox(
-                    width: 64,
-                    height: 36,
-                    child: TextField(
-                      controller: _hoursController,
-                      keyboardType: TextInputType.number,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 13, fontWeight: FontWeight.bold),
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                        border: OutlineInputBorder(),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.timer_outlined, size: 18),
+                      const SizedBox(width: 6),
+                      const Text('Hours Spent:',
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.bold)),
+                      const SizedBox(width: 6),
+                      SizedBox(
+                        width: 56,
+                        height: 36,
+                        child: TextField(
+                          controller: _hoursController,
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.bold),
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 8),
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (_) => setState(() {}),
+                        ),
                       ),
-                      onChanged: (_) => setState(() {}),
-                    ),
+                    ],
                   ),
-                  const SizedBox(width: 14),
-                  const Text('Sessions:',
-                      style:
-                          TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                  const SizedBox(width: 6),
-                  SizedBox(
-                    width: 50,
-                    height: 36,
-                    child: TextField(
-                      controller: _sessionsController,
-                      keyboardType: TextInputType.number,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 13, fontWeight: FontWeight.bold),
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                        border: OutlineInputBorder(),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Sessions:',
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.bold)),
+                      const SizedBox(width: 6),
+                      SizedBox(
+                        width: 48,
+                        height: 36,
+                        child: TextField(
+                          controller: _sessionsController,
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.bold),
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 8),
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (_) => setState(() {}),
+                        ),
                       ),
-                      onChanged: (_) => setState(() {}),
-                    ),
+                    ],
                   ),
-                  const SizedBox(width: 14),
-                  const Text('Hrs/Session:',
-                      style:
-                          TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                  const SizedBox(width: 6),
-                  SizedBox(
-                    width: 54,
-                    height: 36,
-                    child: TextField(
-                      controller: _sessionDurationController,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 13, fontWeight: FontWeight.bold),
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                        border: OutlineInputBorder(),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Hrs/Session:',
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.bold)),
+                      const SizedBox(width: 6),
+                      SizedBox(
+                        width: 52,
+                        height: 36,
+                        child: TextField(
+                          controller: _sessionDurationController,
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.bold),
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 8),
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (_) => setState(() {}),
+                        ),
                       ),
-                      onChanged: (_) => setState(() {}),
-                    ),
+                    ],
                   ),
-                  const Spacer(),
                   if (!hasSignature)
                     OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
@@ -230,6 +246,7 @@ class _CertificatePreviewDialogState
                     )
                   else
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         const Icon(Icons.check_circle_rounded,
                             color: Colors.green, size: 16),
@@ -261,9 +278,10 @@ class _CertificatePreviewDialogState
                   completionDate: DateTime.now(),
                   courseHours: hours,
                   sessionCount: sessions,
-                  sessionDuration: _sessionDurationController.text.trim().isNotEmpty
-                      ? _sessionDurationController.text.trim()
-                      : '2.5',
+                  sessionDuration:
+                      _sessionDurationController.text.trim().isNotEmpty
+                          ? _sessionDurationController.text.trim()
+                          : '2.5',
                   mentorSignatureBytes: settings?.mentorSignatureBytes,
                   mentorName: settings?.companyName ?? 'DATCU GEORGE-CRISTIAN',
                 ),
@@ -280,8 +298,11 @@ class _CertificatePreviewDialogState
             const SizedBox(height: 12),
 
             // Bottom Actions Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            Wrap(
+              alignment: WrapAlignment.end,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
@@ -293,7 +314,6 @@ class _CertificatePreviewDialogState
                   onPressed: () =>
                       _sendWhatsAppCertificateNotification(context),
                 ),
-                const SizedBox(width: 12),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: const Text('Close'),
