@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.68 Release Notes
+# 🚀 Agreemint v1.0.69 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -21,10 +21,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.68
+## 🎨 What's New in Version 1.0.69
 
-- 🔓 **Public QR Code Verification Router Whitelist Fix**:
-  - Whitelisted `/verify-cert` in `GoRouter`'s `isPublic` check so public mobile users and employers scanning the QR code reach the authentic verification portal without being redirected to `/access-denied`.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.68` (`1.0.68+68`).
+- 🛠️ **GitHub Actions SFTP Workflow Fix**:
+  - Fixed SFTP Deploy Action input key from `host:` to `server:` in `.github/workflows/release.yml` so automated SFTP deployment to `apps.qualiadept.eu` successfully resolves the target server host.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.69` (`1.0.69+69`).
 
 

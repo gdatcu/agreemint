@@ -78,10 +78,11 @@ jobs:
       - name: Deploy Web Build to Server via SFTP
         uses: wlixcc/SFTP-Deploy-Action@v1.2.4
         with:
+          server: ${{ secrets.SERVER_HOST }}
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
-          port: ${{ secrets.SERVER_PORT || 22 }}
+          port: ${{ secrets.SERVER_PORT || '22' }}
           local_path: './build/web/*'
           remote_path: ${{ secrets.SERVER_DIR || './' }}
         continue-on-error: true
