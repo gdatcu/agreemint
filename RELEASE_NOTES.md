@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.73 Release Notes
+# 🚀 Agreemint v1.0.74 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -8,7 +8,7 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 * **Mentorship Cohort Management**: Create, edit, and track mentorship cohorts in **RON** and **EUR**.
 * **Student & Enrollment Roster**: Manage active students and enrollments with automatic history archiving upon program deletion.
-* **Prospect Follow-ups & Lead Pipeline CRM**: Lead tracking with top KPI metrics (Total Leads, Due/Overdue, Contacted, Converted & Conversion Rate %, Lost), live search, sorting, filter chips, 1-tap contact logging with date shortcuts (`+2d`, `+7d`, `Next Week`), and WhatsApp outreach.
+* **Prospect Follow-ups & Lead Pipeline CRM**: Lead tracking with top KPI metrics (Total Leads, Due/Overdue, Contacted, Converted & Conversion Rate %, Lost), live item counts on filter tabs (`Due/Overdue (0)`, `Upcoming (12)`, `Contacted (0)`, `Converted (1)`, `Lost (2)`, `All (15)`), live search, sorting, 1-tap contact logging with date shortcuts (`+2d`, `+7d`, `Next Week`), and WhatsApp outreach.
 * **1-Tap Mentorship Graduation Certificate Generator**: Official, branded QualiAdept Mentorship Completion Certificates with customizable course hours, sessions count, session duration (e.g. 2.5h), clean bilingual RO & EN translations, public QR verification portal (`/verify-cert`), mentor signature auto-fill, PDF preview, and WhatsApp sharing.
 * **Live Search & Multi-Filter Roster**: Real-time instant search by Student Name, Email, Phone, and CUI/CIF, with multi-status filter chips (Signed, Unsigned, Refunded, Archived, No Plan, Missing SOLO).
 * **Custom Contract & Business Settings Screen**: Configure company details (CUI/CIF, Reg. Com., Sediu, IBAN, Bank Name), default contract terms, and default mentor signature PNG directly inside the app without re-deploying code.
@@ -22,10 +22,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.73
+## 🎨 What's New in Version 1.0.74
 
-- 🚀 **Switched Automated Deployment to FTP-Deploy-Action**:
-  - Replaced `SFTP-Deploy-Action` with `SamKirkland/FTP-Deploy-Action@v4.3.5` in `.github/workflows/release.yml` for fast (~7 sec), differential file synchronization directly to `apps.qualiadept.eu`.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.73` (`1.0.73+73`).
+- 🔢 **Live Item Counts on Filter Tabs**:
+  - Each filter tab/chip on the Prospect Follow-ups screen now displays its exact live item count: `Due / Overdue (0)`, `Upcoming (12)`, `Contacted (0)`, `Converted (1)`, `Lost (2)`, and `All (15)`.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.74` (`1.0.74+74`).
 
 

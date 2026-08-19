@@ -60,6 +60,13 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
             return due.isBefore(today) || due.isAtSameMomentAs(today);
           }).length;
 
+          final upcomingCount = prospects.where((p) {
+            if (p.status == 'Converted' || p.status == 'Lost') return false;
+            final due = DateTime(
+                p.followUpDate.year, p.followUpDate.month, p.followUpDate.day);
+            return due.isAfter(today);
+          }).length;
+
           final contactedCount = prospects.where((p) => p.status == 'Contacted').length;
           final convertedCount = prospects.where((p) => p.status == 'Converted').length;
           final lostCount = prospects.where((p) => p.status == 'Lost').length;
@@ -75,7 +82,9 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   children: [
-                    _buildKpiCard('Total Leads', '$totalLeads', Colors.blue),
+                    _buildKpiCard('Total Leads', '$totalLeads', Colors.blue,
+                        isSelected: _selectedFilter == 'All',
+                        onTap: () => setState(() => _selectedFilter = 'All')),
                     const SizedBox(width: 8),
                     _buildKpiCard('Due / Overdue', '$overdueCount', Colors.orange,
                         isSelected: _selectedFilter == 'Due / Overdue',
@@ -152,23 +161,23 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
                 ),
               ),
 
-              // Filter Chips Row
+              // Filter Chips Row with Live Item Counts
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 child: Row(
                   children: [
-                    _buildFilterChip('Due / Overdue'),
+                    _buildFilterChip('Due / Overdue', overdueCount),
                     const SizedBox(width: 6),
-                    _buildFilterChip('Upcoming'),
+                    _buildFilterChip('Upcoming', upcomingCount),
                     const SizedBox(width: 6),
-                    _buildFilterChip('Contacted'),
+                    _buildFilterChip('Contacted', contactedCount),
                     const SizedBox(width: 6),
-                    _buildFilterChip('Converted'),
+                    _buildFilterChip('Converted', convertedCount),
                     const SizedBox(width: 6),
-                    _buildFilterChip('Lost'),
+                    _buildFilterChip('Lost', lostCount),
                     const SizedBox(width: 6),
-                    _buildFilterChip('All'),
+                    _buildFilterChip('All', totalLeads),
                   ],
                 ),
               ),
@@ -517,10 +526,10 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
     );
   }
 
-  Widget _buildFilterChip(String filterName) {
+  Widget _buildFilterChip(String filterName, int count) {
     final isSelected = _selectedFilter == filterName;
     return FilterChip(
-      label: Text(filterName, style: const TextStyle(fontSize: 12)),
+      label: Text('$filterName ($count)', style: const TextStyle(fontSize: 12)),
       selected: isSelected,
       onSelected: (_) {
         setState(() {
