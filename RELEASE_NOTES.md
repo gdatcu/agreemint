@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.82 Release Notes
+# 🚀 Agreemint v1.0.83 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,10 +22,15 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.82
+## 🎨 What's New in Version 1.0.83
 
-- 📁 **2-Level FTP Relative Path Deployment (`../../agreemint.qualiadept.eu/`)**:
-  - Updated `server-dir` in GitHub Actions release workflow to navigate up 2 directory levels (`../../`) out of the cPanel FTP user root (`apps.qualiadept.eu/agreemint/`) and deposit all 52 web assets directly into `/home/username/agreemint.qualiadept.eu/`.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.82` (`1.0.82+82`).
+- 👆 **Interactive Status Badges & Direct Screen Navigation**:
+  - Made all status badges on student cards interactive buttons with hover pointers and tooltips.
+  - Tapping **`Signed` / `Unsigned`** navigates directly to Contract View & Signing (`/programs/:id/students/contract`).
+  - Tapping **`1/2 Paid` / `Fully Paid`** navigates directly to Payment Tracker (`/programs/:id/students/payments`).
+- 🧾 **Per-Installment SOLO Invoice Breakdown**:
+  - Replaced flat `No SOLO Invoice` label with granular counts (e.g. **`1/3 SOLO (1 Missing)`** or **`3/3 SOLO`**).
+  - Tapping the SOLO badge opens a new **SOLO Invoice Breakdown Dialog** showing per-installment invoice status with 1-tap "Attach Invoice" shortcuts.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.83` (`1.0.83+83`).
 
 

@@ -3,6 +3,7 @@ import 'package:agreemint/features/programs/models/program_model.dart';
 import 'package:agreemint/features/students/models/student_model.dart';
 import 'package:agreemint/features/students/models/enrollment_model.dart';
 import 'package:agreemint/features/contracts/models/contract_model.dart';
+import 'package:agreemint/features/payments/models/payment_model.dart';
 
 void main() {
   group('ProgramModel Unit Tests', () {
@@ -163,6 +164,49 @@ void main() {
 
       expect(enrollment.isSignedByBeneficiary, false);
       expect(enrollment.canBeDeleted, true);
+    });
+
+    test('soloInvoicesCount and paidMissingSoloInvoicesCount calculate correctly', () {
+      final payments = [
+        PaymentModel(
+          id: 'pay-1',
+          enrollmentId: 'enr-10',
+          amountDue: 500.0,
+          amountPaid: 500.0,
+          dueDate: DateTime.now(),
+          status: 'Paid',
+          externalInvoiceNumber: 'SOLO-101',
+        ),
+        PaymentModel(
+          id: 'pay-2',
+          enrollmentId: 'enr-10',
+          amountDue: 500.0,
+          amountPaid: 500.0,
+          dueDate: DateTime.now(),
+          status: 'Paid',
+          externalInvoiceNumber: null,
+        ),
+        PaymentModel(
+          id: 'pay-3',
+          enrollmentId: 'enr-10',
+          amountDue: 500.0,
+          amountPaid: 0.0,
+          dueDate: DateTime.now(),
+          status: 'Pending',
+          externalInvoiceNumber: null,
+        ),
+      ];
+
+      final enrollment = EnrollmentModel(
+        id: 'enr-10',
+        programId: 'prog-1',
+        studentId: 'stud-1',
+        payments: payments,
+      );
+
+      expect(enrollment.soloInvoicesCount, 1);
+      expect(enrollment.paidMissingSoloInvoicesCount, 1);
+      expect(enrollment.hasMissingSoloInvoice, true);
     });
   });
 

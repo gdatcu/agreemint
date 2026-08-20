@@ -73,6 +73,24 @@ class EnrollmentModel {
       hasPaymentPlan &&
       payments!.any((p) => p.externalInvoiceNumber == null || p.externalInvoiceNumber!.isEmpty);
 
+  /// Number of installments that have a SOLO invoice attached.
+  int get soloInvoicesCount {
+    if (payments == null) return 0;
+    return payments!
+        .where((p) => p.externalInvoiceNumber != null && p.externalInvoiceNumber!.isNotEmpty)
+        .length;
+  }
+
+  /// Number of Paid installments missing a SOLO invoice.
+  int get paidMissingSoloInvoicesCount {
+    if (payments == null) return 0;
+    return payments!
+        .where((p) =>
+            p.status == 'Paid' &&
+            (p.externalInvoiceNumber == null || p.externalInvoiceNumber!.isEmpty))
+        .length;
+  }
+
   /// Total sum of all scheduled installments.
   double get totalPaymentsAmount {
     if (payments == null) return 0.0;

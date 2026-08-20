@@ -568,7 +568,7 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                             ),
                                       ),
 
-                                      // Contract Badge
+                                      // Contract Badge (Interactive: Tapping navigates to contract)
                                       if (enrollment.isRetired)
                                         _buildBadge(
                                           icon: Icons.replay_rounded,
@@ -576,6 +576,13 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                           bgColor: Colors.amber.shade50,
                                           borderColor: Colors.amber.shade300,
                                           textColor: Colors.amber.shade900,
+                                          tooltip: 'Click to view retired contract details',
+                                          onTap: () {
+                                            context.go(
+                                              '/programs/${widget.program.id}/students/contract',
+                                              extra: enrollment,
+                                            );
+                                          },
                                         )
                                       else if (isSigned)
                                         _buildBadge(
@@ -584,6 +591,13 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                           bgColor: Colors.green.shade50,
                                           borderColor: Colors.green.shade200,
                                           textColor: Colors.green.shade800,
+                                          tooltip: 'Click to view / manage signed contract',
+                                          onTap: () {
+                                            context.go(
+                                              '/programs/${widget.program.id}/students/contract',
+                                              extra: enrollment,
+                                            );
+                                          },
                                         )
                                       else
                                         _buildBadge(
@@ -592,9 +606,16 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                           bgColor: Colors.orange.shade50,
                                           borderColor: Colors.orange.shade200,
                                           textColor: Colors.orange.shade900,
+                                          tooltip: 'Click to create / sign contract',
+                                          onTap: () {
+                                            context.go(
+                                              '/programs/${widget.program.id}/students/contract',
+                                              extra: enrollment,
+                                            );
+                                          },
                                         ),
 
-                                      // Payment Status Badge
+                                      // Payment Status Badge (Interactive: Tapping navigates to payments)
                                       if (isFullyPaid)
                                         _buildBadge(
                                           icon: Icons.check_circle_outline,
@@ -602,6 +623,13 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                           bgColor: Colors.teal.shade50,
                                           borderColor: Colors.teal.shade200,
                                           textColor: Colors.teal.shade900,
+                                          tooltip: 'Click to view payment history',
+                                          onTap: () {
+                                            context.go(
+                                              '/programs/${widget.program.id}/students/payments',
+                                              extra: enrollment,
+                                            );
+                                          },
                                         )
                                       else if (payments.isNotEmpty)
                                         _buildBadge(
@@ -611,6 +639,13 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                           bgColor: Colors.purple.shade50,
                                           borderColor: Colors.purple.shade200,
                                           textColor: Colors.purple.shade900,
+                                          tooltip: 'Click to manage payment plan',
+                                          onTap: () {
+                                            context.go(
+                                              '/programs/${widget.program.id}/students/payments',
+                                              extra: enrollment,
+                                            );
+                                          },
                                         )
                                       else
                                         _buildBadge(
@@ -619,17 +654,57 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                           bgColor: Colors.red.shade50,
                                           borderColor: Colors.red.shade300,
                                           textColor: Colors.red.shade900,
+                                          tooltip: 'Click to generate payment plan',
+                                          onTap: () {
+                                            context.go(
+                                              '/programs/${widget.program.id}/students/payments',
+                                              extra: enrollment,
+                                            );
+                                          },
                                         ),
 
-                                      // Missing SOLO Invoice Badge
-                                      if (enrollment.hasMissingSoloInvoice)
-                                        _buildBadge(
-                                          icon: Icons.receipt_long_outlined,
-                                          label: 'No SOLO Invoice',
-                                          bgColor: Colors.blueGrey.shade50,
-                                          borderColor: Colors.blueGrey.shade200,
-                                          textColor: Colors.blueGrey.shade800,
-                                        ),
+                                      // Granular SOLO Invoice Badge (Interactive: Tapping opens breakdown dialog)
+                                      if (payments.isNotEmpty) ...[
+                                        if (enrollment.soloInvoicesCount == payments.length)
+                                          _buildBadge(
+                                            icon: Icons.receipt_long_outlined,
+                                            label:
+                                                '${enrollment.soloInvoicesCount}/${payments.length} SOLO',
+                                            bgColor: Colors.green.shade50,
+                                            borderColor: Colors.green.shade200,
+                                            textColor: Colors.green.shade800,
+                                            tooltip:
+                                                'All SOLO invoices attached. Click for breakdown',
+                                            onTap: () => _showSoloBreakdownDialog(
+                                                context, enrollment, student),
+                                          )
+                                        else if (enrollment.paidMissingSoloInvoicesCount > 0)
+                                          _buildBadge(
+                                            icon: Icons.warning_amber_rounded,
+                                            label:
+                                                '${enrollment.soloInvoicesCount}/${payments.length} SOLO (${enrollment.paidMissingSoloInvoicesCount} Missing)',
+                                            bgColor: Colors.orange.shade50,
+                                            borderColor: Colors.orange.shade300,
+                                            textColor: Colors.orange.shade900,
+                                            tooltip:
+                                                'Missing SOLO invoices for paid installments. Click to inspect',
+                                            onTap: () => _showSoloBreakdownDialog(
+                                                context, enrollment, student),
+                                          )
+                                        else
+                                          _buildBadge(
+                                            icon: Icons.receipt_long_outlined,
+                                            label:
+                                                '${enrollment.soloInvoicesCount}/${payments.length} SOLO',
+                                            bgColor: Colors.blueGrey.shade50,
+                                            borderColor: Colors.blueGrey.shade200,
+                                            textColor: Colors.blueGrey.shade800,
+                                            tooltip:
+                                                'Click to inspect SOLO invoice breakdown',
+                                            onTap: () => _showSoloBreakdownDialog(
+                                                context, enrollment, student),
+                                          ),
+                                      ],
                                     ],
                                   ),
                                   const Divider(height: 16),
@@ -766,29 +841,227 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
     required Color bgColor,
     required Color borderColor,
     required Color textColor,
+    VoidCallback? onTap,
+    String? tooltip,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: bgColor,
+    final child = Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: borderColor),
+        mouseCursor: onTap != null ? SystemMouseCursors.click : SystemMouseCursors.basic,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: borderColor),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 11, color: textColor),
+              const SizedBox(width: 3),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 11, color: textColor),
-          const SizedBox(width: 3),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: textColor,
+    );
+
+    if (tooltip != null && tooltip.isNotEmpty) {
+      return Tooltip(
+        message: tooltip,
+        child: child,
+      );
+    }
+    return child;
+  }
+
+  void _showSoloBreakdownDialog(
+    BuildContext context,
+    EnrollmentModel enrollment,
+    StudentModel student,
+  ) {
+    final payments = enrollment.payments ?? [];
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.receipt_long_outlined, color: Colors.blue.shade800),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'SOLO Invoices — ${student.name}',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: 480,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Installment SOLO Invoice Status (${enrollment.soloInvoicesCount}/${payments.length} Attached):',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (payments.isEmpty)
+                    const Text('No payment schedule created for this student yet.')
+                  else
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: payments.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        final p = payments[index];
+                        final hasInvoice = p.externalInvoiceNumber != null &&
+                            p.externalInvoiceNumber!.isNotEmpty;
+                        final isPaid = p.status == 'Paid';
+
+                        return Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: hasInvoice
+                                ? Colors.green.shade50
+                                : (isPaid ? Colors.orange.shade50 : Colors.grey.shade50),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: hasInvoice
+                                  ? Colors.green.shade200
+                                  : (isPaid
+                                      ? Colors.orange.shade300
+                                      : Colors.grey.shade300),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Installment #${index + 1}: ${p.amountDue.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold, fontSize: 13),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: isPaid
+                                          ? Colors.green.shade100
+                                          : Colors.amber.shade100,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      p.status,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: isPaid
+                                            ? Colors.green.shade900
+                                            : Colors.amber.shade900,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              if (hasInvoice)
+                                Row(
+                                  children: [
+                                    const Icon(Icons.check_circle,
+                                        size: 14, color: Colors.green),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'SOLO Invoice: ${p.externalInvoiceNumber}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green.shade900,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              else if (isPaid)
+                                Row(
+                                  children: [
+                                    Icon(Icons.warning_amber_rounded,
+                                        size: 14, color: Colors.orange.shade800),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Paid — Missing SOLO Invoice',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.orange.shade900,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              else
+                                Row(
+                                  children: [
+                                    const Icon(Icons.hourglass_empty,
+                                        size: 14, color: Colors.grey),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Pending Payment — No Invoice',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                ],
+              ),
             ),
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.payments_outlined, size: 16),
+              label: const Text('Manage Payments & Invoices'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                context.go(
+                  '/programs/${widget.program.id}/students/payments',
+                  extra: enrollment,
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
