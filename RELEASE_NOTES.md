@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.79 Release Notes
+# 🚀 Agreemint v1.0.80 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,11 +22,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.79
+## 🎨 What's New in Version 1.0.80
 
-- 🌐 **Dedicated Subdomain Migration (`agreemint.qualiadept.eu`)**:
-  - Migrated web build base href to root scope (`/`) and target FTP deployment folder to `./agreemint.qualiadept.eu/`.
-  - Updated all client contract signing URLs (`https://agreemint.qualiadept.eu/#/sign/`), QR verification links (`https://agreemint.qualiadept.eu/#/verify-cert`), document viewer gateway links (`https://agreemint.qualiadept.eu/`), and direct APK downloads (`https://agreemint.qualiadept.eu/app-release.apk`).
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.79` (`1.0.79+79`).
+- 🚀 **Hardcoded FTP Deployment Target (`./agreemint.qualiadept.eu/`)**:
+  - Hardcoded `server-dir: './agreemint.qualiadept.eu/'` in GitHub Actions release workflow.
+  - Automatically deploys all web files (`index.html`, `main.dart.js`, `flutter.js`, `app-release.apk`) directly into the `agreemint.qualiadept.eu` root domain folder.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.80` (`1.0.80+80`).
 
 
