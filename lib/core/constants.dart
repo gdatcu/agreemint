@@ -23,5 +23,5 @@ class AppConstants {
 
   /// Base web domain URL used for client contract signing portal links.
   static const String clientPortalBaseUrl =
-      'https://apps.qualiadept.eu/agreemint/#/sign/';
+      'https://agreemint.qualiadept.eu/#/sign/';
 }

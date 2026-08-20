@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.78 Release Notes
+# 🚀 Agreemint v1.0.79 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,11 +22,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.78
+## 🎨 What's New in Version 1.0.79
 
-- ⚡ **Direct Web Server APK Deployment & Direct Download Link**:
-  - Deploys `app-release.apk` directly to `https://apps.qualiadept.eu/agreemint/app-release.apk` during automated build releases.
-  - Fixes mobile Chrome download hangs caused by GitHub release asset S3 redirects, allowing instant 1-tap downloads.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.78` (`1.0.78+78`).
+- 🌐 **Dedicated Subdomain Migration (`agreemint.qualiadept.eu`)**:
+  - Migrated web build base href to root scope (`/`) and target FTP deployment folder to `./agreemint.qualiadept.eu/`.
+  - Updated all client contract signing URLs (`https://agreemint.qualiadept.eu/#/sign/`), QR verification links (`https://agreemint.qualiadept.eu/#/verify-cert`), document viewer gateway links (`https://agreemint.qualiadept.eu/`), and direct APK downloads (`https://agreemint.qualiadept.eu/app-release.apk`).
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.79` (`1.0.79+79`).
 
 

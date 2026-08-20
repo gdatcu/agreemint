@@ -50,8 +50,8 @@ void main() {
       );
 
       expect(msgToday, contains('*astăzi, 2026-08-16*'));
-      expect(msgToday, contains('https://apps.qualiadept.eu/agreemint/#/view-doc?url=https%3A%2F%2Fexample.com%2Finvoice.pdf'));
-      expect(msgToday, contains('https://apps.qualiadept.eu/agreemint/#/view-doc?url=https%3A%2F%2Fexample.com%2Fcontract.pdf'));
+      expect(msgToday, contains('https://agreemint.qualiadept.eu/#/view-doc?url=https%3A%2F%2Fexample.com%2Finvoice.pdf'));
+      expect(msgToday, contains('https://agreemint.qualiadept.eu/#/view-doc?url=https%3A%2F%2Fexample.com%2Fcontract.pdf'));
     });
 
     test('buildContractFollowUpMessage constructs polite contract follow-up string', () {

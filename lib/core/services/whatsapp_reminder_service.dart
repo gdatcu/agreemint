@@ -36,7 +36,7 @@ class WhatsAppReminderService {
 
     final baseUrl = (customBaseUrl != null && customBaseUrl.trim().isNotEmpty)
         ? customBaseUrl.trim()
-        : 'https://apps.qualiadept.eu/agreemint/';
+        : 'https://agreemint.qualiadept.eu/';
 
     final cleanBase = baseUrl.endsWith('/') ? baseUrl : '$baseUrl/';
     return '${cleanBase}#/view-doc?url=$encodedUrl&pin=$pin&title=$encodedTitle';

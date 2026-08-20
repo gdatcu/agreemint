@@ -255,7 +255,7 @@ class CertificateGeneratorService {
                         children: [
                           pw.BarcodeWidget(
                             data:
-                                'https://apps.qualiadept.eu/agreemint/#/verify-cert?id=$certCode&name=${Uri.encodeComponent(studentName)}&prog=${Uri.encodeComponent(programName)}&date=$formattedDate&hours=$courseHours',
+                                'https://agreemint.qualiadept.eu/#/verify-cert?id=$certCode&name=${Uri.encodeComponent(studentName)}&prog=${Uri.encodeComponent(programName)}&date=$formattedDate&hours=$courseHours',
                             barcode: pw.Barcode.qrCode(),
                             width: 50,
                             height: 50,

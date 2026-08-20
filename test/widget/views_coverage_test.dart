@@ -47,7 +47,7 @@ void main() {
     test('AppConstants getters return valid fallback values', () {
       expect(AppConstants.supabaseUrl, isNotEmpty);
       expect(AppConstants.supabaseAnonKey, isNotEmpty);
-      expect(AppConstants.clientPortalBaseUrl, contains('https://apps.qualiadept.eu/'));
+      expect(AppConstants.clientPortalBaseUrl, contains('https://agreemint.qualiadept.eu/'));
     });
   });
 
