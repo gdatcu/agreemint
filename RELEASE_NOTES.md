@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.90 Release Notes
+# 🚀 Agreemint v1.0.91 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,12 +22,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.90
+## 🎨 What's New in Version 1.0.91
 
-- 🛠️ **Supabase Database RPC Relay Integration (Resolves Web CORS Errors)**:
-  - Migrated Resend API email delivery to execute server-side via a secure Supabase PostgreSQL RPC function (`send_email_otp`).
-  - Resolves standard browser CORS security policies preventing direct client-side HTTP requests to external email APIs.
-  - Safe-guards the Resend API Key inside Supabase database environments instead of compiled source code.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.90` (`1.0.90+90`).
+- 🛡️ **Complete Removal of Developer Bypass Backdoor (100% Legal Repudiation Compliance)**:
+  - Completely removed the developer bypass code (`123456`) from `client_web_signature_view.dart`.
+  - Ensures only dynamically generated, email-delivered OTP codes can unlock the signature canvas, passing strict legal & security audit requirements.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.91` (`1.0.91+91`).
 
 

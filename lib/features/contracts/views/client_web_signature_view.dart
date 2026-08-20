@@ -135,7 +135,7 @@ class _ClientWebSignatureViewState
 
   void _verifyOtpCode() {
     final enteredOtp = _otpController.text.trim();
-    if (enteredOtp == _generatedOtp || enteredOtp == '123456') {
+    if (enteredOtp == _generatedOtp) {
       setState(() {
         _isEmailVerified = true;
         _emailVerifyError = null;
