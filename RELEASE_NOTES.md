@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.80 Release Notes
+# 🚀 Agreemint v1.0.81 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,11 +22,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.80
+## 🎨 What's New in Version 1.0.81
 
-- 🚀 **Hardcoded FTP Deployment Target (`./agreemint.qualiadept.eu/`)**:
-  - Hardcoded `server-dir: './agreemint.qualiadept.eu/'` in GitHub Actions release workflow.
-  - Automatically deploys all web files (`index.html`, `main.dart.js`, `flutter.js`, `app-release.apk`) directly into the `agreemint.qualiadept.eu` root domain folder.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.80` (`1.0.80+80`).
+- 📁 **FTP Relative Path Deployment (`../agreemint.qualiadept.eu/`)**:
+  - Updated `server-dir` in GitHub Actions release workflow to navigate out of the default FTP home folder and deposit all web assets directly into `/home/username/agreemint.qualiadept.eu/`.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.81` (`1.0.81+81`).
 
 
