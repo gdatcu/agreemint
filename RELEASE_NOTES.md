@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.83 Release Notes
+# 🚀 Agreemint v1.0.84 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,15 +22,14 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.83
+## 🎨 What's New in Version 1.0.84
 
-- 👆 **Interactive Status Badges & Direct Screen Navigation**:
-  - Made all status badges on student cards interactive buttons with hover pointers and tooltips.
-  - Tapping **`Signed` / `Unsigned`** navigates directly to Contract View & Signing (`/programs/:id/students/contract`).
-  - Tapping **`1/2 Paid` / `Fully Paid`** navigates directly to Payment Tracker (`/programs/:id/students/payments`).
-- 🧾 **Per-Installment SOLO Invoice Breakdown**:
-  - Replaced flat `No SOLO Invoice` label with granular counts (e.g. **`1/3 SOLO (1 Missing)`** or **`3/3 SOLO`**).
-  - Tapping the SOLO badge opens a new **SOLO Invoice Breakdown Dialog** showing per-installment invoice status with 1-tap "Attach Invoice" shortcuts.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.83` (`1.0.83+83`).
+- 📱 **0 Overflow Responsive Mobile Layout Across All Views**:
+  - **Payment Tracker Screen**: Wrapped installment headers and action icon buttons (`[Invoice]`, `[Receipt]`, `[WhatsApp]`, `[Edit]`, `[Delete]`) in flexible `Expanded` & `Wrap` elements, completely eliminating horizontal `RenderFlex overflowed` stripes on narrow mobile displays ($\le 360\text{px}$).
+  - **SOLO Invoice Modal**: Wrapped title string in `Expanded` to fit narrow mobile viewports cleanly.
+  - **Accounting CSV Export Modal**: Wrapped header text in `Expanded`.
+  - **Add/Edit Lead CRM Modal**: Wrapped header text in `Expanded`.
+  - **Company Settings Screen**: Wrapped card section headers in `Expanded`.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.84` (`1.0.84+84`).
 
 

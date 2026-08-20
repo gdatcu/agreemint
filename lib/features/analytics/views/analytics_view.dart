@@ -426,7 +426,7 @@ class __AccountingExportDialogState extends State<_AccountingExportDialog> {
         children: [
           Icon(Icons.table_chart_outlined, color: Colors.teal),
           SizedBox(width: 10),
-          Text('Export Accounting CSV'),
+          Expanded(child: Text('Export Accounting CSV')),
         ],
       ),
       content: Column(

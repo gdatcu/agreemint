@@ -397,10 +397,12 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                         title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Installment #${index + 1}',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
+                            Expanded(
+                              child: Text(
+                                'Installment #${index + 1}',
+                                style:
+                                    const TextStyle(fontWeight: FontWeight.bold),
+                              ),
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -601,100 +603,102 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                     ),
                               ),
                             ],
-                          ],
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                Icons.post_add,
-                                size: 20,
-                                color: payment.externalInvoiceNumber != null
-                                    ? Colors.blue.shade700
-                                    : Colors.grey.shade600,
-                              ),
-                              tooltip: 'SOLO / External Invoice',
-                              onPressed: () => _showSoloInvoiceDialog(
-                                  context, ref, payment),
-                            ),
-                            if (payment.amountPaid > 0)
-                              IconButton(
-                                icon: Icon(
-                                  Icons.receipt_long,
-                                  size: 20,
-                                  color: payment.isReceiptSigned
-                                      ? Colors.green.shade700
-                                      : Colors.indigo,
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 2,
+                              runSpacing: 2,
+                              children: [
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.post_add,
+                                    size: 20,
+                                    color: payment.externalInvoiceNumber != null
+                                        ? Colors.blue.shade700
+                                        : Colors.grey.shade600,
+                                  ),
+                                  tooltip: 'SOLO / External Invoice',
+                                  onPressed: () => _showSoloInvoiceDialog(
+                                      context, ref, payment),
                                 ),
-                                tooltip: payment.isReceiptSigned
-                                    ? 'View Signed Receipt'
-                                    : 'Chitanță / Generate Receipt PDF',
-                                onPressed: () => _generateAndShowReceipt(
-                                    context, payment, index + 1, payments.length),
-                              ),
-                            if (displayStatus != 'Paid' &&
-                                displayStatus != 'Refunded' &&
-                                !isContractRefunded) ...[
-                              IconButton(
-                                icon: Icon(Icons.chat_outlined,
-                                    size: 20, color: Colors.green.shade600),
-                                tooltip: 'Send WhatsApp Reminder',
-                                onPressed: () {
-                                  final now = DateTime.now();
-                                  final today = DateTime(now.year, now.month, now.day);
-                                  final dueDay = DateTime(payment.dueDate.year, payment.dueDate.month, payment.dueDate.day);
-                                  final daysUntilDue = dueDay.difference(today).inDays;
-
-                                  final contractPdf = widget.enrollment.contract?.signedPdfUrl ?? widget.enrollment.contract?.pdfUrl;
-
-                                  WhatsAppReminderService.sendReminder(
-                                    context: context,
-                                    phone: student?.phone,
-                                    studentName: student?.name ?? 'Cursant',
-                                    programName: program?.name ?? 'Program Mentorat',
-                                    amount: payment.amountDue - payment.amountPaid,
-                                    currency: currency,
-                                    dueDateStr: dateStr,
-                                    daysUntilDue: daysUntilDue,
-                                    invoiceUrl: payment.invoiceUrl,
-                                    invoiceNumber: payment.invoiceNumber,
-                                    contractPdfUrl: contractPdf,
-                                  );
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.edit_outlined, size: 20),
-                                tooltip: 'Edit / Record Payment',
-                                onPressed: () =>
-                                    _showRecordPaymentDialog(context, ref, payment),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline,
-                                    size: 20, color: Colors.redAccent),
-                                tooltip: 'Delete Installment',
-                                onPressed: () =>
-                                    _showDeleteInstallmentDialog(context, ref, payment),
-                              ),
-                            ] else ...[
-                              IconButton(
-                                icon: Icon(Icons.lock_outline,
-                                    size: 20, color: Colors.grey.shade400),
-                                tooltip: displayStatus == 'Refunded' || isContractRefunded
-                                    ? 'Contract / Payment Refunded: Cannot be edited or deleted'
-                                    : 'Payment settled: Paid installments cannot be edited or deleted',
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(displayStatus == 'Refunded' || isContractRefunded
-                                          ? 'Refunded installments cannot be modified or deleted.'
-                                          : 'Paid installments cannot be modified or deleted.'),
-                                      backgroundColor: Colors.orange,
+                                if (payment.amountPaid > 0)
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.receipt_long,
+                                      size: 20,
+                                      color: payment.isReceiptSigned
+                                          ? Colors.green.shade700
+                                          : Colors.indigo,
                                     ),
-                                  );
-                                },
-                              ),
-                            ],
+                                    tooltip: payment.isReceiptSigned
+                                        ? 'View Signed Receipt'
+                                        : 'Chitanță / Generate Receipt PDF',
+                                    onPressed: () => _generateAndShowReceipt(
+                                        context, payment, index + 1, payments.length),
+                                  ),
+                                if (displayStatus != 'Paid' &&
+                                    displayStatus != 'Refunded' &&
+                                    !isContractRefunded) ...[
+                                  IconButton(
+                                    icon: Icon(Icons.chat_outlined,
+                                        size: 20, color: Colors.green.shade600),
+                                    tooltip: 'Send WhatsApp Reminder',
+                                    onPressed: () {
+                                      final now = DateTime.now();
+                                      final today = DateTime(now.year, now.month, now.day);
+                                      final dueDay = DateTime(payment.dueDate.year, payment.dueDate.month, payment.dueDate.day);
+                                      final daysUntilDue = dueDay.difference(today).inDays;
+
+                                      final contractPdf = widget.enrollment.contract?.signedPdfUrl ?? widget.enrollment.contract?.pdfUrl;
+
+                                      WhatsAppReminderService.sendReminder(
+                                        context: context,
+                                        phone: student?.phone,
+                                        studentName: student?.name ?? 'Cursant',
+                                        programName: program?.name ?? 'Program Mentorat',
+                                        amount: payment.amountDue - payment.amountPaid,
+                                        currency: currency,
+                                        dueDateStr: dateStr,
+                                        daysUntilDue: daysUntilDue,
+                                        invoiceUrl: payment.invoiceUrl,
+                                        invoiceNumber: payment.invoiceNumber,
+                                        contractPdfUrl: contractPdf,
+                                      );
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit_outlined, size: 20),
+                                    tooltip: 'Edit / Record Payment',
+                                    onPressed: () =>
+                                        _showRecordPaymentDialog(context, ref, payment),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline,
+                                        size: 20, color: Colors.redAccent),
+                                    tooltip: 'Delete Installment',
+                                    onPressed: () =>
+                                        _showDeleteInstallmentDialog(context, ref, payment),
+                                  ),
+                                ] else ...[
+                                  IconButton(
+                                    icon: Icon(Icons.lock_outline,
+                                        size: 20, color: Colors.grey.shade400),
+                                    tooltip: displayStatus == 'Refunded' || isContractRefunded
+                                        ? 'Contract / Payment Refunded: Cannot be edited or deleted'
+                                        : 'Payment settled: Paid installments cannot be edited or deleted',
+                                    onPressed: () {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(displayStatus == 'Refunded' || isContractRefunded
+                                              ? 'Refunded installments cannot be modified or deleted.'
+                                              : 'Paid installments cannot be modified or deleted.'),
+                                          backgroundColor: Colors.orange,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ],
+                            ),
                           ],
                         ),
                         onTap: () {
@@ -959,7 +963,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
             children: const [
               Icon(Icons.description_outlined, color: Colors.blue),
               SizedBox(width: 8),
-              Text('SOLO External Invoice'),
+              Expanded(child: Text('SOLO External Invoice')),
             ],
           ),
           content: SingleChildScrollView(

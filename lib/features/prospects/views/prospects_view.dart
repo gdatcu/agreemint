@@ -865,7 +865,13 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text(isEdit ? 'Edit Prospect' : 'Add Prospect / Lead'),
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text(isEdit ? 'Edit Prospect' : 'Add Prospect / Lead'),
+                  ),
+                ],
+              ),
               content: SingleChildScrollView(
                 child: Form(
                   key: formKey,
