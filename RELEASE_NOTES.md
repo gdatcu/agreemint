@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.85 Release Notes
+# 🚀 Agreemint v1.0.86 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,10 +22,14 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.85
+## 🎨 What's New in Version 1.0.86
 
-- 🌐 **Direct Subdomain FTP Deployment (`server-dir: './'`)**:
-  - Updated GitHub Actions FTP deployment to use root target `./` with the newly created dedicated subdomain FTP account (`agreemint@agreemint.qualiadept.eu`), deploying all compiled web assets directly into `https://agreemint.qualiadept.eu`.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.85` (`1.0.85+85`).
+- ✍️ **Permanent Default Mentor Signature Retention & Async Load Sync**:
+  - Fixed async state sync race condition in `business_settings_view.dart` so previously drawn & saved mentor signatures automatically populate the preview canvas on page load.
+  - Added signature preservation in `_saveSettings()` ensuring existing signature bytes are never erased when updating company details unless explicitly cleared.
+- 📱 **Complete Mobile Overflow Fixes Across All Analytics & CRM Dialogs**:
+  - Fixed `Payment Collection Rate` card row overflow in `analytics_view.dart`.
+  - Fixed `Program of Interest` dropdown text overflow in `prospects_view.dart` with `isExpanded: true` and text truncation (`overflow: TextOverflow.ellipsis`).
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.86` (`1.0.86+86`).
 
 

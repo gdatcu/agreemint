@@ -105,6 +105,10 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
         }
       } else if (_existingSignatureBytes != null) {
         mentorSigBase64 = base64Encode(_existingSignatureBytes!);
+      } else {
+        final currentSettings = ref.read(businessSettingsControllerProvider).asData?.value ??
+            ref.read(businessSettingsControllerProvider).value;
+        mentorSigBase64 = currentSettings?.mentorSignatureBase64;
       }
 
       final updatedSettings = BusinessSettingsModel(
@@ -156,6 +160,19 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
   Widget build(BuildContext context) {
     final settingsAsync = ref.watch(businessSettingsControllerProvider);
 
+    ref.listen<AsyncValue<BusinessSettingsModel>>(
+      businessSettingsControllerProvider,
+      (previous, next) {
+        next.whenData((settings) {
+          if (_existingSignatureBytes == null && settings.mentorSignatureBytes != null) {
+            setState(() {
+              _existingSignatureBytes = settings.mentorSignatureBytes;
+            });
+          }
+        });
+      },
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Business & Contract Settings'),
@@ -174,6 +191,23 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
       ),
       body: settingsAsync.when(
         data: (settings) {
+          if (_existingSignatureBytes == null && settings.mentorSignatureBytes != null) {
+            _existingSignatureBytes = settings.mentorSignatureBytes;
+          }
+          if (_companyNameController.text.isEmpty) {
+            _companyNameController.text = settings.companyName;
+            _companyAddressController.text = settings.companyAddress;
+            _regComController.text = settings.regCom;
+            _cuiCifController.text = settings.cuiCif;
+            _euidController.text = settings.euid;
+            _ibanController.text = settings.iban;
+            _bankNameController.text = settings.bankName;
+            _beneficiaryEntityController.text = settings.beneficiaryEntity;
+            _serviceDescriptionController.text = settings.serviceDescription;
+            _paymentTermController.text = settings.paymentTerm;
+            _refundDeadlineController.text = settings.refundDeadline;
+          }
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Form(

@@ -917,6 +917,7 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
                         data: (programs) {
                           return DropdownButtonFormField<String>(
                             value: selectedProgramId,
+                            isExpanded: true,
                             decoration: const InputDecoration(
                               labelText: 'Program of Interest',
                               prefixIcon: Icon(Icons.school),
@@ -924,7 +925,10 @@ class _ProspectsViewState extends ConsumerState<ProspectsView> {
                             items: programs.map((prog) {
                               return DropdownMenuItem(
                                 value: prog.id,
-                                child: Text(prog.name),
+                                child: Text(
+                                  prog.name,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               );
                             }).toList(),
                             onChanged: (val) {
