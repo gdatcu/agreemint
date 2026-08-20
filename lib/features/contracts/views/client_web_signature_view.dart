@@ -6,6 +6,7 @@ import '../models/contract_model.dart';
 import '../repositories/contract_repository.dart';
 import '../services/pdf_generator_service.dart';
 import '../../../core/services/email_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ClientWebSignatureView extends ConsumerStatefulWidget {
   final String contractId;
@@ -95,29 +96,22 @@ class _ClientWebSignatureViewState
       return;
     }
 
-    final otp = _computeSecurityOtp();
-    final studentName = _contract?.enrollment?.student?.name ?? 'Beneficiar';
-
     setState(() {
       _isLoading = true;
     });
 
-    final success = await EmailService.sendOtpEmail(
-      email: enteredEmail,
-      otp: otp,
-      studentName: studentName,
-    );
+    try {
+      final supabase = Supabase.instance.client;
+      await supabase.auth.signInWithOtp(
+        email: enteredEmail,
+        shouldCreateUser: true,
+      );
 
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (success) {
       setState(() {
-        _generatedOtp = otp;
         _otpSent = true;
         _emailVerifyError = null;
       });
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -126,25 +120,62 @@ class _ClientWebSignatureViewState
           ),
         );
       }
-    } else {
+    } catch (e) {
       setState(() {
         _emailVerifyError = 'Nu s-a putut trimite email-ul OTP. Te rugăm să încerci din nou.';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
       });
     }
   }
 
-  void _verifyOtpCode() {
+  Future<void> _verifyOtpCode() async {
     final enteredOtp = _otpController.text.trim();
-    if (enteredOtp == _generatedOtp) {
-      setState(() {
-        _isEmailVerified = true;
-        _emailVerifyError = null;
-      });
-    } else {
+    final enteredEmail = _emailVerifyController.text.trim().toLowerCase();
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final supabase = Supabase.instance.client;
+      
+      // Try verifying as magiclink (for returning/already registered users)
+      AuthResponse response;
+      try {
+        response = await supabase.auth.verifyOTP(
+          email: enteredEmail,
+          token: enteredOtp,
+          type: OtpType.magiclink,
+        );
+      } catch (_) {
+        // Fallback to signup type (for new/first-time users)
+        response = await supabase.auth.verifyOTP(
+          email: enteredEmail,
+          token: enteredOtp,
+          type: OtpType.signup,
+        );
+      }
+
+      if (response.user != null) {
+        setState(() {
+          _isEmailVerified = true;
+          _emailVerifyError = null;
+        });
+      } else {
+        throw Exception('Verification failed');
+      }
+    } catch (e) {
       _emailVerifyAttempts++;
       setState(() {
         _emailVerifyError =
-            'Invalid OTP security code. ${_maxEmailAttempts - _emailVerifyAttempts} attempts remaining.';
+            'Cod OTP incorect sau expirat. ${_maxEmailAttempts - _emailVerifyAttempts} încercări rămase.';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
       });
     }
   }

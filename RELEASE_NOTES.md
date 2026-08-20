@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.91 Release Notes
+# 🚀 Agreemint v1.0.92 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,11 +22,12 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.91
+## 🎨 What's New in Version 1.0.92
 
-- 🛡️ **Complete Removal of Developer Bypass Backdoor (100% Legal Repudiation Compliance)**:
-  - Completely removed the developer bypass code (`123456`) from `client_web_signature_view.dart`.
-  - Ensures only dynamically generated, email-delivered OTP codes can unlock the signature canvas, passing strict legal & security audit requirements.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.91` (`1.0.91+91`).
+- 🔒 **Supabase Passwordless Auth OTP Integration (Zero-Log Security)**:
+  - Migrated email verification from custom OTP to **Supabase Passwordless Authentication (`signInWithOtp`)**.
+  - Passcodes are now generated and verified entirely server-side, stored as secure cryptographic hashes, and dispatched via SMTP.
+  - Guarantees that plaintext OTP codes are **never** logged in any dashboard or delivery reports (including Resend or cPanel logs), passing strict legal audit non-repudiation standards.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.92` (`1.0.92+92`).
 
 
