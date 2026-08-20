@@ -57,6 +57,7 @@ jobs:
           flutter build web --base-href "/agreemint/" --release \
             --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
             --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          cp build/app/outputs/flutter-apk/app-release.apk build/web/app-release.apk
 
       - name: Zip Web Release
         run: |

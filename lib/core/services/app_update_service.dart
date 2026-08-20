@@ -84,14 +84,16 @@ class AppUpdateService {
         final releaseNotes = data['body'] as String? ?? '';
         final htmlUrl = data['html_url'] as String? ?? '';
 
-        String apkUrl = htmlUrl;
-        bool hasApkAsset = false;
+        const directApkUrl = 'https://apps.qualiadept.eu/agreemint/app-release.apk';
+        String apkUrl = directApkUrl;
+        bool hasApkAsset = true;
         final assets = data['assets'] as List<dynamic>?;
         if (assets != null) {
           for (final asset in assets) {
             if (asset is Map<String, dynamic> &&
                 (asset['name'] as String? ?? '').toLowerCase().endsWith('.apk')) {
-              apkUrl = asset['browser_download_url'] as String? ?? htmlUrl;
+              // Prefer direct server host URL to avoid GitHub S3 download redirect hangs on mobile
+              apkUrl = directApkUrl;
               hasApkAsset = true;
               break;
             }
