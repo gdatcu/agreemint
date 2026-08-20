@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.89 Release Notes
+# 🚀 Agreemint v1.0.90 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,11 +22,12 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.89
+## 🎨 What's New in Version 1.0.90
 
-- 📬 **Live Resend Email Delivery Integration**:
-  - Integrated **Resend API** (`re_DHb...`) to deliver 6-digit OTP security codes directly to student emails upon verification requests.
-  - Eliminated the debug on-screen OTP key display, ensuring the secure code is **only** accessible from the client's private email inbox.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.89` (`1.0.89+89`).
+- 🛠️ **Supabase Database RPC Relay Integration (Resolves Web CORS Errors)**:
+  - Migrated Resend API email delivery to execute server-side via a secure Supabase PostgreSQL RPC function (`send_email_otp`).
+  - Resolves standard browser CORS security policies preventing direct client-side HTTP requests to external email APIs.
+  - Safe-guards the Resend API Key inside Supabase database environments instead of compiled source code.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.90` (`1.0.90+90`).
 
 
