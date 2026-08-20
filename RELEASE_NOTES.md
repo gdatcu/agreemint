@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.84 Release Notes
+# 🚀 Agreemint v1.0.85 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,14 +22,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.84
+## 🎨 What's New in Version 1.0.85
 
-- 📱 **0 Overflow Responsive Mobile Layout Across All Views**:
-  - **Payment Tracker Screen**: Wrapped installment headers and action icon buttons (`[Invoice]`, `[Receipt]`, `[WhatsApp]`, `[Edit]`, `[Delete]`) in flexible `Expanded` & `Wrap` elements, completely eliminating horizontal `RenderFlex overflowed` stripes on narrow mobile displays ($\le 360\text{px}$).
-  - **SOLO Invoice Modal**: Wrapped title string in `Expanded` to fit narrow mobile viewports cleanly.
-  - **Accounting CSV Export Modal**: Wrapped header text in `Expanded`.
-  - **Add/Edit Lead CRM Modal**: Wrapped header text in `Expanded`.
-  - **Company Settings Screen**: Wrapped card section headers in `Expanded`.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.84` (`1.0.84+84`).
+- 🌐 **Direct Subdomain FTP Deployment (`server-dir: './'`)**:
+  - Updated GitHub Actions FTP deployment to use root target `./` with the newly created dedicated subdomain FTP account (`agreemint@agreemint.qualiadept.eu`), deploying all compiled web assets directly into `https://agreemint.qualiadept.eu`.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.85` (`1.0.85+85`).
 
 
