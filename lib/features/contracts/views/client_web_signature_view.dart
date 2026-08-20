@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/contract_model.dart';
 import '../repositories/contract_repository.dart';
 import '../services/pdf_generator_service.dart';
+import '../../../core/services/email_service.dart';
 
 class ClientWebSignatureView extends ConsumerStatefulWidget {
   final String contractId;
@@ -64,7 +65,7 @@ class _ClientWebSignatureViewState
     return '$last4$twoDigits';
   }
 
-  void _verifyEmailAndSendOtp() {
+  Future<void> _verifyEmailAndSendOtp() async {
     if (_emailVerifyAttempts >= _maxEmailAttempts) {
       setState(() {
         _emailVerifyError =
@@ -95,11 +96,41 @@ class _ClientWebSignatureViewState
     }
 
     final otp = _computeSecurityOtp();
+    final studentName = _contract?.enrollment?.student?.name ?? 'Beneficiar';
+
     setState(() {
-      _generatedOtp = otp;
-      _otpSent = true;
-      _emailVerifyError = null;
+      _isLoading = true;
     });
+
+    final success = await EmailService.sendOtpEmail(
+      email: enteredEmail,
+      otp: otp,
+      studentName: studentName,
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (success) {
+      setState(() {
+        _generatedOtp = otp;
+        _otpSent = true;
+        _emailVerifyError = null;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('📬 Codul OTP de securitate a fost trimis la $enteredEmail!'),
+            backgroundColor: Colors.green.shade700,
+          ),
+        );
+      }
+    } else {
+      setState(() {
+        _emailVerifyError = 'Nu s-a putut trimite email-ul OTP. Te rugăm să încerci din nou.';
+      });
+    }
   }
 
   void _verifyOtpCode() {
@@ -689,22 +720,6 @@ class _ClientWebSignatureViewState
                       ),
                       onSubmitted: (_) => _verifyOtpCode(),
                     ),
-                    if (_generatedOtp != null) ...[
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.amber.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.amber.shade300),
-                        ),
-                        child: Text(
-                          '🔐 Cod Securitate Generat: $_generatedOtp (Cod Test: 123456)',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.amber.shade900),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ],
                     const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,

@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.88 Release Notes
+# 🚀 Agreemint v1.0.89 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,17 +22,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.88
+## 🎨 What's New in Version 1.0.89
 
-- 🛡️ **2-Step OTP Security Passcode Gate**:
-  - Upgraded client web contract signing portal (`/sign/:contractId`) with 2-step OTP (One-Time Password) security verification.
-  - Clients verify their email and enter a 6-digit OTP passcode before viewing draft terms and drawing signatures.
-- 📜 **Official eIDAS / Law 455/2001 Electronic Signature Audit Trail Certificate**:
-  - Automatically appends a 2nd page to executed contract PDFs featuring an immutable **Electronic Signature Audit Trail Certificate**:
-    - Signer Name & Verified Email Address
-    - Authentication Method (`Cod Securizat OTP Validat`)
-    - Timestamp (`UTC`) & Unique Contract Serial Number
-    - Legal Status (`FULLY EXECUTED - EU eIDAS / Legea 455/2001`)
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.88` (`1.0.88+88`).
+- 📬 **Live Resend Email Delivery Integration**:
+  - Integrated **Resend API** (`re_DHb...`) to deliver 6-digit OTP security codes directly to student emails upon verification requests.
+  - Eliminated the debug on-screen OTP key display, ensuring the secure code is **only** accessible from the client's private email inbox.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.89` (`1.0.89+89`).
 
 
