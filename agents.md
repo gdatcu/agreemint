@@ -48,3 +48,8 @@ You are responsible for generating the GitHub Actions workflows to automate rele
 *   **Error Handling:** Wrap all Supabase calls in `try-catch` blocks. Surface errors to the UI using a standard `SnackBar` or error banner, never silently fail.
 *   **UI/UX:** Use Material 3 design guidelines (`useMaterial3: true`). Keep the interface clean, heavily utilizing `Card`, `ListTile`, and `DataTable` widgets to display the relational data clearly.
 *   **Step-by-Step Execution:** When asked to build a feature, write the Model first, the Repository second, the Controller third, and the UI last. Do not attempt to write the entire feature in a single file or a single step.
+
+## 7. Mandatory Approval & Workflow Protocol
+*   **Answer & Present First:** Whenever the user asks a question, requests a feature, or reports an issue, the agent MUST first thoroughly research, answer, present findings/analysis, and outline the proposed implementation plan in clear detail.
+*   **Explicit Approval Required:** The agent MUST ALWAYS ask for explicit user approval, confirmation, or guidance BEFORE executing code modifications, editing files, or running state-changing commands.
+*   **No Unrequested Autonomous Execution:** Never execute code changes or build steps preemptively without presenting the plan and securing explicit confirmation from the user.
