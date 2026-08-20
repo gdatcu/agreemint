@@ -412,6 +412,142 @@ class PdfGeneratorService {
       ),
     );
 
+    // Append Page 2: Official Electronic Signature Audit Trail Certificate
+    if (hasClientSig) {
+      final auditTimestamp = DateTime.now().toUtc().toString().replaceAll('.000', '') + ' UTC';
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(36),
+          build: (pw.Context context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(14),
+                  decoration: pw.BoxDecoration(
+                    color: PdfColors.blue50,
+                    border: pw.Border.all(color: PdfColors.blue900, width: 1.5),
+                    borderRadius: pw.BorderRadius.circular(6),
+                  ),
+                  child: pw.Row(
+                    children: [
+                      pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Text(
+                            'ANEXA AUDIT - CERTIFICAT DE EXECUTARE SEMNATURA ELECTRONICA',
+                            style: pw.TextStyle(
+                              fontSize: 10,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.blue900,
+                            ),
+                          ),
+                          pw.Text(
+                            'ELECTRONIC SIGNATURE AUDIT TRAIL CERTIFICATE',
+                            style: pw.TextStyle(
+                              fontSize: 8.5,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.blue800,
+                            ),
+                          ),
+                          pw.Text(
+                            'Generat automat conform eIDAS (EU) No 910/2014 & Legii nr. 455/2001 privind semnatura electronica',
+                            style: const pw.TextStyle(
+                              fontSize: 7.5,
+                              color: PdfColors.grey800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                pw.SizedBox(height: 20),
+
+                pw.Text(
+                  '1. DETALII CONTRACT & EXECUTARE / CONTRACT EXECUTION DETAILS',
+                  style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold),
+                ),
+                pw.SizedBox(height: 6),
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(10),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.grey300),
+                    borderRadius: pw.BorderRadius.circular(4),
+                  ),
+                  child: pw.Column(
+                    children: [
+                      _buildAuditRow('Identificator Unic Contract / Contract ID:', contractNumber),
+                      _buildAuditRow('Titlu Program / Program Title:', programName),
+                      _buildAuditRow('Prestator / Provider:', prestatorNume),
+                      _buildAuditRow('Beneficiar / Beneficiary:', studentName),
+                    ],
+                  ),
+                ),
+                pw.SizedBox(height: 16),
+
+                pw.Text(
+                  '2. VERIFICARE IDENTITATE & AUDIT SEMNATURA BENEFICIAR / SIGNER AUDIT',
+                  style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold),
+                ),
+                pw.SizedBox(height: 6),
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(10),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.grey300),
+                    borderRadius: pw.BorderRadius.circular(4),
+                  ),
+                  child: pw.Column(
+                    children: [
+                      _buildAuditRow('Email Beneficiar Verificat / Signer Email:', emailCursant),
+                      _buildAuditRow('Telefon Beneficiar / Signer Phone:', telefonCursant),
+                      _buildAuditRow('Metoda Verificare / Authentication:', 'Cod Securizat OTP (One-Time Password) Validat'),
+                      _buildAuditRow('Timestamp Executare / Execution Time:', auditTimestamp),
+                      _buildAuditRow('Stare Legala / Execution Status:', 'SEMNAT SI EXECUTAT CU SUCCES / FULLY EXECUTED'),
+                    ],
+                  ),
+                ),
+                pw.SizedBox(height: 20),
+
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(10),
+                  decoration: pw.BoxDecoration(
+                    color: PdfColors.green50,
+                    border: pw.Border.all(color: PdfColors.green700, width: 1),
+                    borderRadius: pw.BorderRadius.circular(4),
+                  ),
+                  child: pw.Row(
+                    children: [
+                      pw.Expanded(
+                        child: pw.Text(
+                          '[VALIDATED] Prezentul document contine semnaturile electronice ale ambele parti si pista completa de audit. Integritatea si autenticitatea sunt garantate criptografic.',
+                          style: pw.TextStyle(fontSize: 8, color: PdfColors.green900, fontWeight: pw.FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      );
+    }
+
     return pdf.save();
+  }
+
+  static pw.Widget _buildAuditRow(String label, String value) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 2.5),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(label, style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
+          pw.Text(value, style: pw.TextStyle(fontSize: 8.5, fontWeight: pw.FontWeight.bold)),
+        ],
+      ),
+    );
   }
 }

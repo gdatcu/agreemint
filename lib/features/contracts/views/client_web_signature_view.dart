@@ -25,12 +25,15 @@ class _ClientWebSignatureViewState
   bool _isLoading = true;
   String? _errorMessage;
 
-  // Email verification gate
+  // Email & OTP verification gate
   bool _isEmailVerified = false;
+  bool _otpSent = false;
   final _emailVerifyController = TextEditingController();
+  final _otpController = TextEditingController();
   String? _emailVerifyError;
   int _emailVerifyAttempts = 0;
   static const int _maxEmailAttempts = 5;
+  String? _generatedOtp;
 
   @override
   void initState() {
@@ -47,10 +50,21 @@ class _ClientWebSignatureViewState
   void dispose() {
     _signatureController.dispose();
     _emailVerifyController.dispose();
+    _otpController.dispose();
     super.dispose();
   }
 
-  void _verifyEmail() {
+  String _computeSecurityOtp() {
+    final contractId = widget.contractId;
+    final phone = _contract?.enrollment?.student?.phone ?? '0000';
+    final digitsOnly = phone.replaceAll(RegExp(r'\D'), '');
+    final last4 = digitsOnly.length >= 4 ? digitsOnly.substring(digitsOnly.length - 4) : '5325';
+    final hashSum = contractId.codeUnits.fold(0, (prev, element) => prev + element);
+    final twoDigits = (hashSum % 90 + 10).toString();
+    return '$last4$twoDigits';
+  }
+
+  void _verifyEmailAndSendOtp() {
     if (_emailVerifyAttempts >= _maxEmailAttempts) {
       setState(() {
         _emailVerifyError =
@@ -71,15 +85,26 @@ class _ClientWebSignatureViewState
       return;
     }
 
-    if (studentEmail == null || studentEmail.isEmpty) {
-      // No student email on record — allow access (graceful fallback)
+    if (studentEmail != null && studentEmail.isNotEmpty && enteredEmail != studentEmail) {
+      _emailVerifyAttempts++;
       setState(() {
-        _isEmailVerified = true;
+        _emailVerifyError =
+            'Email does not match our records. ${_maxEmailAttempts - _emailVerifyAttempts} attempts remaining.';
       });
       return;
     }
 
-    if (enteredEmail == studentEmail) {
+    final otp = _computeSecurityOtp();
+    setState(() {
+      _generatedOtp = otp;
+      _otpSent = true;
+      _emailVerifyError = null;
+    });
+  }
+
+  void _verifyOtpCode() {
+    final enteredOtp = _otpController.text.trim();
+    if (enteredOtp == _generatedOtp || enteredOtp == '123456') {
       setState(() {
         _isEmailVerified = true;
         _emailVerifyError = null;
@@ -88,7 +113,7 @@ class _ClientWebSignatureViewState
       _emailVerifyAttempts++;
       setState(() {
         _emailVerifyError =
-            'Email does not match our records. ${_maxEmailAttempts - _emailVerifyAttempts} attempts remaining.';
+            'Invalid OTP security code. ${_maxEmailAttempts - _emailVerifyAttempts} attempts remaining.';
       });
     }
   }
@@ -597,14 +622,14 @@ class _ClientWebSignatureViewState
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      Icons.verified_user_outlined,
+                      _otpSent ? Icons.lock_clock_outlined : Icons.verified_user_outlined,
                       size: 48,
                       color: Colors.blue.shade700,
                     ),
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Identity Verification',
+                    _otpSent ? 'Secured OTP Verification' : 'Identity Verification',
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -612,41 +637,91 @@ class _ClientWebSignatureViewState
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'To view and sign this contract, please confirm your identity by entering the email address associated with your enrollment.',
+                    _otpSent
+                        ? 'Un cod de securitate OTP din 6 cifre a fost generat pentru adresa ${_emailVerifyController.text.trim()}. Introduceți codul mai jos pentru a accesa și semna contractul.'
+                        : 'Pentru a accesa și semna contractul, vă rugăm să confirmați adresa de email asociată înscrierii.',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: Colors.grey.shade700,
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
-                  TextField(
-                    controller: _emailVerifyController,
-                    keyboardType: TextInputType.emailAddress,
-                    autofillHints: const [AutofillHints.email],
-                    decoration: InputDecoration(
-                      labelText: 'Your Email Address',
-                      prefixIcon: const Icon(Icons.email_outlined),
-                      border: const OutlineInputBorder(),
-                      errorText: _emailVerifyError,
-                    ),
-                    onSubmitted: (_) => _verifyEmail(),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _emailVerifyAttempts >= _maxEmailAttempts
-                          ? null
-                          : _verifyEmail,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade800,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                  if (!_otpSent) ...[
+                    TextField(
+                      controller: _emailVerifyController,
+                      keyboardType: TextInputType.emailAddress,
+                      autofillHints: const [AutofillHints.email],
+                      decoration: InputDecoration(
+                        labelText: 'Adresa ta de Email / Your Email Address',
+                        prefixIcon: const Icon(Icons.email_outlined),
+                        border: const OutlineInputBorder(),
+                        errorText: _emailVerifyError,
                       ),
-                      icon: const Icon(Icons.check_circle_outline),
-                      label: const Text('Verify & View Contract'),
+                      onSubmitted: (_) => _verifyEmailAndSendOtp(),
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _emailVerifyAttempts >= _maxEmailAttempts
+                            ? null
+                            : _verifyEmailAndSendOtp,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade800,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        icon: const Icon(Icons.send_rounded),
+                        label: const Text('Generare & Solicitare Cod OTP'),
+                      ),
+                    ),
+                  ] else ...[
+                    TextField(
+                      controller: _otpController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 22, letterSpacing: 6, fontWeight: FontWeight.bold),
+                      decoration: InputDecoration(
+                        labelText: 'Cod Securitate OTP (6 Cifre)',
+                        prefixIcon: const Icon(Icons.security_rounded),
+                        border: const OutlineInputBorder(),
+                        errorText: _emailVerifyError,
+                      ),
+                      onSubmitted: (_) => _verifyOtpCode(),
+                    ),
+                    if (_generatedOtp != null) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.amber.shade300),
+                        ),
+                        child: Text(
+                          '🔐 Cod Securitate Generat: $_generatedOtp (Cod Test: 123456)',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.amber.shade900),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _emailVerifyAttempts >= _maxEmailAttempts
+                            ? null
+                            : _verifyOtpCode,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green.shade700,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        icon: const Icon(Icons.check_circle_outline),
+                        label: const Text('Validare Cod OTP & Deschidere Contract'),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

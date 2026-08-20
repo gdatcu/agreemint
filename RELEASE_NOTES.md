@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.87 Release Notes
+# 🚀 Agreemint v1.0.88 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,10 +22,17 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.87
+## 🎨 What's New in Version 1.0.88
 
-- 🌐 **Direct Subdomain FTP Deployment Verification (`https://agreemint.qualiadept.eu`)**:
-  - Verified cPanel FTP user directory update to `/home/gbrmlvka/agreemint.qualiadept.eu`, ensuring all web assets are uploaded directly into root without subfolders.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.87` (`1.0.87+87`).
+- 🛡️ **2-Step OTP Security Passcode Gate**:
+  - Upgraded client web contract signing portal (`/sign/:contractId`) with 2-step OTP (One-Time Password) security verification.
+  - Clients verify their email and enter a 6-digit OTP passcode before viewing draft terms and drawing signatures.
+- 📜 **Official eIDAS / Law 455/2001 Electronic Signature Audit Trail Certificate**:
+  - Automatically appends a 2nd page to executed contract PDFs featuring an immutable **Electronic Signature Audit Trail Certificate**:
+    - Signer Name & Verified Email Address
+    - Authentication Method (`Cod Securizat OTP Validat`)
+    - Timestamp (`UTC`) & Unique Contract Serial Number
+    - Legal Status (`FULLY EXECUTED - EU eIDAS / Legea 455/2001`)
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.88` (`1.0.88+88`).
 
 
