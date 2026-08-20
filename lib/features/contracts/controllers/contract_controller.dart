@@ -6,6 +6,7 @@ import '../services/pdf_generator_service.dart';
 import '../../payments/repositories/payment_repository.dart';
 import '../../payments/controllers/payment_controller.dart';
 import '../../analytics/controllers/analytics_controller.dart';
+import '../../students/controllers/student_controller.dart';
 
 part 'contract_controller.g.dart';
 
@@ -175,6 +176,10 @@ class EnrollmentContractController extends _$EnrollmentContractController {
         details: contractDetails,
       );
 
+      ref.invalidate(programEnrollmentsControllerProvider);
+      ref.invalidate(globalContractsControllerProvider);
+      ref.invalidate(analyticsSummaryControllerProvider);
+
       return finalContract;
     });
   }
@@ -244,7 +249,6 @@ class EnrollmentContractController extends _$EnrollmentContractController {
         clientSignatureBytes: clientSignatureBytes,
       );
 
-
       await repository.uploadSignedContractPdf(
         contractId: contract.id,
         enrollmentId: enrollmentId,
@@ -257,6 +261,10 @@ class EnrollmentContractController extends _$EnrollmentContractController {
         clientSignatureUrl: clientSigUrl,
         clientSignedDate: DateTime.now(),
       );
+
+      ref.invalidate(programEnrollmentsControllerProvider);
+      ref.invalidate(globalContractsControllerProvider);
+      ref.invalidate(analyticsSummaryControllerProvider);
 
       return finalContract;
     });
@@ -285,6 +293,10 @@ class EnrollmentContractController extends _$EnrollmentContractController {
         contractId: contract.id,
         status: 'FullySigned',
       );
+
+      ref.invalidate(programEnrollmentsControllerProvider);
+      ref.invalidate(globalContractsControllerProvider);
+      ref.invalidate(analyticsSummaryControllerProvider);
 
       return finalContract;
     });
@@ -322,10 +334,11 @@ class EnrollmentContractController extends _$EnrollmentContractController {
       // 2. Mark payments as refunded
       await paymentRepo.markPaymentsAsRefunded(enrollmentId);
 
-      // 3. Invalidate analytics summary provider and enrollment payments provider to refresh UI
+      // 3. Invalidate analytics summary provider, enrollment payments provider, and program enrollments provider to refresh UI
       ref.invalidate(analyticsSummaryControllerProvider);
       ref.invalidate(enrollmentPaymentsControllerProvider(enrollmentId));
-
+      ref.invalidate(programEnrollmentsControllerProvider);
+      ref.invalidate(globalContractsControllerProvider);
       return updatedContract;
     });
   }

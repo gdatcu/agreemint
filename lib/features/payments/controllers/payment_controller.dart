@@ -3,6 +3,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/services/notification_service.dart';
 import '../models/payment_model.dart';
 import '../repositories/payment_repository.dart';
+import '../../students/controllers/student_controller.dart';
+import '../../analytics/controllers/analytics_controller.dart';
 
 part 'payment_controller.g.dart';
 
@@ -15,7 +17,7 @@ class EnrollmentPaymentsController extends _$EnrollmentPaymentsController {
         .fetchPaymentsForEnrollment(enrollmentId);
   }
 
-  /// Generates a schedule of payments, refreshing local state and invalidating the global dashboard.
+  /// Generates a schedule of payments, refreshing local state and invalidating dependent controllers.
   Future<void> generatePlan({
     required double totalAmount,
     required int numberOfInstallments,
@@ -29,14 +31,16 @@ class EnrollmentPaymentsController extends _$EnrollmentPaymentsController {
         numberOfInstallments: numberOfInstallments,
       );
 
-      // Invalidate the global pending payments controller to refresh the dashboard
+      // Invalidate global dashboard, program enrollments, and analytics summary
       ref.invalidate(globalPendingPaymentsControllerProvider);
+      ref.invalidate(programEnrollmentsControllerProvider);
+      ref.invalidate(analyticsSummaryControllerProvider);
 
       return repository.fetchPaymentsForEnrollment(enrollmentId);
     });
   }
 
-  /// Logs a payment update, refreshing local state and invalidating the global dashboard.
+  /// Logs a payment update, refreshing local state and invalidating dependent controllers.
   Future<void> logPayment({
     required String paymentId,
     required double amountPaid,
@@ -53,8 +57,10 @@ class EnrollmentPaymentsController extends _$EnrollmentPaymentsController {
         paymentMethod: paymentMethod,
       );
 
-      // Invalidate the global pending payments controller to refresh the dashboard
+      // Invalidate global dashboard, program enrollments, and analytics summary
       ref.invalidate(globalPendingPaymentsControllerProvider);
+      ref.invalidate(programEnrollmentsControllerProvider);
+      ref.invalidate(analyticsSummaryControllerProvider);
 
       final updatedList = await repository.fetchPaymentsForEnrollment(enrollmentId);
 
@@ -95,6 +101,8 @@ class EnrollmentPaymentsController extends _$EnrollmentPaymentsController {
         paymentMethod: paymentMethod,
       );
       ref.invalidate(globalPendingPaymentsControllerProvider);
+      ref.invalidate(programEnrollmentsControllerProvider);
+      ref.invalidate(analyticsSummaryControllerProvider);
       return repository.fetchPaymentsForEnrollment(enrollmentId);
     });
   }
@@ -106,6 +114,8 @@ class EnrollmentPaymentsController extends _$EnrollmentPaymentsController {
       final repository = ref.read(paymentRepositoryProvider);
       await repository.deleteInstallment(paymentId);
       ref.invalidate(globalPendingPaymentsControllerProvider);
+      ref.invalidate(programEnrollmentsControllerProvider);
+      ref.invalidate(analyticsSummaryControllerProvider);
       return repository.fetchPaymentsForEnrollment(enrollmentId);
     });
   }
@@ -125,6 +135,7 @@ class EnrollmentPaymentsController extends _$EnrollmentPaymentsController {
         invoiceUrl: invoiceUrl,
       );
       ref.invalidate(globalPendingPaymentsControllerProvider);
+      ref.invalidate(programEnrollmentsControllerProvider);
       return repository.fetchPaymentsForEnrollment(enrollmentId);
     });
   }

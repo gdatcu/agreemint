@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.75 Release Notes
+# 🚀 Agreemint v1.0.76 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,10 +22,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.75
+## 🎨 What's New in Version 1.0.76
 
-- 📐 **Responsive Layout Overflow Fixes**:
-  - Converted rigid `Row` layouts to responsive `Wrap` layouts in `CertificatePreviewDialog` (top controls bar & bottom action buttons) and `ProspectsView` (card action buttons), completely eliminating RenderFlex layout overflow errors on narrow screens.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.75` (`1.0.75+75`).
+- 🔄 **Real-Time Cross-Screen State Synchronization**:
+  - Automatically invalidates `programEnrollmentsControllerProvider` and `analyticsSummaryControllerProvider` whenever a payment is registered, plan generated, or installment deleted in `PaymentTrackerView`.
+  - Student rosters (`programs/:programId/students`) now immediately reflect updated payment badges (`1/2`, `Fully Paid`, etc.) without needing to restart or re-open the app.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.76` (`1.0.76+76`).
 
 
