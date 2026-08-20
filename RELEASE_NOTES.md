@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.76 Release Notes
+# 🚀 Agreemint v1.0.77 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,11 +22,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.76
+## 🎨 What's New in Version 1.0.77
 
-- 🔄 **Real-Time Cross-Screen State Synchronization**:
-  - Automatically invalidates `programEnrollmentsControllerProvider` and `analyticsSummaryControllerProvider` whenever a payment is registered, plan generated, or installment deleted in `PaymentTrackerView`.
-  - Student rosters (`programs/:programId/students`) now immediately reflect updated payment badges (`1/2`, `Fully Paid`, etc.) without needing to restart or re-open the app.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.76` (`1.0.76+76`).
+- 📲 **Interactive In-App Version & Update Check Modal**:
+  - Tapping the version chip in the top app bar now opens a live **Update Check & Release Info** modal.
+  - Queries GitHub Releases API live, displays release notes, and provides a 1-tap **Update Now** button for seamless Android APK updates.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.77` (`1.0.77+77`).
 
 
