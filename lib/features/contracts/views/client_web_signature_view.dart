@@ -6,6 +6,8 @@ import '../models/contract_model.dart';
 import '../repositories/contract_repository.dart';
 import '../services/pdf_generator_service.dart';
 import '../../../core/services/email_service.dart';
+import '../../../core/services/discord_notification_service.dart';
+import '../../settings/controllers/business_settings_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ClientWebSignatureView extends ConsumerStatefulWidget {
@@ -332,6 +334,23 @@ class _ClientWebSignatureViewState
         clientSignatureUrl: clientSigUrl,
         clientSignedDate: DateTime.now(),
       );
+
+      // 5. Dispatch Discord Webhook Alert to Mentor
+      try {
+        final settings = await ref.read(businessSettingsControllerProvider.notifier).build();
+        if (settings.discordWebhookUrl != null && settings.discordWebhookUrl!.isNotEmpty) {
+          await DiscordNotificationService.notifyContractSigned(
+            webhookUrl: settings.discordWebhookUrl!,
+            studentName: d['student_name'] as String? ?? student?.name ?? 'Cursant',
+            studentCnp: d['cnp_cursant'] as String? ?? student?.cui ?? '',
+            programName: d['program_name'] as String? ?? program?.name ?? 'Program Mentorat',
+            contractNumber: updatedContract.contractNumber,
+            signedPdfUrl: updatedContract.signedPdfUrl ?? updatedContract.pdfUrl ?? '',
+          );
+        }
+      } catch (e) {
+        debugPrint('Discord Webhook trigger failed: $e');
+      }
 
       setState(() {
         _contract = updatedContract;

@@ -14,6 +14,7 @@ class BusinessSettingsModel {
   final String paymentTerm;
   final String refundDeadline;
   final String? mentorSignatureBase64;
+  final String? discordWebhookUrl;
 
   const BusinessSettingsModel({
     this.companyName = 'DATCU GEORGE-CRISTIAN PERSOANA FIZICĂ AUTORIZATĂ',
@@ -30,6 +31,7 @@ class BusinessSettingsModel {
     this.paymentTerm = '3 (trei) zile calendaristice',
     this.refundDeadline = '5 (cinci) zile calendaristice',
     this.mentorSignatureBase64,
+    this.discordWebhookUrl,
   });
 
   /// Helper getter returning decoded signature bytes if base64 string is present.
@@ -57,6 +59,7 @@ class BusinessSettingsModel {
     String? paymentTerm,
     String? refundDeadline,
     String? mentorSignatureBase64,
+    String? discordWebhookUrl,
   }) {
     return BusinessSettingsModel(
       companyName: companyName ?? this.companyName,
@@ -72,6 +75,7 @@ class BusinessSettingsModel {
       refundDeadline: refundDeadline ?? this.refundDeadline,
       mentorSignatureBase64:
           mentorSignatureBase64 ?? this.mentorSignatureBase64,
+      discordWebhookUrl: discordWebhookUrl ?? this.discordWebhookUrl,
     );
   }
 
@@ -89,6 +93,7 @@ class BusinessSettingsModel {
       'payment_term': paymentTerm,
       'refund_deadline': refundDeadline,
       'mentor_signature_base64': mentorSignatureBase64,
+      'discord_webhook_url': discordWebhookUrl,
     };
   }
 
@@ -112,6 +117,7 @@ class BusinessSettingsModel {
       refundDeadline: (json['refund_deadline'] as String?) ??
           '5 (cinci) zile calendaristice',
       mentorSignatureBase64: json['mentor_signature_base64'] as String?,
+      discordWebhookUrl: json['discord_webhook_url'] as String?,
     );
   }
 }

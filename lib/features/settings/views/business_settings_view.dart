@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signature/signature.dart';
+import '../../../core/services/discord_notification_service.dart';
 import '../controllers/business_settings_controller.dart';
 import '../models/business_settings_model.dart';
 
@@ -29,6 +30,7 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
   late TextEditingController _serviceDescriptionController;
   late TextEditingController _paymentTermController;
   late TextEditingController _refundDeadlineController;
+  late TextEditingController _discordWebhookController;
 
   late SignatureController _signatureController;
   Uint8List? _existingSignatureBytes;
@@ -69,6 +71,8 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
         TextEditingController(text: settings.paymentTerm);
     _refundDeadlineController =
         TextEditingController(text: settings.refundDeadline);
+    _discordWebhookController =
+        TextEditingController(text: settings.discordWebhookUrl ?? '');
 
     _existingSignatureBytes = settings.mentorSignatureBytes;
   }
@@ -86,6 +90,7 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
     _serviceDescriptionController.dispose();
     _paymentTermController.dispose();
     _refundDeadlineController.dispose();
+    _discordWebhookController.dispose();
     _signatureController.dispose();
     super.dispose();
   }
@@ -125,6 +130,7 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
         paymentTerm: _paymentTermController.text.trim(),
         refundDeadline: _refundDeadlineController.text.trim(),
         mentorSignatureBase64: mentorSigBase64,
+        discordWebhookUrl: _discordWebhookController.text.trim(),
       );
 
       await ref
@@ -457,6 +463,8 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
                   ),
                   const SizedBox(height: 24),
                   _buildSoloIntegrationCard(),
+                  const SizedBox(height: 24),
+                  _buildDiscordIntegrationCard(),
                   const SizedBox(height: 32),
 
                   SizedBox(
@@ -763,6 +771,110 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
                       },
                       icon: const Icon(Icons.receipt_long_rounded),
                       label: const Text('Copy Bookmarklet 2: Factură Draft'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDiscordIntegrationCard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(
+          icon: Icons.notifications_active_rounded,
+          title: 'Realtime Contract Notifications (Discord Webhook)',
+        ),
+        const SizedBox(height: 12),
+        Card(
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: Theme.of(context).colorScheme.outlineVariant,
+              width: 0.5,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.indigo.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(Icons.chat_bubble_outline_rounded,
+                          color: Colors.indigo.shade700, size: 20),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Discord Real-Time Contract Signed Alerts',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Receive instant Discord push notifications on your phone/laptop whenever a student signs their contract, featuring direct links to the signed PDF contract!',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _discordWebhookController,
+                  decoration: InputDecoration(
+                    labelText: 'Discord Webhook URL',
+                    hintText: 'https://discord.com/api/webhooks/...',
+                    border: const OutlineInputBorder(),
+                    prefixIcon:
+                        Icon(Icons.link_rounded, color: Colors.indigo.shade600),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final url = _discordWebhookController.text.trim();
+                        if (url.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  'Te rugăm să introduci un Webhook URL valid mai întâi.'),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                          return;
+                        }
+                        final success =
+                            await DiscordNotificationService.sendTestMessage(url);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(success
+                                  ? '🎉 Mesaj de test trimis cu succes pe Discord!'
+                                  : '❌ Trimiterea a eșuat. Verifică URL-ul Webhook.'),
+                              backgroundColor:
+                                  success ? Colors.green : Colors.red,
+                            ),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.send_rounded, size: 16),
+                      label: const Text('Trimite Mesaj de Test Discord'),
                     ),
                   ],
                 ),

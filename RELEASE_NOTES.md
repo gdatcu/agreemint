@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.2.0 Release Notes
+# 🚀 Agreemint v1.3.0 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,12 +22,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.2.0
+## 🎨 What's New in Version 1.3.0
 
-- 💡 **Simplified Single-Copy SOLO Workflow & Direct Client Copy Button**:
-  - **Single Click Copy**: Clarified that clicking **Copiază date SOLO** on any unpaid payment tile copies **ALL** student registration details AND invoice details in a **single click**.
-  - **Direct Client Copy Button on Student Roster**: Added a new **Copiază date client SOLO** action button directly on each student card in the Student Roster, allowing you to copy student registration details anytime without navigating to Payments.
-  - **2 Dedicated Bookmarklets**:
-    - Use **Bookmarklet 1: Client Nou SOLO** in the `"Adaugă client nou"` modal to fill Nume, CNP, Adresă, Email, Telefon.
-    - Use **Bookmarklet 2: Factură Draft SOLO** in the `"Factură draft"` editor to fill Client search, Article name, Price, Issue date, Due date.
-- 📦 **Minor Version Bump**: Promoted release version to `v1.2.0` (`1.2.0+110`).
+- 🔔 **Real-Time Discord Webhook Alerts for Contract Signing**:
+  - Added native **Discord Webhook Integration**: Mentors get instant push notification alerts on their phone/laptop the second a client signs a contract!
+  - Includes a rich Discord Embed containing: Client Name, CNP/CUI, Program Name, Timestamp, and a **direct 1-click link to view/download the signed PDF contract**.
+  - Built-in **"Send Test Discord Alert"** button in **Profil / Settings** to verify Discord Webhooks in 1 click.
+- 📦 **Minor Version Bump**: Promoted release version to `v1.3.0` (`1.3.0+111`).
