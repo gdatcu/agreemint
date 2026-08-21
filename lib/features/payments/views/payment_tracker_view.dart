@@ -637,6 +637,10 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                     onPressed: () => _generateAndShowReceipt(
                                         context, payment, index + 1, payments.length),
                                   ),
+                                ],
+                                if (displayStatus != 'Paid' &&
+                                    displayStatus != 'Refunded' &&
+                                    !isContractRefunded) ...[
                                   IconButton(
                                     icon: Icon(
                                       Icons.copy_all_rounded,
@@ -647,10 +651,6 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                     onPressed: () => _copySoloData(
                                         payment, index + 1, payments.length),
                                   ),
-                                ],
-                                if (displayStatus != 'Paid' &&
-                                    displayStatus != 'Refunded' &&
-                                    !isContractRefunded) ...[
                                   IconButton(
                                     icon: Icon(Icons.chat_outlined,
                                         size: 20, color: Colors.green.shade600),

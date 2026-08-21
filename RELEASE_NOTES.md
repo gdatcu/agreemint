@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.1.6 Release Notes
+# 🚀 Agreemint v1.1.7 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,14 +22,9 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.1.6
+## 🎨 What's New in Version 1.1.7
 
-- ⚡ **Upgraded SOLO Autofill Bookmarklet Selectors**:
-  - Upgraded browser input matching keywords inside the **SOLO Integration Bookmarklet code** to support exact SOLO draft editor DOM selectors:
-    - **Client**: Added `'customer'` keyword (matches `name="invoiceCustomer"`).
-    - **Articol**: Added `'article'` keyword (matches `name="article-name0"`).
-    - **Preț unitar**: Added `'pu'` and `'unitprice'` keywords (matches `name="line-pu0"`).
-    - **Data emitere**: Added `'start-date'` and `'start'` keywords (matches `name="start-date"`).
-    - **Data scadentă**: Added `'end-date'` and `'end'` keywords (matches `name="end-date"`).
-  - Enables 100% complete autofill of the entire SOLO draft form!
-- 📦 **Patch Version Bump**: Promoted release version to `v1.1.6` (`1.1.6+106`).
+- 💰 **Visibility Rules for SOLO Invoicing Button**:
+  - Hides the **Copiază date SOLO** action button once an installment is marked as **Paid** (since paid installments already have invoices generated).
+  - Exposes the **Copiază date SOLO** action button only on **Unpaid / Pending** installments (allowing you to copy the billing details and generate the invoice before the client makes their bank transfer).
+- 📦 **Patch Version Bump**: Promoted release version to `v1.1.7` (`1.1.7+107`).
