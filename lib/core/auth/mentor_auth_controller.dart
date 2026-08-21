@@ -9,6 +9,14 @@ part 'mentor_auth_controller.g.dart';
 class MentorAuthController extends _$MentorAuthController {
   StreamSubscription<AuthState>? _authSubscription;
 
+  bool _isMentorEmail(String? email) {
+    if (email == null) return false;
+    final cleanEmail = email.trim().toLowerCase();
+    return cleanEmail == 'george.datcu@hotmail.com' ||
+        cleanEmail == 'george.datcu@gmail.com' ||
+        cleanEmail == 'billing@qualiadept.eu';
+  }
+
   @override
   Future<bool> build() async {
     final client = Supabase.instance.client;
@@ -17,7 +25,8 @@ class MentorAuthController extends _$MentorAuthController {
     // Listen for auth state changes (login, logout, token refresh)
     _authSubscription?.cancel();
     _authSubscription = client.auth.onAuthStateChange.listen((data) {
-      final isAuthenticated = data.session != null;
+      final user = data.session?.user;
+      final isAuthenticated = user != null && _isMentorEmail(user.email);
       state = AsyncValue.data(isAuthenticated);
     });
 
@@ -26,7 +35,7 @@ class MentorAuthController extends _$MentorAuthController {
       _authSubscription?.cancel();
     });
 
-    return session != null;
+    return session != null && _isMentorEmail(session.user.email);
   }
 
   /// Authenticates the mentor with email and password via Supabase Auth.
