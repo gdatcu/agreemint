@@ -1432,9 +1432,10 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
         _serieNrCiController.text = value;
       } else if (key.contains('eliberat') || key.contains('spclep')) {
         _eliberatorCiController.text = value;
-      } else if (key.contains('adresa') ||
-          key.contains('adresă') ||
-          key.contains('address')) {
+      } else if ((key.contains('adresa') ||
+              key.contains('adresă') ||
+              key.contains('address')) &&
+          !key.contains('email')) {
         _adresaController.text = value;
       }
     }

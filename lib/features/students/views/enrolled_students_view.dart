@@ -1537,9 +1537,10 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
           key.contains('nr. reg')) {
         regComCtrl.text = value.toUpperCase();
         onClientTypeChanged('PFA');
-      } else if (key.contains('adresa') ||
-          key.contains('adresă') ||
-          key.contains('address')) {
+      } else if ((key.contains('adresa') ||
+              key.contains('adresă') ||
+              key.contains('address')) &&
+          !key.contains('email')) {
         addressCtrl.text = value;
       }
     }
