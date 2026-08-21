@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.98 Release Notes
+# 🚀 Agreemint v1.0.99 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,12 +22,12 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.98
+## 🎨 What's New in Version 1.0.99
 
-- 🔌 **SaaS-Ready SOLO Invoicing Integration Settings Tab**:
-  - Added the **SOLO Invoicing Integration Guide** card inside the **Business Settings** view.
-  - Mentors using your software can read the step-by-step instructions on showing the Bookmarks Bar and adding the bookmark.
-  - Added a **"Copy Bookmarklet Code"** button to allow mentors to copy the updated, reactive bookmarklet Javascript code in 1-click at any time.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.98` (`1.0.98+98`).
-
-
+- ⚡ **WhatsApp Smart Paste CRM Parser**:
+  - Added a **Smart Paste (WhatsApp / Text)** collapsible card inside the **Enroll Student** dialog.
+  - Automatically parses copied WhatsApp text containing student details using case-insensitive regular expressions to extract: Name, Email, Phone, CNP/CUI, Reg. Com., and Address.
+  - Instantly populates form inputs and toggles the PFA/PF client type setting dynamically.
+- 📋 **CNP & Address Fields for PF Individuals**:
+  - Restructured the Dialog layout to enable CNP and Billing Address inputs for Individual (PF) students (previously hidden), since individuals also require these for legal contracts and invoicing.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.99` (`1.0.99+99`).

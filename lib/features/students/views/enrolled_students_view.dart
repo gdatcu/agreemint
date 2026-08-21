@@ -1247,6 +1247,7 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
 
   void _showEnrollStudentDialog(BuildContext context, WidgetRef ref) {
     final formKey = GlobalKey<FormState>();
+    final smartTextController = TextEditingController();
     final nameController = TextEditingController();
     final emailController = TextEditingController();
     final phoneController = TextEditingController();
@@ -1292,6 +1293,54 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                           },
                         ),
                       ),
+                      // Smart Paste Expander/Card
+                      ExpansionTile(
+                        title: Row(
+                          children: const [
+                            Icon(Icons.bolt, color: Colors.amber),
+                            SizedBox(width: 8),
+                            Text('Smart Paste (WhatsApp / Text)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                        childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        children: [
+                          TextField(
+                            controller: smartTextController,
+                            maxLines: 4,
+                            decoration: const InputDecoration(
+                              hintText: 'Pasează mesajul de pe WhatsApp aici...\n(Nume, CNP, Email, Adresă)',
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.all(10),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(40),
+                            ),
+                            icon: const Icon(Icons.auto_awesome),
+                            label: const Text('Autofill Form'),
+                            onPressed: () {
+                              setStateDialog(() {
+                                _parseSmartText(
+                                  text: smartTextController.text,
+                                  nameCtrl: nameController,
+                                  emailCtrl: emailController,
+                                  phoneCtrl: phoneController,
+                                  cuiCtrl: cuiController,
+                                  regComCtrl: regComController,
+                                  addressCtrl: billingAddressController,
+                                  onClientTypeChanged: (type) {
+                                    clientType = type;
+                                  },
+                                );
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
                       TextFormField(
                         controller: nameController,
                         decoration: const InputDecoration(
@@ -1332,32 +1381,35 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                         ),
                         keyboardType: TextInputType.phone,
                       ),
-                      if (clientType == 'PFA') ...[
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: cuiController,
-                          decoration: const InputDecoration(
-                            labelText: 'CUI / CIF (Optional)',
-                            hintText: 'e.g., RO12345678',
-                          ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: cuiController,
+                        decoration: InputDecoration(
+                          labelText: clientType == 'PF' ? 'CNP (Optional)' : 'CUI / CIF (Optional)',
+                          hintText: clientType == 'PF' ? 'e.g., 1900101...' : 'e.g., RO12345678',
+                          prefixIcon: const Icon(Icons.badge_outlined),
                         ),
+                      ),
+                      if (clientType == 'PFA') ...[
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: regComController,
                           decoration: const InputDecoration(
                             labelText: 'Reg. Com. (Optional)',
                             hintText: 'e.g., F40/123/2026 or J40/1234/2025',
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: billingAddressController,
-                          decoration: const InputDecoration(
-                            labelText: 'Billing Address (Optional)',
-                            hintText: 'e.g., Str. Exemplu Nr. 10, Bucuresti',
+                            prefixIcon: Icon(Icons.confirmation_number_outlined),
                           ),
                         ),
                       ],
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: billingAddressController,
+                        decoration: const InputDecoration(
+                          labelText: 'Billing Address (Optional)',
+                          hintText: 'e.g., Str. Exemplu Nr. 10, Bucuresti',
+                          prefixIcon: Icon(Icons.location_on_outlined),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -1415,4 +1467,81 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
     );
   }
 
+  void _parseSmartText({
+    required String text,
+    required TextEditingController nameCtrl,
+    required TextEditingController emailCtrl,
+    required TextEditingController phoneCtrl,
+    required TextEditingController cuiCtrl,
+    required TextEditingController regComCtrl,
+    required TextEditingController addressCtrl,
+    required Function(String) onClientTypeChanged,
+  }) {
+    // Normalize whitespace
+    final cleanText = text.replaceAll(RegExp(r'\s+'), ' ').trim();
+
+    // 1. Extract Email
+    final emailMatch = RegExp(
+      r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}',
+      caseSensitive: false,
+    ).firstMatch(text);
+    if (emailMatch != null) {
+      emailCtrl.text = emailMatch.group(0) ?? '';
+    }
+
+    // 2. Extract Phone
+    final phoneMatch = RegExp(
+      r'(?:\+40|07)[0-9\s\-]{8,12}\b',
+    ).firstMatch(text);
+    if (phoneMatch != null) {
+      phoneCtrl.text = phoneMatch.group(0)!.replaceAll(RegExp(r'[\s\-]'), '');
+    }
+
+    // 3. Extract CNP (13 digits starting with 1, 2, 5, 6, 9)
+    final cnpMatch = RegExp(
+      r'\b[12569][0-9]{12}\b',
+    ).firstMatch(text);
+    if (cnpMatch != null) {
+      cuiCtrl.text = cnpMatch.group(0) ?? '';
+      onClientTypeChanged('PF');
+    }
+
+    // 4. Extract CUI/CIF (e.g. RO123456 or just digits)
+    final cuiKeywordMatch = RegExp(
+      r'(?:cui|cif|c.u.i|c.i.f)[:\s\-]*([a-zA-Z]*\s*[0-9]+)\b',
+      caseSensitive: false,
+    ).firstMatch(text);
+    if (cuiKeywordMatch != null && cnpMatch == null) {
+      cuiCtrl.text = cuiKeywordMatch.group(1)!.replaceAll(' ', '').toUpperCase();
+      onClientTypeChanged('PFA');
+    }
+
+    // 5. Extract Reg Com (Jxx/xxx/xxxx or Fxx/xxx/xxxx)
+    final regComMatch = RegExp(
+      r'\b[JF][0-9]{2}/[0-9]+/[0-9]{4}\b',
+      caseSensitive: false,
+    ).firstMatch(text);
+    if (regComMatch != null) {
+      regComCtrl.text = regComMatch.group(0)!.toUpperCase();
+      onClientTypeChanged('PFA');
+    }
+
+    // 6. Extract Name
+    final nameMatch = RegExp(
+      r'(?:nume complet|nume|full name|client)[:\s\-]*([a-zA-Z\s\-ĂăÂâÎîȘșȚț]+?)(?=\s*(?:cnp|ci\b|cui|cif|adresa|email|telefon|\.|$))',
+      caseSensitive: false,
+    ).firstMatch(cleanText);
+    if (nameMatch != null) {
+      nameCtrl.text = nameMatch.group(1)!.trim();
+    }
+
+    // 7. Extract Address
+    final addressMatch = RegExp(
+      r'(?:adresa din buletin|adresa|adresă|address)[:\s\-]*([a-zA-Z0-9\s\-\.,ĂăÂâÎîȘșȚț]+?)(?=\s*(?:email|telefon|cnp|ci\b|cui|cif|\.|$))',
+      caseSensitive: false,
+    ).firstMatch(cleanText);
+    if (addressMatch != null) {
+      addressCtrl.text = addressMatch.group(1)!.trim();
+    }
+  }
 }
