@@ -1721,6 +1721,8 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
       'clientName': student?.name ?? '',
       'clientCnp': student?.cui ?? '',
       'clientAddress': cleanAddress,
+      'clientEmail': student?.email ?? '',
+      'clientPhone': student?.phone ?? '',
       'productName': productName,
       'amount': payment.amountPaid > 0 ? payment.amountPaid : payment.amountDue,
       'currency': currency,

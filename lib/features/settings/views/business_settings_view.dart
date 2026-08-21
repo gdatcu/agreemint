@@ -575,19 +575,22 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
     const text = await navigator.clipboard.readText();
     const data = JSON.parse(text);
     
-    const summary = `Client: ${data.clientName}\nCNP/CUI: ${data.clientCnp}\nAdresă: ${data.clientAddress}\nProdus: ${data.productName}\nPreț: ${data.amount} ${data.currency}\nData emitere: ${data.issueDate}\nData scadentă: ${data.dueDate}`;
+    const summary = `Client: ${data.clientName || '-'}\nCNP/CUI: ${data.clientCnp || '-'}\nEmail: ${data.clientEmail || '-'}\nTelefon: ${data.clientPhone || '-'}\nAdresă: ${data.clientAddress || '-'}\nProdus: ${data.productName || '-'}\nPreț: ${data.amount || '-'} ${data.currency || 'RON'}\nEmitere: ${data.issueDate || '-'}\nScadentă: ${data.dueDate || '-'}`;
     
     const setReactValue = (input, value) => {
+      if (!input || value === undefined || value === null) return;
       const prototype = input.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
       const nativeSetter = Object.getOwnPropertyDescriptor(prototype, "value").set;
       nativeSetter.call(input, value);
       input.dispatchEvent(new Event('input', { bubbles: true }));
       input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.dispatchEvent(new Event('blur', { bubbles: true }));
     };
 
     const fillInput = (keywords, excludeKeywords, value) => {
       if (!value) return false;
       const inputs = Array.from(document.querySelectorAll('input, textarea'));
+      let filled = false;
       for (const input of inputs) {
         const text = (input.placeholder || input.name || input.id || "").toLowerCase();
         let labelText = "";
@@ -601,21 +604,23 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
         
         if (matchesKeywords && !matchesExclude) {
           setReactValue(input, value);
-          return true;
+          filled = true;
         }
       }
-      return false;
+      return filled;
     };
     
-    fillInput(['nume', 'client', 'prenume', 'denumire', 'customer'], [], data.clientName);
-    fillInput(['cnp', 'cui', 'cif', 'identificare'], [], data.clientCnp);
-    fillInput(['adresa', 'sediu', 'strada'], [], data.clientAddress);
+    fillInput(['customer-name', 'nume', 'client', 'prenume', 'denumire', 'customer'], ['code', 'email', 'phone', 'address'], data.clientName);
+    fillInput(['customer-code1', 'cnp', 'cui', 'cif', 'identificare', 'code1'], [], data.clientCnp);
+    fillInput(['customer-address', 'adresa', 'sediu', 'strada', 'address'], [], data.clientAddress);
+    fillInput(['customer-email', 'email', 'e-mail'], [], data.clientEmail);
+    fillInput(['customer-phone', 'telefon', 'phone', 'tel'], [], data.clientPhone);
     fillInput(['articol', 'produs', 'serviciu', 'descriere', 'article'], [], data.productName);
-    fillInput(['unitar', 'pret unitar', 'preț unitar', 'price', 'pu', 'unitprice'], ['total'], data.amount.toString());
+    fillInput(['unitar', 'pret unitar', 'preț unitar', 'price', 'pu', 'unitprice'], ['total'], data.amount ? data.amount.toString() : '');
     fillInput(['emitere', 'issue', 'start-date', 'start'], [], data.issueDate);
     fillInput(['scadenta', 'scadentă', 'due', 'end-date', 'end'], [], data.dueDate);
     
-    alert("Datele au fost completate în formular!\n\n" + summary);
+    alert("Datele au fost completate în formularul SOLO!\n\n" + summary);
   } catch (e) {
     alert("Asigură-te că ai copiat datele corecte din Agreemint și că ai permis accesul la clipboard.");
   }
