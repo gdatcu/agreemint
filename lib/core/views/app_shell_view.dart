@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../services/app_update_service.dart';
 import '../services/notification_service.dart';
+import '../services/supabase_realtime_service.dart';
 import '../../features/payments/controllers/payment_controller.dart';
 import '../../features/prospects/controllers/prospect_controller.dart';
 
@@ -13,6 +14,11 @@ class AppShellView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Initialize Supabase Realtime Stream for Live Contract Signed Alerts
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SupabaseRealtimeService.initialize(context, ref);
+    });
+
     final pendingState = ref.watch(globalPendingPaymentsControllerProvider);
     final prospectsState = ref.watch(prospectsControllerProvider);
 

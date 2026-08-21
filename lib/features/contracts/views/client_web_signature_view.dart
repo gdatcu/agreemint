@@ -335,21 +335,40 @@ class _ClientWebSignatureViewState
         clientSignedDate: DateTime.now(),
       );
 
-      // 5. Dispatch Discord Webhook Alert to Mentor
+      // 5. Dispatch Realtime Alerts (Discord + Email) to Mentor
       try {
         final settings = await ref.read(businessSettingsControllerProvider.notifier).build();
+        final studentNameStr = d['student_name'] as String? ?? student?.name ?? 'Cursant';
+        final studentCnpStr = d['cnp_cursant'] as String? ?? student?.cui ?? '';
+        final programNameStr = d['program_name'] as String? ?? program?.name ?? 'Program Mentorat';
+        final pdfUrlStr = updatedContract.signedPdfUrl ?? updatedContract.pdfUrl ?? '';
+
+        // Dispatch Discord Webhook
         if (settings.discordWebhookUrl != null && settings.discordWebhookUrl!.isNotEmpty) {
           await DiscordNotificationService.notifyContractSigned(
             webhookUrl: settings.discordWebhookUrl!,
-            studentName: d['student_name'] as String? ?? student?.name ?? 'Cursant',
-            studentCnp: d['cnp_cursant'] as String? ?? student?.cui ?? '',
-            programName: d['program_name'] as String? ?? program?.name ?? 'Program Mentorat',
+            studentName: studentNameStr,
+            studentCnp: studentCnpStr,
+            programName: programNameStr,
             contractNumber: updatedContract.contractNumber,
-            signedPdfUrl: updatedContract.signedPdfUrl ?? updatedContract.pdfUrl ?? '',
+            signedPdfUrl: pdfUrlStr,
+          );
+        }
+
+        // Dispatch Email Alert
+        if (settings.mentorNotificationEmail != null && settings.mentorNotificationEmail!.isNotEmpty) {
+          await EmailService.sendContractSignedEmailAlert(
+            mentorEmail: settings.mentorNotificationEmail!,
+            studentName: studentNameStr,
+            studentCnp: studentCnpStr,
+            programName: programNameStr,
+            contractNumber: updatedContract.contractNumber,
+            signedPdfUrl: pdfUrlStr,
+            resendApiKey: settings.resendApiKey,
           );
         }
       } catch (e) {
-        debugPrint('Discord Webhook trigger failed: $e');
+        debugPrint('Realtime notification trigger failed: $e');
       }
 
       setState(() {

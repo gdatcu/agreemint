@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.3.0 Release Notes
+# 🚀 Agreemint v1.4.0 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,10 +22,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.3.0
+## 🎨 What's New in Version 1.4.0
 
-- 🔔 **Real-Time Discord Webhook Alerts for Contract Signing**:
-  - Added native **Discord Webhook Integration**: Mentors get instant push notification alerts on their phone/laptop the second a client signs a contract!
-  - Includes a rich Discord Embed containing: Client Name, CNP/CUI, Program Name, Timestamp, and a **direct 1-click link to view/download the signed PDF contract**.
-  - Built-in **"Send Test Discord Alert"** button in **Profil / Settings** to verify Discord Webhooks in 1 click.
-- 📦 **Minor Version Bump**: Promoted release version to `v1.3.0` (`1.3.0+111`).
+- 🔔 **Omnichannel Real-Time Notifications for Signed Contracts**:
+  - **Option 1: Supabase Realtime Listener**: Subscribes to live Postgres contract changes in the app. Shows a live banner toast (*"🎉 Contract #X semnat de cursant în timp real!"*) and automatically refreshes payments and prospects on screen.
+  - **Option 2: Email Alert Notification**: Sends an instant email notification to your configured mentor email address with student info and a direct PDF download link. Includes a **"Trimite Email de Test"** button in Settings.
+  - **Option 3: Discord Webhook Alert**: Sends a rich Discord Embed push alert to your Discord server channel with direct 1-click links to the signed PDF.
+- 📦 **Minor Version Bump**: Promoted release version to `v1.4.0` (`1.4.0+112`).

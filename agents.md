@@ -49,7 +49,7 @@ You are responsible for generating the GitHub Actions workflows to automate rele
 *   **UI/UX:** Use Material 3 design guidelines (`useMaterial3: true`). Keep the interface clean, heavily utilizing `Card`, `ListTile`, and `DataTable` widgets to display the relational data clearly.
 *   **Step-by-Step Execution:** When asked to build a feature, write the Model first, the Repository second, the Controller third, and the UI last. Do not attempt to write the entire feature in a single file or a single step.
 
-## 7. Mandatory Approval & Workflow Protocol
-*   **Answer & Present First:** Whenever the user asks a question, requests a feature, or reports an issue, the agent MUST first thoroughly research, answer, present findings/analysis, and outline the proposed implementation plan in clear detail.
-*   **Explicit Approval Required:** The agent MUST ALWAYS ask for explicit user approval, confirmation, or guidance BEFORE executing code modifications, editing files, or running state-changing commands.
-*   **No Unrequested Autonomous Execution:** Never execute code changes or build steps preemptively without presenting the plan and securing explicit confirmation from the user.
+## 7. Mandatory Approval & Workflow Protocol (STRICT GUARDRAIL)
+*   **Answer & Present Proposal First:** Whenever the user asks a question, requests a feature, or discusses options, the agent MUST first thoroughly research, analyze, and present the technical proposal and options to the user for discussion.
+*   **Explicit Approval Required Before Code Changes:** The agent MUST ALWAYS stop and wait for explicit user approval before writing code, editing files, making commits, or running state-changing commands.
+*   **No Premature Autonomous Execution:** NEVER jump straight to modifying files or implementing features until the user explicitly responds with approval to proceed with a specific proposed plan.

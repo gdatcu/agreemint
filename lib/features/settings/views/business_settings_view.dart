@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signature/signature.dart';
 import '../../../core/services/discord_notification_service.dart';
+import '../../../core/services/email_service.dart';
 import '../controllers/business_settings_controller.dart';
 import '../models/business_settings_model.dart';
 
@@ -31,6 +32,8 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
   late TextEditingController _paymentTermController;
   late TextEditingController _refundDeadlineController;
   late TextEditingController _discordWebhookController;
+  late TextEditingController _mentorNotificationEmailController;
+  late TextEditingController _resendApiKeyController;
 
   late SignatureController _signatureController;
   Uint8List? _existingSignatureBytes;
@@ -73,6 +76,10 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
         TextEditingController(text: settings.refundDeadline);
     _discordWebhookController =
         TextEditingController(text: settings.discordWebhookUrl ?? '');
+    _mentorNotificationEmailController =
+        TextEditingController(text: settings.mentorNotificationEmail ?? '');
+    _resendApiKeyController =
+        TextEditingController(text: settings.resendApiKey ?? '');
 
     _existingSignatureBytes = settings.mentorSignatureBytes;
   }
@@ -91,6 +98,8 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
     _paymentTermController.dispose();
     _refundDeadlineController.dispose();
     _discordWebhookController.dispose();
+    _mentorNotificationEmailController.dispose();
+    _resendApiKeyController.dispose();
     _signatureController.dispose();
     super.dispose();
   }
@@ -131,6 +140,8 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
         refundDeadline: _refundDeadlineController.text.trim(),
         mentorSignatureBase64: mentorSigBase64,
         discordWebhookUrl: _discordWebhookController.text.trim(),
+        mentorNotificationEmail: _mentorNotificationEmailController.text.trim(),
+        resendApiKey: _resendApiKeyController.text.trim(),
       );
 
       await ref
@@ -465,6 +476,8 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
                   _buildSoloIntegrationCard(),
                   const SizedBox(height: 24),
                   _buildDiscordIntegrationCard(),
+                  const SizedBox(height: 24),
+                  _buildEmailIntegrationCard(),
                   const SizedBox(height: 32),
 
                   SizedBox(
@@ -875,6 +888,121 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
                       },
                       icon: const Icon(Icons.send_rounded, size: 16),
                       label: const Text('Trimite Mesaj de Test Discord'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmailIntegrationCard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(
+          icon: Icons.mark_email_read_rounded,
+          title: 'Realtime Contract Notifications (Email Alert)',
+        ),
+        const SizedBox(height: 12),
+        Card(
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: Theme.of(context).colorScheme.outlineVariant,
+              width: 0.5,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(Icons.email_outlined,
+                          color: Colors.green.shade700, size: 20),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Email Alerts for Signed Contracts',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Receive instant email alerts in your inbox whenever a student signs a contract, featuring student details and a direct link to the signed PDF contract.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _mentorNotificationEmailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Adresă Email Notificări Mentor',
+                    hintText: 'danielioanmarcu@yahoo.com sau me@georgedatcu.com',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.alternate_email_rounded),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _resendApiKeyController,
+                  decoration: const InputDecoration(
+                    labelText: 'Cheie API Resend (Opțional pentru trimitere directă)',
+                    hintText: 're_123456789...',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.key_rounded),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final email = _mentorNotificationEmailController.text.trim();
+                        if (email.isEmpty || !email.contains('@')) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  'Te rugăm să introduci o adresă email validă mai întâi.'),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                          return;
+                        }
+                        final success = await EmailService.sendTestEmailAlert(
+                          mentorEmail: email,
+                          resendApiKey: _resendApiKeyController.text.trim(),
+                        );
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(success
+                                  ? '🎉 Mesaj de test email trimis cu succes!'
+                                  : '❌ Trimiterea a eșuat. Verifică adresa email.'),
+                              backgroundColor:
+                                  success ? Colors.green : Colors.red,
+                            ),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.send_rounded, size: 16),
+                      label: const Text('Trimite Email de Test'),
                     ),
                   ],
                 ),
