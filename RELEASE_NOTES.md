@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.1.8 Release Notes
+# 🚀 Agreemint v1.1.9 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,9 +22,9 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.1.8
+## 🎨 What's New in Version 1.1.9
 
-- 👤 **Universal Solo Bookmarklet & New Client Support**:
-  - Enhanced `Copiază date SOLO` payload to serialize full student contact details (`clientEmail` & `clientPhone`).
-  - Upgraded the **SOLO Bookmarklet** code to be 100% universal: it now automatically populates both the **Draft Invoice Editor** AND the **Adaugă client nou (New Client)** modal form (`customer-name`, `customer-code1`, `customer-address`, `customer-email`, `customer-phone`).
-- 📦 **Patch Version Bump**: Promoted release version to `v1.1.8` (`1.1.8+108`).
+- 🔖 **Two Dedicated SOLO Bookmarklets**:
+  - **Bookmarklet 1: Client Nou SOLO**: Dedicated 1-click autofill for the **"Adaugă client nou"** popup dialog (`customer-name`, `customer-code1`, `customer-address`, `customer-email`, `customer-phone`). Uses AngularJS `$scope.$apply()` and event handlers to update client models cleanly.
+  - **Bookmarklet 2: Factură Draft SOLO**: Dedicated 1-click autofill for the **"Factură draft GD-32-26/SOLO"** invoice editor page (`invoiceCustomer`, `article-name0`, `line-pu0`, `start-date`, `end-date`).
+- 📦 **Patch Version Bump**: Promoted release version to `v1.1.9` (`1.1.9+109`).

@@ -570,59 +570,99 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
   }
 
   Widget _buildSoloIntegrationCard() {
-    const bookmarkletCode = r'''javascript:(async () => {
+    const clientBookmarkletCode = r'''javascript:(async () => {
   try {
     const text = await navigator.clipboard.readText();
     const data = JSON.parse(text);
     
-    const summary = `Client: ${data.clientName || '-'}\nCNP/CUI: ${data.clientCnp || '-'}\nEmail: ${data.clientEmail || '-'}\nTelefon: ${data.clientPhone || '-'}\nAdresă: ${data.clientAddress || '-'}\nProdus: ${data.productName || '-'}\nPreț: ${data.amount || '-'} ${data.currency || 'RON'}\nEmitere: ${data.issueDate || '-'}\nScadentă: ${data.dueDate || '-'}`;
-    
-    const setReactValue = (input, value) => {
-      if (!input || value === undefined || value === null) return;
-      const prototype = input.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
-      const nativeSetter = Object.getOwnPropertyDescriptor(prototype, "value").set;
-      nativeSetter.call(input, value);
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-      input.dispatchEvent(new Event('change', { bubbles: true }));
-      input.dispatchEvent(new Event('blur', { bubbles: true }));
+    const setVal = (el, val) => {
+      if (!el || !val) return false;
+      el.value = val;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      el.dispatchEvent(new Event('blur', { bubbles: true }));
+      try {
+        if (window.angular) {
+          const ngEl = window.angular.element(el);
+          ngEl.triggerHandler('input');
+          ngEl.triggerHandler('change');
+          const scope = ngEl.scope();
+          if (scope) scope.$apply();
+        }
+      } catch(e) {}
+      return true;
     };
 
-    const fillInput = (keywords, excludeKeywords, value) => {
-      if (!value) return false;
-      const inputs = Array.from(document.querySelectorAll('input, textarea'));
-      let filled = false;
-      for (const input of inputs) {
-        const text = (input.placeholder || input.name || input.id || "").toLowerCase();
-        let labelText = "";
-        if (input.id) {
-          const label = document.querySelector(`label[for="${input.id}"]`);
-          if (label) labelText = label.innerText.toLowerCase();
-        }
-        
-        const matchesKeywords = keywords.some(k => text.includes(k) || labelText.includes(k));
-        const matchesExclude = excludeKeywords.some(k => text.includes(k) || labelText.includes(k));
-        
-        if (matchesKeywords && !matchesExclude) {
-          setReactValue(input, value);
-          filled = true;
-        }
+    const findAndFill = (selector, keywords, val) => {
+      if (!val) return false;
+      let el = document.querySelector(selector);
+      if (!el) {
+        const inputs = Array.from(document.querySelectorAll('input, textarea'));
+        el = inputs.find(i => {
+          const t = (i.name || i.id || i.placeholder || '').toLowerCase();
+          return keywords.some(k => t.includes(k));
+        });
       }
-      return filled;
+      return setVal(el, val);
     };
-    
-    fillInput(['customer-name', 'nume', 'client', 'prenume', 'denumire', 'customer'], ['code', 'email', 'phone', 'address'], data.clientName);
-    fillInput(['customer-code1', 'cnp', 'cui', 'cif', 'identificare', 'code1'], [], data.clientCnp);
-    fillInput(['customer-address', 'adresa', 'sediu', 'strada', 'address'], [], data.clientAddress);
-    fillInput(['customer-email', 'email', 'e-mail'], [], data.clientEmail);
-    fillInput(['customer-phone', 'telefon', 'phone', 'tel'], [], data.clientPhone);
-    fillInput(['articol', 'produs', 'serviciu', 'descriere', 'article'], [], data.productName);
-    fillInput(['unitar', 'pret unitar', 'preț unitar', 'price', 'pu', 'unitprice'], ['total'], data.amount ? data.amount.toString() : '');
-    fillInput(['emitere', 'issue', 'start-date', 'start'], [], data.issueDate);
-    fillInput(['scadenta', 'scadentă', 'due', 'end-date', 'end'], [], data.dueDate);
-    
-    alert("Datele au fost completate în formularul SOLO!\n\n" + summary);
+
+    findAndFill('input[name="customer-name"], #customerName20', ['customer-name', 'nume'], data.clientName);
+    findAndFill('input[name="customer-code1"]', ['customer-code1', 'cnp', 'code1'], data.clientCnp);
+    findAndFill('input[name="customer-address"]', ['customer-address', 'adresa'], data.clientAddress);
+    findAndFill('input[name="customer-email"]', ['customer-email', 'email'], data.clientEmail);
+    findAndFill('input[name="customer-phone"]', ['customer-phone', 'telefon', 'phone'], data.clientPhone);
+
+    alert("Formularul 'Adaugă client nou' a fost completat!\n\nNume: " + (data.clientName||'-') + "\nCNP: " + (data.clientCnp||'-') + "\nAdresă: " + (data.clientAddress||'-') + "\nEmail: " + (data.clientEmail||'-') + "\nTelefon: " + (data.clientPhone||'-'));
   } catch (e) {
-    alert("Asigură-te că ai copiat datele corecte din Agreemint și că ai permis accesul la clipboard.");
+    alert("Asigură-te că ai copiat datele din Agreemint și că ai permis accesul la clipboard.");
+  }
+})();''';
+
+    const invoiceBookmarkletCode = r'''javascript:(async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    const data = JSON.parse(text);
+    
+    const setVal = (el, val) => {
+      if (!el || !val) return false;
+      el.value = val;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      el.dispatchEvent(new Event('blur', { bubbles: true }));
+      try {
+        if (window.angular) {
+          const ngEl = window.angular.element(el);
+          ngEl.triggerHandler('input');
+          ngEl.triggerHandler('change');
+          const scope = ngEl.scope();
+          if (scope) scope.$apply();
+        }
+      } catch(e) {}
+      return true;
+    };
+
+    const findAndFill = (selector, keywords, val) => {
+      if (!val) return false;
+      let el = document.querySelector(selector);
+      if (!el) {
+        const inputs = Array.from(document.querySelectorAll('input, textarea'));
+        el = inputs.find(i => {
+          const t = (i.name || i.id || i.placeholder || '').toLowerCase();
+          return keywords.some(k => t.includes(k));
+        });
+      }
+      return setVal(el, val);
+    };
+
+    findAndFill('input[name="invoiceCustomer"], #invoiceCustomer', ['customer', 'client'], data.clientName);
+    findAndFill('textarea[name="article-name0"]', ['article', 'articol'], data.productName);
+    findAndFill('input[name="line-pu0"]', ['line-pu', 'pu', 'unitar'], data.amount ? data.amount.toString() : '');
+    findAndFill('input[name="start-date"]', ['start-date', 'emitere'], data.issueDate);
+    findAndFill('input[name="end-date"]', ['end-date', 'scadenta'], data.dueDate);
+
+    alert("Formularul de Factură Draft a fost completat!\n\nClient: " + (data.clientName||'-') + "\nProdus: " + (data.productName||'-') + "\nPreț: " + (data.amount||'-') + " " + (data.currency||'RON') + "\nScadentă: " + (data.dueDate||'-'));
+  } catch (e) {
+    alert("Asigură-te că ai copiat datele din Agreemint și că ai permis accesul la clipboard.");
   }
 })();''';
 
@@ -660,14 +700,14 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
                     ),
                     const SizedBox(width: 8),
                     const Text(
-                      'SaaS Feature: 1-Click Invoice Autofill',
+                      'SaaS Feature: 1-Click Invoice & Client Autofill',
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Mentors can use this bookmarklet to autofill client registration and invoice details inside SOLO.ro in 1 click, eliminating manual copy-pasting.',
+                  'Mentors can create two bookmarklets on their browser bookmarks bar to autofill client registration and draft invoices in SOLO in 1 click:',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -682,26 +722,49 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
                 const SizedBox(height: 4),
                 const Text('2. Right-click on your bookmarks bar and choose "Add page..." (Adaugă pagină).'),
                 const SizedBox(height: 4),
-                const Text('3. Enter "Autofill SOLO" as name, and paste the code below as the URL.'),
+                const Text('3. Add Bookmarklet 1: Name = "Autofill Client Nou", URL = paste Bookmarklet 1 Code below.'),
                 const SizedBox(height: 4),
-                const Text('4. Click "Copiază date SOLO" on any paid installment in Agreemint.'),
+                const Text('4. Add Bookmarklet 2: Name = "Autofill Factură SOLO", URL = paste Bookmarklet 2 Code below.'),
                 const SizedBox(height: 4),
-                const Text('5. Open the invoice creation form in SOLO and click "Autofill SOLO" on your bar!'),
+                const Text('5. Click "Copiază date SOLO" on any unpaid installment in Agreemint.'),
+                const SizedBox(height: 4),
+                const Text('6. In SOLO: click "Autofill Client Nou" when adding a new client popup, and "Autofill Factură SOLO" on the invoice editor page!'),
                 const SizedBox(height: 16),
-                OutlinedButton.icon(
-                  onPressed: () async {
-                    await Clipboard.setData(const ClipboardData(text: bookmarkletCode));
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Autofill Bookmarklet code copied to clipboard!'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.content_copy_rounded),
-                  label: const Text('Copy Bookmarklet Code'),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        await Clipboard.setData(ClipboardData(text: clientBookmarkletCode));
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Bookmarklet 1 (Client Nou SOLO) copied to clipboard!'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.person_add_alt_1_rounded),
+                      label: const Text('Copy Bookmarklet 1: Client Nou'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        await Clipboard.setData(ClipboardData(text: invoiceBookmarkletCode));
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Bookmarklet 2 (Factură Draft SOLO) copied to clipboard!'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.receipt_long_rounded),
+                      label: const Text('Copy Bookmarklet 2: Factură Draft'),
+                    ),
+                  ],
                 ),
               ],
             ),
