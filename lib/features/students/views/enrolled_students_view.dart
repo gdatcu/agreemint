@@ -1254,6 +1254,8 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
     final cuiController = TextEditingController();
     final regComController = TextEditingController();
     final billingAddressController = TextEditingController();
+    final ciSerieController = TextEditingController();
+    final ciEliberatorController = TextEditingController();
     String clientType = 'PF';
 
     showDialog(
@@ -1330,6 +1332,8 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                   cuiCtrl: cuiController,
                                   regComCtrl: regComController,
                                   addressCtrl: billingAddressController,
+                                  ciSerieCtrl: ciSerieController,
+                                  ciEliberatorCtrl: ciEliberatorController,
                                   onClientTypeChanged: (type) {
                                     clientType = type;
                                   },
@@ -1390,6 +1394,32 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                           prefixIcon: const Icon(Icons.badge_outlined),
                         ),
                       ),
+                      if (clientType == 'PF') ...[
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: ciSerieController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Serie și Nr. CI (Optional)',
+                                  prefixIcon: Icon(Icons.credit_card_outlined),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextFormField(
+                                controller: ciEliberatorController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Eliberat de (Optional)',
+                                  prefixIcon: Icon(Icons.gavel_outlined),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                       if (clientType == 'PFA') ...[
                         const SizedBox(height: 16),
                         TextFormField(
@@ -1429,6 +1459,12 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                       final cui = cuiController.text.trim();
                       final regCom = regComController.text.trim();
                       final billingAddress = billingAddressController.text.trim();
+                      final ciSerie = ciSerieController.text.trim();
+                      final ciEliberator = ciEliberatorController.text.trim();
+                      var finalAddress = billingAddress;
+                      if (clientType == 'PF' && (ciSerie.isNotEmpty || ciEliberator.isNotEmpty)) {
+                        finalAddress = '$billingAddress | $ciSerie | $ciEliberator';
+                      }
 
                       await ref
                           .read(programEnrollmentsControllerProvider(widget.program.id)
@@ -1441,7 +1477,7 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                             cui: cui.isNotEmpty ? cui : null,
                             regCom: regCom.isNotEmpty ? regCom : null,
                             billingAddress:
-                                billingAddress.isNotEmpty ? billingAddress : null,
+                                finalAddress.isNotEmpty ? finalAddress : null,
                           );
 
                       // Show success snackbar
@@ -1475,6 +1511,8 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
     required TextEditingController cuiCtrl,
     required TextEditingController regComCtrl,
     required TextEditingController addressCtrl,
+    required TextEditingController ciSerieCtrl,
+    required TextEditingController ciEliberatorCtrl,
     required Function(String) onClientTypeChanged,
   }) {
     final lines = text.split('\n');
@@ -1537,6 +1575,15 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
           key.contains('nr. reg')) {
         regComCtrl.text = value.toUpperCase();
         onClientTypeChanged('PFA');
+      } else if (key.contains('ci ') ||
+          key.contains('ci(') ||
+          key.contains('carte') ||
+          key.contains('serie') ||
+          key.contains('număr') ||
+          key.contains('numar')) {
+        ciSerieCtrl.text = value;
+      } else if (key.contains('eliberat') || key.contains('spclep')) {
+        ciEliberatorCtrl.text = value;
       } else if ((key.contains('adresa') ||
               key.contains('adresă') ||
               key.contains('address')) &&

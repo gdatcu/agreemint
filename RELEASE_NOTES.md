@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.1.3 Release Notes
+# 🚀 Agreemint v1.1.4 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,9 +22,12 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.1.3
+## 🎨 What's New in Version 1.1.4
 
-- 🐛 **Fix Billing Address Smart Paste Bug**:
-  - Excluded keyword matches containing `email` from matching as `adresa`/`billing address` in both the **Contract Management** view and **Enroll Student** dialog.
-  - Resolves parser issues where the email line (`* adresa email: ...`) would accidentally overwrite the actual billing address field with the email string!
-- 📦 **Patch Version Bump**: Promoted release version to `v1.1.3` (`1.1.3+103`).
+- 📋 **Integrated CI details in Enroll Student Dialog & Contract pre-population**:
+  - Added **Serie și Nr. CI** and **Eliberat de** input fields to the **Enroll New Student** dialog for Individual (PF) students.
+  - Automatically compiles CI data inside the billing address database field using a pipe separator (`Billing Address | CI Serie/Nr. | CI Eliberat de`).
+  - Pre-populates the CI inputs automatically on the **Contract Management** page.
+- 📅 **Default CI Issue Date**:
+  - Automatically sets **Data eliberării CI** to the default value **`12.05.2023`** if not already set, eliminating redundant date selections!
+- 📦 **Patch Version Bump**: Promoted release version to `v1.1.4` (`1.1.4+104`).

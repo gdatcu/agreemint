@@ -125,7 +125,24 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
         _cnpController.text = student.cui!;
       }
       if (student.billingAddress != null && student.billingAddress!.isNotEmpty) {
-        _adresaController.text = student.billingAddress!;
+        final addressStr = student.billingAddress!;
+        if (addressStr.contains(' | ')) {
+          final parts = addressStr.split(' | ');
+          _adresaController.text = parts[0].trim();
+          if (parts.length > 1) {
+            _serieNrCiController.text = parts[1].trim();
+          }
+          if (parts.length > 2) {
+            _eliberatorCiController.text = parts[2].trim();
+          }
+        } else {
+          _adresaController.text = addressStr.trim();
+        }
+      }
+      
+      // Default CI date if not set on the page
+      if (_dataEliberariiCiController.text.isEmpty) {
+        _dataEliberariiCiController.text = '12.05.2023';
       }
     }
   }
