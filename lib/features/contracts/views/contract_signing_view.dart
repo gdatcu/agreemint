@@ -29,6 +29,7 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
   bool _isGenerating = false;
 
   final _formKey = GlobalKey<FormState>();
+  final _smartTextController = TextEditingController();
   final _adresaController = TextEditingController();
   final _cnpController = TextEditingController();
   final _serieNrCiController = TextEditingController();
@@ -143,6 +144,7 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
   @override
   void dispose() {
     _signatureController.dispose();
+    _smartTextController.dispose();
     _priceRonController.dispose();
     _contractNumberController.dispose();
     _adresaController.dispose();
@@ -784,6 +786,54 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Smart Paste (WhatsApp / Text) Card
+          Card(
+            color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.outlineVariant,
+                width: 0.5,
+              ),
+            ),
+            child: ExpansionTile(
+              leading: const Icon(Icons.bolt, color: Colors.amber),
+              title: const Text(
+                'Smart Paste (WhatsApp / Text)',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+              subtitle: const Text(
+                'Instantly populate CNP, Address, CI Serie/Nr, and Eliberat de from WhatsApp text.',
+                style: TextStyle(fontSize: 11),
+              ),
+              childrenPadding: const EdgeInsets.all(12),
+              children: [
+                TextField(
+                  controller: _smartTextController,
+                  maxLines: 4,
+                  decoration: const InputDecoration(
+                    hintText: 'Pasează mesajul de pe WhatsApp aici...\n(CNP, Adresă, CI, Eliberat de)',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.all(10),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(40),
+                  ),
+                  icon: const Icon(Icons.auto_awesome),
+                  label: const Text('Autofill Contract Form'),
+                  onPressed: () {
+                    setState(() {
+                      _parseSmartText(_smartTextController.text);
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
           // PART 1: PRESTATOR (PFA DETAILS)
           ExpansionTile(
             title: const Text(
@@ -1337,5 +1387,56 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
         );
       },
     );
+  }
+
+  void _parseSmartText(String text) {
+    final lines = text.split('\n');
+
+    for (var line in lines) {
+      // Clean up bullet points, asterisks, hyphens, and leading whitespace
+      var cleanLine = line.trim();
+      while (cleanLine.startsWith('*') ||
+          cleanLine.startsWith('-') ||
+          cleanLine.startsWith('•') ||
+          cleanLine.startsWith(' ')) {
+        cleanLine = cleanLine.substring(1).trim();
+      }
+
+      if (cleanLine.isEmpty) continue;
+
+      // Find the first colon to split key and value
+      final colonIndex = cleanLine.indexOf(':');
+      if (colonIndex == -1) {
+        // Fallback: If no colon, but it's a CNP (13 digits), extract it
+        final cnpMatch = RegExp(r'\b[12569][0-9]{12}\b').firstMatch(cleanLine);
+        if (cnpMatch != null) {
+          _cnpController.text = cnpMatch.group(0) ?? '';
+        }
+        continue;
+      }
+
+      final key = cleanLine.substring(0, colonIndex).trim().toLowerCase();
+      final value = cleanLine.substring(colonIndex + 1).trim();
+
+      if (value.isEmpty) continue;
+
+      // Match keys
+      if (key.contains('cnp') || key.contains('cod numeric')) {
+        _cnpController.text = value;
+      } else if (key.contains('ci ') ||
+          key.contains('ci(') ||
+          key.contains('carte') ||
+          key.contains('serie') ||
+          key.contains('număr') ||
+          key.contains('numar')) {
+        _serieNrCiController.text = value;
+      } else if (key.contains('eliberat') || key.contains('spclep')) {
+        _eliberatorCiController.text = value;
+      } else if (key.contains('adresa') ||
+          key.contains('adresă') ||
+          key.contains('address')) {
+        _adresaController.text = value;
+      }
+    }
   }
 }

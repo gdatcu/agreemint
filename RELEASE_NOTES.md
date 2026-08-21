@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.1.1 Release Notes
+# 🚀 Agreemint v1.1.2 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,9 +22,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.1.1
+## 🎨 What's New in Version 1.1.2
 
-- 📝 **Auto-Populating Contract Signer Details**:
-  - Automatically loads the student's **CNP** and **Billing Address** values directly from the student record into the **Contract Management** creation form fields on initialization.
-  - Eliminates duplicate manual data entry when generating student agreements.
-- 📦 **Patch Version Bump**: Promoted release version to `v1.1.1` (`1.1.1+101`).
+- ⚡ **Smart Paste for Contract Management**:
+  - Added a collapsible **Smart Paste (WhatsApp / Text)** card at the top of the **Contract Management** creation form.
+  - Automatically parses WhatsApp texts to extract and populate: **CNP**, **Adresă completă din CI**, **Serie și Nr. CI** (`CI (Serie & Număr)`), and **Eliberat de** fields in 1 click.
+  - Resolves duplicate manual copying for CI details!
+- 📦 **Patch Version Bump**: Promoted release version to `v1.1.2` (`1.1.2+102`).
