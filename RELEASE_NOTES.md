@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.99 Release Notes
+# 🚀 Agreemint v1.1.0 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,12 +22,12 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.99
+## 🎨 What's New in Version 1.1.0
 
-- ⚡ **WhatsApp Smart Paste CRM Parser**:
-  - Added a **Smart Paste (WhatsApp / Text)** collapsible card inside the **Enroll Student** dialog.
-  - Automatically parses copied WhatsApp text containing student details using case-insensitive regular expressions to extract: Name, Email, Phone, CNP/CUI, Reg. Com., and Address.
-  - Instantly populates form inputs and toggles the PFA/PF client type setting dynamically.
+- ⚡ **Line-by-Line WhatsApp Smart Paste Parser**:
+  - Replaced lookup regular expressions with a bulletproof, line-by-line colon-split parser.
+  - Automatically handles bullet points (`*`, `-`, `•`), prefixes, and leading symbols.
+  - Correctly extracts **Full Name** and **Billing Address** regardless of special format structures (like list asterisks `*` before field labels).
 - 📋 **CNP & Address Fields for PF Individuals**:
   - Restructured the Dialog layout to enable CNP and Billing Address inputs for Individual (PF) students (previously hidden), since individuals also require these for legal contracts and invoicing.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.99` (`1.0.99+99`).
+- 📦 **Major Version Bump**: Promoted release version to `v1.1.0` (`1.1.0+100`).

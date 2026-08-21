@@ -1477,71 +1477,71 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
     required TextEditingController addressCtrl,
     required Function(String) onClientTypeChanged,
   }) {
-    // Normalize whitespace
-    final cleanText = text.replaceAll(RegExp(r'\s+'), ' ').trim();
+    final lines = text.split('\n');
 
-    // 1. Extract Email
-    final emailMatch = RegExp(
-      r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}',
-      caseSensitive: false,
-    ).firstMatch(text);
-    if (emailMatch != null) {
-      emailCtrl.text = emailMatch.group(0) ?? '';
-    }
+    for (var line in lines) {
+      // Clean up bullet points, asterisks, hyphens, and leading whitespace
+      var cleanLine = line.trim();
+      while (cleanLine.startsWith('*') ||
+          cleanLine.startsWith('-') ||
+          cleanLine.startsWith('•') ||
+          cleanLine.startsWith(' ')) {
+        cleanLine = cleanLine.substring(1).trim();
+      }
 
-    // 2. Extract Phone
-    final phoneMatch = RegExp(
-      r'(?:\+40|07)[0-9\s\-]{8,12}\b',
-    ).firstMatch(text);
-    if (phoneMatch != null) {
-      phoneCtrl.text = phoneMatch.group(0)!.replaceAll(RegExp(r'[\s\-]'), '');
-    }
+      if (cleanLine.isEmpty) continue;
 
-    // 3. Extract CNP (13 digits starting with 1, 2, 5, 6, 9)
-    final cnpMatch = RegExp(
-      r'\b[12569][0-9]{12}\b',
-    ).firstMatch(text);
-    if (cnpMatch != null) {
-      cuiCtrl.text = cnpMatch.group(0) ?? '';
-      onClientTypeChanged('PF');
-    }
+      // Find the first colon to split key and value
+      final colonIndex = cleanLine.indexOf(':');
+      if (colonIndex == -1) {
+        // Fallback: If no colon, but it's an email, extract it
+        if (cleanLine.contains('@')) {
+          final emailMatch = RegExp(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}').firstMatch(cleanLine);
+          if (emailMatch != null) {
+            emailCtrl.text = emailMatch.group(0) ?? '';
+          }
+        }
+        // Fallback: If it's a CNP (13 digits), extract it
+        final cnpMatch = RegExp(r'\b[12569][0-9]{12}\b').firstMatch(cleanLine);
+        if (cnpMatch != null) {
+          cuiCtrl.text = cnpMatch.group(0) ?? '';
+          onClientTypeChanged('PF');
+        }
+        continue;
+      }
 
-    // 4. Extract CUI/CIF (e.g. RO123456 or just digits)
-    final cuiKeywordMatch = RegExp(
-      r'(?:cui|cif|c.u.i|c.i.f)[:\s\-]*([a-zA-Z]*\s*[0-9]+)\b',
-      caseSensitive: false,
-    ).firstMatch(text);
-    if (cuiKeywordMatch != null && cnpMatch == null) {
-      cuiCtrl.text = cuiKeywordMatch.group(1)!.replaceAll(' ', '').toUpperCase();
-      onClientTypeChanged('PFA');
-    }
+      final key = cleanLine.substring(0, colonIndex).trim().toLowerCase();
+      final value = cleanLine.substring(colonIndex + 1).trim();
 
-    // 5. Extract Reg Com (Jxx/xxx/xxxx or Fxx/xxx/xxxx)
-    final regComMatch = RegExp(
-      r'\b[JF][0-9]{2}/[0-9]+/[0-9]{4}\b',
-      caseSensitive: false,
-    ).firstMatch(text);
-    if (regComMatch != null) {
-      regComCtrl.text = regComMatch.group(0)!.toUpperCase();
-      onClientTypeChanged('PFA');
-    }
+      if (value.isEmpty) continue;
 
-    // 6. Extract Name
-    final nameMatch = RegExp(
-      r'(?:nume complet|nume|full name|client)[:\s\-]*([a-zA-Z\s\-ĂăÂâÎîȘșȚț]+?)(?=\s*(?:cnp|ci\b|cui|cif|adresa|email|telefon|\.|$))',
-      caseSensitive: false,
-    ).firstMatch(cleanText);
-    if (nameMatch != null) {
-      nameCtrl.text = nameMatch.group(1)!.trim();
-    }
-
-    // 7. Extract Address
-    final addressMatch = RegExp(
-      r'(?:adresa din buletin|adresa|adresă|address)[:\s\-]*([a-zA-Z0-9\s\-\.,ĂăÂâÎîȘșȚț]+?)(?=\s*(?:email|telefon|cnp|ci\b|cui|cif|\.|$))',
-      caseSensitive: false,
-    ).firstMatch(cleanText);
-    if (addressMatch != null) {
-      addressCtrl.text = addressMatch.group(1)!.trim();
+      // Match keys
+      if (key.contains('nume complet') ||
+          key.contains('nume') ||
+          key.contains('full name') ||
+          key.contains('client')) {
+        nameCtrl.text = value;
+      } else if (key.contains('email') || value.contains('@')) {
+        // Remove trailing/leading braces or symbols often found around emails
+        emailCtrl.text = value.replaceAll(RegExp(r'[<>\[\]]'), '').trim();
+      } else if (key.contains('telefon') || key.contains('phone')) {
+        phoneCtrl.text = value.replaceAll(RegExp(r'[\s\-]'), '');
+      } else if (key.contains('cnp') || key.contains('cod numeric')) {
+        cuiCtrl.text = value;
+        onClientTypeChanged('PF');
+      } else if (key.contains('cui') || key.contains('cif')) {
+        cuiCtrl.text = value.replaceAll(' ', '').toUpperCase();
+        onClientTypeChanged('PFA');
+      } else if (key.contains('reg. com') ||
+          key.contains('reg com') ||
+          key.contains('nr. reg')) {
+        regComCtrl.text = value.toUpperCase();
+        onClientTypeChanged('PFA');
+      } else if (key.contains('adresa') ||
+          key.contains('adresă') ||
+          key.contains('address')) {
+        addressCtrl.text = value;
+      }
     }
   }
 }
