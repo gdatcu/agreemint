@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.1.4 Release Notes
+# 🚀 Agreemint v1.1.5 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,12 +22,12 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.1.4
+## 🎨 What's New in Version 1.1.5
 
-- 📋 **Integrated CI details in Enroll Student Dialog & Contract pre-population**:
-  - Added **Serie și Nr. CI** and **Eliberat de** input fields to the **Enroll New Student** dialog for Individual (PF) students.
-  - Automatically compiles CI data inside the billing address database field using a pipe separator (`Billing Address | CI Serie/Nr. | CI Eliberat de`).
-  - Pre-populates the CI inputs automatically on the **Contract Management** page.
-- 📅 **Default CI Issue Date**:
-  - Automatically sets **Data eliberării CI** to the default value **`12.05.2023`** if not already set, eliminating redundant date selections!
-- 📦 **Patch Version Bump**: Promoted release version to `v1.1.4` (`1.1.4+104`).
+- 🧾 **Contract-Aware SOLO Invoice Autofill**:
+  - Automatically loads and integrates the **Contract Number** and **Contract Signed Date** into the **Copiază date SOLO** clipboard copy actions.
+  - Dynamically builds the **Articol / ProductName** according to:
+    - **Single/Full payment**: `Servicii QA Automation – cf. Contract nr. <NO> din <Date>`
+    - **Installments / Tranșe**: `Servicii QA Automation – Tranșa X/Y cf. Contract nr. <NO> din <Date>`
+  - If contract details are missing, it automatically displays a prompt dialog asking for the missing Contract Number and Date, ensuring complete data is always copied.
+- 📦 **Patch Version Bump**: Promoted release version to `v1.1.5` (`1.1.5+105`).

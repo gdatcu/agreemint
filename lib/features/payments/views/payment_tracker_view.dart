@@ -1577,16 +1577,151 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
     int installmentIndex,
     int totalInstallments,
   ) async {
+    final contract = widget.enrollment.contract;
+    if (contract == null) {
+      // Contract is missing, prompt for details
+      await _showContractDetailsPromptDialog(
+        payment,
+        installmentIndex,
+        totalInstallments,
+      );
+    } else {
+      final contractNo = contract.contractNumber.toString();
+      final contractDate = _formatDateToSolo(
+        contract.clientSignedDate ?? contract.createdAt ?? DateTime.now(),
+      );
+      await _copySoloDataWithContract(
+        payment: payment,
+        installmentIndex: installmentIndex,
+        totalInstallments: totalInstallments,
+        contractNo: contractNo,
+        contractDate: contractDate,
+      );
+    }
+  }
+
+  Future<void> _showContractDetailsPromptDialog(
+    PaymentModel payment,
+    int installmentIndex,
+    int totalInstallments,
+  ) async {
+    final contractNoController = TextEditingController(text: '1');
+    final contractDateController = TextEditingController(
+      text: _formatDateToSolo(DateTime.now()),
+    );
+    final formKey = GlobalKey<FormState>();
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.description_outlined, color: Colors.blueAccent),
+              SizedBox(width: 8),
+              Text('Detalii Contract Lipsă'),
+            ],
+          ),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Nu s-a găsit niciun contract generat pentru acest student în Agreemint. Introduceți numărul și data contractului pentru factura SOLO:',
+                  style: TextStyle(fontSize: 12),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: contractNoController,
+                  decoration: const InputDecoration(
+                    labelText: 'Număr Contract *',
+                    hintText: 'ex: 45',
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (val) => val == null || val.trim().isEmpty
+                      ? 'Introduceți numărul contractului'
+                      : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: contractDateController,
+                  decoration: const InputDecoration(
+                    labelText: 'Dată Contract (DD.MM.YYYY) *',
+                    hintText: 'ex: 21.08.2026',
+                  ),
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return 'Introduceți data contractului';
+                    }
+                    final match = RegExp(r'^\d{2}\.\d{2}\.\d{4}$').hasMatch(val.trim());
+                    if (!match) {
+                      return 'Format invalid. Folosiți DD.MM.YYYY';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Anulează'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (formKey.currentState?.validate() ?? false) {
+                  final contractNo = contractNoController.text.trim();
+                  final contractDate = contractDateController.text.trim();
+                  Navigator.of(context).pop();
+                  _copySoloDataWithContract(
+                    payment: payment,
+                    installmentIndex: installmentIndex,
+                    totalInstallments: totalInstallments,
+                    contractNo: contractNo,
+                    contractDate: contractDate,
+                  );
+                }
+              },
+              child: const Text('Copiază Date SOLO'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _copySoloDataWithContract({
+    required PaymentModel payment,
+    required int installmentIndex,
+    required int totalInstallments,
+    required String contractNo,
+    required String contractDate,
+  }) async {
     final student = widget.enrollment.student;
     final program = widget.enrollment.program;
     final currency = program?.currency ?? 'RON';
 
-    // Construct the structured JSON billing data
+    // Parse clean billing address out of combined address field if needed
+    var cleanAddress = student?.billingAddress ?? '';
+    if (cleanAddress.contains(' | ')) {
+      cleanAddress = cleanAddress.split(' | ')[0].trim();
+    }
+
+    // Construct product name depending on installments
+    String productName;
+    if (totalInstallments > 1) {
+      productName = 'Servicii QA Automation – Tranșa $installmentIndex/$totalInstallments cf. Contract nr. $contractNo din $contractDate';
+    } else {
+      productName = 'Servicii QA Automation – cf. Contract nr. $contractNo din $contractDate';
+    }
+
     final billingData = {
       'clientName': student?.name ?? '',
       'clientCnp': student?.cui ?? '',
-      'clientAddress': student?.billingAddress ?? '',
-      'productName': 'Servicii de mentorat QualiAdept - ${program?.name ?? ""} - Tranșa $installmentIndex',
+      'clientAddress': cleanAddress,
+      'productName': productName,
       'amount': payment.amountPaid > 0 ? payment.amountPaid : payment.amountDue,
       'currency': currency,
       'issueDate': _formatDateToSolo(DateTime.now()),
