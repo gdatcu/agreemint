@@ -117,6 +117,16 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
             ? program.name
             : 'QA Automation (TS + Playwright)';
     _technologiesController = TextEditingController(text: techCurriculum);
+
+    final student = widget.enrollment.student;
+    if (student != null) {
+      if (student.cui != null && student.cui!.isNotEmpty) {
+        _cnpController.text = student.cui!;
+      }
+      if (student.billingAddress != null && student.billingAddress!.isNotEmpty) {
+        _adresaController.text = student.billingAddress!;
+      }
+    }
   }
 
   void _fetchLiveRateAndConvert(double eurPrice) async {
