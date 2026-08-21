@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.97 Release Notes
+# 🚀 Agreemint v1.0.98 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,14 +22,12 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.97
+## 🎨 What's New in Version 1.0.98
 
-- ⚡ **Upgraded SOLO Invoicing Autofill Flow**:
-  - Automatically formats the current date and due date as `DD.MM.YYYY` inside the clipboard payload.
-  - Excludes the `Total articol` selector to write the amount directly to the **Preț unitar** input.
-  - Overwrites the default `Articol` description with the custom cohort billing text.
-  - Autofills the **Data emitere** (Issue Date) and **Data scadentă** (Due Date) fields.
-  - Utilizes React state dispatcher overrides for instant reactive rendering inside SOLO.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.97` (`1.0.97+97`).
+- 🔌 **SaaS-Ready SOLO Invoicing Integration Settings Tab**:
+  - Added the **SOLO Invoicing Integration Guide** card inside the **Business Settings** view.
+  - Mentors using your software can read the step-by-step instructions on showing the Bookmarks Bar and adding the bookmark.
+  - Added a **"Copy Bookmarklet Code"** button to allow mentors to copy the updated, reactive bookmarklet Javascript code in 1-click at any time.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.98` (`1.0.98+98`).
 
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signature/signature.dart';
 import '../controllers/business_settings_controller.dart';
@@ -454,7 +455,8 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
                       ),
                     ),
                   ),
-
+                  const SizedBox(height: 24),
+                  _buildSoloIntegrationCard(),
                   const SizedBox(height: 32),
 
                   SizedBox(
@@ -564,6 +566,143 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildSoloIntegrationCard() {
+    const bookmarkletCode = r'''javascript:(async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    const data = JSON.parse(text);
+    
+    const summary = `Client: ${data.clientName}\nCNP/CUI: ${data.clientCnp}\nAdresă: ${data.clientAddress}\nProdus: ${data.productName}\nPreț: ${data.amount} ${data.currency}\nData emitere: ${data.issueDate}\nData scadentă: ${data.dueDate}`;
+    
+    const setReactValue = (input, value) => {
+      const prototype = input.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
+      const nativeSetter = Object.getOwnPropertyDescriptor(prototype, "value").set;
+      nativeSetter.call(input, value);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+
+    const fillInput = (keywords, excludeKeywords, value) => {
+      if (!value) return false;
+      const inputs = Array.from(document.querySelectorAll('input, textarea'));
+      for (const input of inputs) {
+        const text = (input.placeholder || input.name || input.id || "").toLowerCase();
+        let labelText = "";
+        if (input.id) {
+          const label = document.querySelector(`label[for="${input.id}"]`);
+          if (label) labelText = label.innerText.toLowerCase();
+        }
+        
+        const matchesKeywords = keywords.some(k => text.includes(k) || labelText.includes(k));
+        const matchesExclude = excludeKeywords.some(k => text.includes(k) || labelText.includes(k));
+        
+        if (matchesKeywords && !matchesExclude) {
+          setReactValue(input, value);
+          return true;
+        }
+      }
+      return false;
+    };
+    
+    fillInput(['nume', 'client', 'prenume', 'denumire'], [], data.clientName);
+    fillInput(['cnp', 'cui', 'cif', 'identificare'], [], data.clientCnp);
+    fillInput(['adresa', 'sediu', 'strada'], [], data.clientAddress);
+    fillInput(['articol', 'produs', 'serviciu', 'descriere'], [], data.productName);
+    fillInput(['unitar', 'pret unitar', 'preț unitar', 'price'], ['total'], data.amount.toString());
+    fillInput(['emitere', 'issue'], [], data.issueDate);
+    fillInput(['scadenta', 'scadentă', 'due'], [], data.dueDate);
+    
+    alert("Datele au fost completate în formular!\n\n" + summary);
+  } catch (e) {
+    alert("Asigură-te că ai copiat datele corecte din Agreemint și că ai permis accesul la clipboard.");
+  }
+})();''';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(
+          icon: Icons.integration_instructions_rounded,
+          title: 'SOLO Invoicing Integration Guide (For Mentors)',
+        ),
+        const SizedBox(height: 12),
+        Card(
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: Theme.of(context).colorScheme.outlineVariant,
+              width: 0.5,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(Icons.rocket_launch_outlined, color: Colors.blue.shade700, size: 20),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'SaaS Feature: 1-Click Invoice Autofill',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Mentors can use this bookmarklet to autofill client registration and invoice details inside SOLO.ro in 1 click, eliminating manual copy-pasting.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Setup Instructions:',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+                const SizedBox(height: 8),
+                const Text('1. Press Ctrl + Shift + B to display your browser Bookmarks Bar.'),
+                const SizedBox(height: 4),
+                const Text('2. Right-click on your bookmarks bar and choose "Add page..." (Adaugă pagină).'),
+                const SizedBox(height: 4),
+                const Text('3. Enter "Autofill SOLO" as name, and paste the code below as the URL.'),
+                const SizedBox(height: 4),
+                const Text('4. Click "Copiază date SOLO" on any paid installment in Agreemint.'),
+                const SizedBox(height: 4),
+                const Text('5. Open the invoice creation form in SOLO and click "Autofill SOLO" on your bar!'),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    await Clipboard.setData(const ClipboardData(text: bookmarkletCode));
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Autofill Bookmarklet code copied to clipboard!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.content_copy_rounded),
+                  label: const Text('Copy Bookmarklet Code'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
