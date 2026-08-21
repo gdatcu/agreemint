@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.1.5 Release Notes
+# 🚀 Agreemint v1.1.6 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,12 +22,14 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.1.5
+## 🎨 What's New in Version 1.1.6
 
-- 🧾 **Contract-Aware SOLO Invoice Autofill**:
-  - Automatically loads and integrates the **Contract Number** and **Contract Signed Date** into the **Copiază date SOLO** clipboard copy actions.
-  - Dynamically builds the **Articol / ProductName** according to:
-    - **Single/Full payment**: `Servicii QA Automation – cf. Contract nr. <NO> din <Date>`
-    - **Installments / Tranșe**: `Servicii QA Automation – Tranșa X/Y cf. Contract nr. <NO> din <Date>`
-  - If contract details are missing, it automatically displays a prompt dialog asking for the missing Contract Number and Date, ensuring complete data is always copied.
-- 📦 **Patch Version Bump**: Promoted release version to `v1.1.5` (`1.1.5+105`).
+- ⚡ **Upgraded SOLO Autofill Bookmarklet Selectors**:
+  - Upgraded browser input matching keywords inside the **SOLO Integration Bookmarklet code** to support exact SOLO draft editor DOM selectors:
+    - **Client**: Added `'customer'` keyword (matches `name="invoiceCustomer"`).
+    - **Articol**: Added `'article'` keyword (matches `name="article-name0"`).
+    - **Preț unitar**: Added `'pu'` and `'unitprice'` keywords (matches `name="line-pu0"`).
+    - **Data emitere**: Added `'start-date'` and `'start'` keywords (matches `name="start-date"`).
+    - **Data scadentă**: Added `'end-date'` and `'end'` keywords (matches `name="end-date"`).
+  - Enables 100% complete autofill of the entire SOLO draft form!
+- 📦 **Patch Version Bump**: Promoted release version to `v1.1.6` (`1.1.6+106`).

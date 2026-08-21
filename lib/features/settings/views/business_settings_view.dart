@@ -607,13 +607,13 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
       return false;
     };
     
-    fillInput(['nume', 'client', 'prenume', 'denumire'], [], data.clientName);
+    fillInput(['nume', 'client', 'prenume', 'denumire', 'customer'], [], data.clientName);
     fillInput(['cnp', 'cui', 'cif', 'identificare'], [], data.clientCnp);
     fillInput(['adresa', 'sediu', 'strada'], [], data.clientAddress);
-    fillInput(['articol', 'produs', 'serviciu', 'descriere'], [], data.productName);
-    fillInput(['unitar', 'pret unitar', 'preț unitar', 'price'], ['total'], data.amount.toString());
-    fillInput(['emitere', 'issue'], [], data.issueDate);
-    fillInput(['scadenta', 'scadentă', 'due'], [], data.dueDate);
+    fillInput(['articol', 'produs', 'serviciu', 'descriere', 'article'], [], data.productName);
+    fillInput(['unitar', 'pret unitar', 'preț unitar', 'price', 'pu', 'unitprice'], ['total'], data.amount.toString());
+    fillInput(['emitere', 'issue', 'start-date', 'start'], [], data.issueDate);
+    fillInput(['scadenta', 'scadentă', 'due', 'end-date', 'end'], [], data.dueDate);
     
     alert("Datele au fost completate în formular!\n\n" + summary);
   } catch (e) {
