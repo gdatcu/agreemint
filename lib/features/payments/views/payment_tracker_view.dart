@@ -1565,6 +1565,13 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
     }
   }
 
+  String _formatDateToSolo(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final year = date.year.toString();
+    return '$day.$month.$year';
+  }
+
   Future<void> _copySoloData(
     PaymentModel payment,
     int installmentIndex,
@@ -1582,6 +1589,8 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
       'productName': 'Servicii de mentorat QualiAdept - ${program?.name ?? ""} - Tranșa $installmentIndex',
       'amount': payment.amountPaid > 0 ? payment.amountPaid : payment.amountDue,
       'currency': currency,
+      'issueDate': _formatDateToSolo(DateTime.now()),
+      'dueDate': _formatDateToSolo(payment.dueDate),
     };
 
     try {

@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.96 Release Notes
+# 🚀 Agreemint v1.0.97 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,12 +22,14 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.96
+## 🎨 What's New in Version 1.0.97
 
-- ⚡ **1-Click SOLO Invoicing Autofill Flow**:
-  - Implemented the **Copiază date SOLO** (Copy SOLO Data) button in the payment tracker installment list.
-  - Automatically serializes and copies student details (Name, CNP/CUI, Billing Address), installment information, price, and currency to the clipboard in a structured JSON payload.
-  - Provided a browser **Bookmarklet** script that automatically parses the clipboard payload and populates the client registration and invoice emission fields on `falcon.solo.ro` instantly.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.96` (`1.0.96+96`).
+- ⚡ **Upgraded SOLO Invoicing Autofill Flow**:
+  - Automatically formats the current date and due date as `DD.MM.YYYY` inside the clipboard payload.
+  - Excludes the `Total articol` selector to write the amount directly to the **Preț unitar** input.
+  - Overwrites the default `Articol` description with the custom cohort billing text.
+  - Autofills the **Data emitere** (Issue Date) and **Data scadentă** (Due Date) fields.
+  - Utilizes React state dispatcher overrides for instant reactive rendering inside SOLO.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.97` (`1.0.97+97`).
 
 
