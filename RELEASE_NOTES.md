@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.0.94 Release Notes
+# 🚀 Agreemint v1.0.96 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,11 +22,12 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.0.94
+## 🎨 What's New in Version 1.0.96
 
-- 📋 **Transactional SMTP Metadata Propagation**:
-  - Configured `signInWithOtp` to pass the student's name (`studentName`) as metadata (`name`) to Supabase.
-  - Allows you to use the dynamic variable `{{ .Data.name }}` directly inside your HTML templates for custom personal greetings.
-- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.94` (`1.0.94+94`).
+- ⚡ **1-Click SOLO Invoicing Autofill Flow**:
+  - Implemented the **Copiază date SOLO** (Copy SOLO Data) button in the payment tracker installment list.
+  - Automatically serializes and copies student details (Name, CNP/CUI, Billing Address), installment information, price, and currency to the clipboard in a structured JSON payload.
+  - Provided a browser **Bookmarklet** script that automatically parses the clipboard payload and populates the client registration and invoice emission fields on `falcon.solo.ro` instantly.
+- 📦 **Dynamic Version Bump**: Updated app version to `v1.0.96` (`1.0.96+96`).
 
 

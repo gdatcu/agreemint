@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
@@ -620,7 +622,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                   onPressed: () => _showSoloInvoiceDialog(
                                       context, ref, payment),
                                 ),
-                                if (payment.amountPaid > 0)
+                                if (payment.amountPaid > 0) ...[
                                   IconButton(
                                     icon: Icon(
                                       Icons.receipt_long,
@@ -635,6 +637,17 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                     onPressed: () => _generateAndShowReceipt(
                                         context, payment, index + 1, payments.length),
                                   ),
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.copy_all_rounded,
+                                      size: 20,
+                                      color: Colors.blue.shade800,
+                                    ),
+                                    tooltip: 'Copiază date SOLO',
+                                    onPressed: () => _copySoloData(
+                                        payment, index + 1, payments.length),
+                                  ),
+                                ],
                                 if (displayStatus != 'Paid' &&
                                     displayStatus != 'Refunded' &&
                                     !isContractRefunded) ...[
@@ -1545,6 +1558,48 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to generate receipt: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _copySoloData(
+    PaymentModel payment,
+    int installmentIndex,
+    int totalInstallments,
+  ) async {
+    final student = widget.enrollment.student;
+    final program = widget.enrollment.program;
+    final currency = program?.currency ?? 'RON';
+
+    // Construct the structured JSON billing data
+    final billingData = {
+      'clientName': student?.name ?? '',
+      'clientCnp': student?.cui ?? '',
+      'clientAddress': student?.billingAddress ?? '',
+      'productName': 'Servicii de mentorat QualiAdept - ${program?.name ?? ""} - Tranșa $installmentIndex',
+      'amount': payment.amountPaid > 0 ? payment.amountPaid : payment.amountDue,
+      'currency': currency,
+    };
+
+    try {
+      await Clipboard.setData(ClipboardData(text: jsonEncode(billingData)));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Datele de facturare pentru SOLO au fost copiate! Deschide SOLO și folosește Bookmarklet-ul.'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Copierea a eșuat: $e'),
             backgroundColor: Colors.red,
           ),
         );
