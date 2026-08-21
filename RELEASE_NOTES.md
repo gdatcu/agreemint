@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.1.9 Release Notes
+# 🚀 Agreemint v1.2.0 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,9 +22,12 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.1.9
+## 🎨 What's New in Version 1.2.0
 
-- 🔖 **Two Dedicated SOLO Bookmarklets**:
-  - **Bookmarklet 1: Client Nou SOLO**: Dedicated 1-click autofill for the **"Adaugă client nou"** popup dialog (`customer-name`, `customer-code1`, `customer-address`, `customer-email`, `customer-phone`). Uses AngularJS `$scope.$apply()` and event handlers to update client models cleanly.
-  - **Bookmarklet 2: Factură Draft SOLO**: Dedicated 1-click autofill for the **"Factură draft GD-32-26/SOLO"** invoice editor page (`invoiceCustomer`, `article-name0`, `line-pu0`, `start-date`, `end-date`).
-- 📦 **Patch Version Bump**: Promoted release version to `v1.1.9` (`1.1.9+109`).
+- 💡 **Simplified Single-Copy SOLO Workflow & Direct Client Copy Button**:
+  - **Single Click Copy**: Clarified that clicking **Copiază date SOLO** on any unpaid payment tile copies **ALL** student registration details AND invoice details in a **single click**.
+  - **Direct Client Copy Button on Student Roster**: Added a new **Copiază date client SOLO** action button directly on each student card in the Student Roster, allowing you to copy student registration details anytime without navigating to Payments.
+  - **2 Dedicated Bookmarklets**:
+    - Use **Bookmarklet 1: Client Nou SOLO** in the `"Adaugă client nou"` modal to fill Nume, CNP, Adresă, Email, Telefon.
+    - Use **Bookmarklet 2: Factură Draft SOLO** in the `"Factură draft"` editor to fill Client search, Article name, Price, Issue date, Due date.
+- 📦 **Minor Version Bump**: Promoted release version to `v1.2.0` (`1.2.0+110`).

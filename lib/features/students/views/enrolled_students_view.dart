@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../programs/models/program_model.dart';
@@ -730,21 +732,27 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                        IconButton(
                                          icon: const Icon(Icons.description_outlined),
                                          tooltip: 'Manage Contract',
-                                        onPressed: () {
-                                          context.go(
-                                              '/programs/${widget.program.id}/students/contract',
-                                              extra: enrollment);
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.payment_outlined),
-                                        tooltip: 'Payments',
-                                        onPressed: () {
-                                          context.go(
-                                              '/programs/${widget.program.id}/students/payments',
-                                              extra: enrollment);
-                                        },
-                                      ),
+                                         onPressed: () {
+                                           context.go(
+                                               '/programs/${widget.program.id}/students/contract',
+                                               extra: enrollment);
+                                         },
+                                       ),
+                                       IconButton(
+                                         icon: const Icon(Icons.payment_outlined),
+                                         tooltip: 'Payments',
+                                         onPressed: () {
+                                           context.go(
+                                               '/programs/${widget.program.id}/students/payments',
+                                               extra: enrollment);
+                                         },
+                                       ),
+                                       IconButton(
+                                         icon: Icon(Icons.person_add_alt_1_outlined,
+                                             color: Colors.blue.shade700),
+                                         tooltip: 'Copiază date client SOLO',
+                                         onPressed: () => _copySoloClientData(student),
+                                       ),
                                       if (enrollment.contract?.status != 'Refunded' &&
                                           enrollment.contract?.status != 'Cancelled')
                                         IconButton(
@@ -1589,6 +1597,41 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
               key.contains('address')) &&
           !key.contains('email')) {
         addressCtrl.text = value;
+      }
+    }
+  }
+
+  Future<void> _copySoloClientData(StudentModel student) async {
+    var cleanAddress = student.billingAddress ?? '';
+    if (cleanAddress.contains(' | ')) {
+      cleanAddress = cleanAddress.split(' | ')[0].trim();
+    }
+    final clientData = {
+      'clientName': student.name,
+      'clientCnp': student.cui ?? '',
+      'clientAddress': cleanAddress,
+      'clientEmail': student.email,
+      'clientPhone': student.phone ?? '',
+    };
+    try {
+      await Clipboard.setData(ClipboardData(text: jsonEncode(clientData)));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Datele clientului pentru SOLO au fost copiate! Deschide "Adaugă client nou" în SOLO și apasă "Autofill Client Nou".'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Copierea a eșuat: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
