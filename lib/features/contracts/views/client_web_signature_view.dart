@@ -96,6 +96,8 @@ class _ClientWebSignatureViewState
       return;
     }
 
+    final studentName = _contract?.enrollment?.student?.name ?? 'Beneficiar';
+
     setState(() {
       _isLoading = true;
     });
@@ -105,6 +107,9 @@ class _ClientWebSignatureViewState
       await supabase.auth.signInWithOtp(
         email: enteredEmail,
         shouldCreateUser: true,
+        data: {
+          'name': studentName,
+        },
       );
 
       setState(() {
