@@ -226,3 +226,55 @@ CREATE POLICY "Public can read business settings for signing" ON public.business
 -- 🔐 Mentors: Full access to insert/update company settings & notification keys
 CREATE POLICY "Mentors full access to business settings" ON public.business_settings
   FOR ALL TO authenticated USING (public.is_mentor());
+
+
+-- ============================================================================
+-- 8. SERVER-SIDE RESEND EMAIL DISPATCH (ZERO CORS RESTRICTIONS)
+-- ============================================================================
+CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
+
+CREATE OR REPLACE FUNCTION public.send_resend_email(
+  p_to TEXT,
+  p_subject TEXT,
+  p_html TEXT,
+  p_api_key TEXT DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_api_key TEXT;
+  v_response_id BIGINT;
+BEGIN
+  -- Use provided API key or fallback to business_settings table in Supabase
+  IF p_api_key IS NOT NULL AND p_api_key <> '' THEN
+    v_api_key := p_api_key;
+  ELSE
+    SELECT resend_api_key INTO v_api_key FROM public.business_settings LIMIT 1;
+  END IF;
+
+  IF v_api_key IS NULL OR v_api_key = '' THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Missing Resend API Key');
+  END IF;
+
+  -- Server-side HTTP POST to Resend (100% immune to browser CORS)
+  SELECT net.http_post(
+    url := 'https://api.resend.com/emails',
+    headers := jsonb_build_object(
+      'Authorization', 'Bearer ' || v_api_key,
+      'Content-Type', 'application/json'
+    ),
+    body := jsonb_build_object(
+      'from', 'Agreemint Alerts <onboarding@resend.dev>',
+      'to', jsonb_build_array(p_to),
+      'subject', p_subject,
+      'html', p_html
+    )
+  ) INTO v_response_id;
+
+  RETURN jsonb_build_object('success', true, 'request_id', v_response_id);
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.send_resend_email TO anon, authenticated, service_role;

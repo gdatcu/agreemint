@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.4.8 Release Notes
+# 🚀 Agreemint v1.4.9 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,12 +22,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.4.8
+## 🎨 What's New in Version 1.4.9
 
-- 📧 **Direct Resend API Routing for 100% Reliable Email Delivery**:
-  - Removed failing third-party CORS proxy and switched all email dispatches directly to Resend's REST endpoint (`https://api.resend.com/emails`), enabling instantaneous inbox delivery.
-  - Added comprehensive delivery logging for all contract signed and test email alerts.
-- ✍️ **Bulletproof Signature Fallback Chain**:
-  - Made saved profile signature fallback fail-safe (`pngBytes ??= _savedMentorSignatureBytes`), ensuring contract generation never blocks or fails with "Please draw your signature first".
-  - Wrapped signature canvas overlay with `IgnorePointer` for seamless gesture passthrough.
-- 📦 **Patch Version Bump**: Promoted release version to `v1.4.8` (`1.4.8+120`).
+- 🛡️ **Supabase Server-Side Resend Dispatch (Zero CORS Restrictions)**:
+  - Integrated `Supabase.instance.client.rpc('send_resend_email')` for 100% reliable server-to-server Resend API execution.
+  - Completely eliminates browser CORS restrictions (`ClientException: Failed to fetch`) on Chrome, Edge, Safari, and mobile browsers.
+  - Added PostgreSQL `send_resend_email` function with `pg_net` to `supabase_secure_rls.sql`.
+- 📦 **Patch Version Bump**: Promoted release version to `v1.4.9` (`1.4.9+121`).

@@ -48,11 +48,8 @@ class EmailService {
     final apiKey = resendApiKey?.trim();
     if (apiKey != null && apiKey.isNotEmpty) {
       try {
-        final payload = {
-          'from': 'Agreemint Alerts <onboarding@resend.dev>',
-          'to': [cleanEmail],
-          'subject': '✍️ Contract Semnat de $studentName (Contract #$contractNumber)',
-          'html': '''
+        final subject = '✍️ Contract Semnat de $studentName (Contract #$contractNumber)';
+        final htmlContent = '''
             <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px;">
               <h2 style="color: #2e7d32; margin-top: 0;">🎉 Contract Semnat cu Succes!</h2>
               <p style="font-size: 15px;">Cursantul <strong>$studentName</strong> a semnat contractul de mentorat.</p>
@@ -70,44 +67,57 @@ class EmailService {
               <hr style="border: none; border-top: 1px solid #eee;"/>
               <p style="font-size: 12px; color: #888; text-align: center;">Agreemint Realtime Notification System • QualiAdept</p>
             </div>
-          ''',
-        };
+          ''';
 
-        debugPrint('[EmailService] Sending contract signed alert via Resend to $cleanEmail...');
-        final response = await http.post(
-          Uri.parse('https://api.resend.com/emails'),
-          headers: {
-            'Authorization': 'Bearer $apiKey',
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode(payload),
-        );
-
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          debugPrint('[EmailService] Resend email delivered successfully: ${response.body}');
-          return true;
+        // 1. Primary: Server-side dispatch via Supabase RPC (100% immune to browser CORS)
+        try {
+          final supabase = Supabase.instance.client;
+          final rpcRes = await supabase.rpc(
+            'send_resend_email',
+            params: {
+              'p_to': cleanEmail,
+              'p_subject': subject,
+              'p_html': htmlContent,
+              'p_api_key': apiKey,
+            },
+          );
+          if (rpcRes != null && (rpcRes['success'] == true || rpcRes is Map)) {
+            debugPrint('[EmailService] Contract signed email dispatched via Supabase RPC: $rpcRes');
+            return true;
+          }
+        } catch (e) {
+          debugPrint('[EmailService] Supabase send_resend_email RPC notice: $e');
         }
-        debugPrint('[EmailService] Resend API Error: ${response.statusCode} - ${response.body}');
+
+        // 2. Direct REST Fallback (for mobile/desktop platforms without browser CORS)
+        if (!kIsWeb) {
+          final payload = {
+            'from': 'Agreemint Alerts <onboarding@resend.dev>',
+            'to': [cleanEmail],
+            'subject': subject,
+            'html': htmlContent,
+          };
+          debugPrint('[EmailService] Sending contract signed alert via direct Resend API to $cleanEmail...');
+          final response = await http.post(
+            Uri.parse('https://api.resend.com/emails'),
+            headers: {
+              'Authorization': 'Bearer $apiKey',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode(payload),
+          );
+
+          if (response.statusCode == 200 || response.statusCode == 201) {
+            debugPrint('[EmailService] Resend email delivered successfully: ${response.body}');
+            return true;
+          }
+        }
       } catch (e) {
         debugPrint('[EmailService] Failed to send email via Resend API: $e');
       }
     }
 
-    // 2. Fallback to Supabase RPC send_email_notification
-    try {
-      final supabase = Supabase.instance.client;
-      final response = await supabase.rpc(
-        'send_email_notification',
-        params: {
-          'p_email': cleanEmail,
-          'p_subject': '✍️ Contract Semnat: $studentName (Contract #$contractNumber)',
-          'p_body': 'Contractul #$contractNumber a fost semnat de $studentName. Vezi PDF: $signedPdfUrl',
-        },
-      );
-      return response != null;
-    } catch (_) {
-      return false;
-    }
+    return false;
   }
 
   /// Sends a test email notification to verify mentor email configuration.
@@ -121,24 +131,48 @@ class EmailService {
     }
 
     final apiKey = resendApiKey?.trim();
+    final htmlContent = '''
+      <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+        <h2 style="color: #1565c0;">✅ Test Notificare Email Reușit!</h2>
+        <p>Notificările prin email pentru contracte semnate sunt configurate activ în Agreemint.</p>
+        <p style="font-size: 12px; color: #777;">Trimis prin Resend la ora ${DateTime.now().toString()}</p>
+      </div>
+    ''';
 
-    // 1. If Resend API Key is set, send via Resend
-    if (apiKey != null && apiKey.isNotEmpty) {
+    // 1. Primary: Server-side dispatch via Supabase RPC (immune to browser CORS)
+    try {
+      final supabase = Supabase.instance.client;
+      final rpcRes = await supabase.rpc(
+        'send_resend_email',
+        params: {
+          'p_to': cleanEmail,
+          'p_subject': '✅ Test Notificare Email Agreemint',
+          'p_html': htmlContent,
+          if (apiKey != null && apiKey.isNotEmpty) 'p_api_key': apiKey,
+        },
+      );
+      if (rpcRes != null && (rpcRes['success'] == true || rpcRes is Map)) {
+        debugPrint('[EmailService] Test email dispatched via Supabase RPC: $rpcRes');
+        return {
+          'success': true,
+          'message': '🎉 Email de test expediat cu succes prin Resend la $cleanEmail!'
+        };
+      }
+    } catch (e) {
+      debugPrint('[EmailService] Supabase send_resend_email RPC notice: $e');
+    }
+
+    // 2. Direct REST Fallback (for mobile/desktop platforms)
+    if (apiKey != null && apiKey.isNotEmpty && !kIsWeb) {
       try {
         final payload = {
           'from': 'Agreemint Alerts <onboarding@resend.dev>',
           'to': [cleanEmail],
           'subject': '✅ Test Notificare Email Agreemint',
-          'html': '''
-            <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-              <h2 style="color: #1565c0;">✅ Test Notificare Email Reușit!</h2>
-              <p>Notificările prin email pentru contracte semnate sunt configurate activ în Agreemint.</p>
-              <p style="font-size: 12px; color: #777;">Trimis prin Resend API la ora ${DateTime.now().toString()}</p>
-            </div>
-          ''',
+          'html': htmlContent,
         };
 
-        debugPrint('[EmailService] Sending test email via Resend to $cleanEmail...');
+        debugPrint('[EmailService] Sending test email via direct Resend API to $cleanEmail...');
         final response = await http.post(
           Uri.parse('https://api.resend.com/emails'),
           headers: {
@@ -166,23 +200,9 @@ class EmailService {
       }
     }
 
-    // 2. If no Resend API key, try Supabase RPC or notify missing key
-    try {
-      final supabase = Supabase.instance.client;
-      await supabase.rpc(
-        'send_email_notification',
-        params: {
-          'p_email': cleanEmail,
-          'p_subject': '✅ Test Notificare Email Agreemint',
-          'p_body': 'Notificările prin email pentru contracte semnate sunt configurate activ!',
-        },
-      );
-      return {'success': true, 'message': '🎉 Notificare de test expediată către $cleanEmail!'};
-    } catch (_) {
-      return {
-        'success': false,
-        'message': '💡 Pentru trimiterea de emailuri pe telefon, obține o cheie gratuită pe Resend.com (100% gratuit) și lipește-o în câmpul "Cheie API Resend".'
-      };
-    }
+    return {
+      'success': false,
+      'message': '❌ Pentru activare, rulează scriptul SQL în Supabase Dashboard > SQL Editor.'
+    };
   }
 }
