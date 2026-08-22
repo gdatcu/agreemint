@@ -424,7 +424,7 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
           ),
         );
       } else {
-        // Dispatch notifications to Discord and Email
+        // Dispatch notifications to Discord and Email in parallel
         try {
           final settings = await BusinessSettingsService.loadSettings();
           final updatedContract = resultState.value;
@@ -434,28 +434,43 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
             final programNameStr = widget.enrollment.program?.name ?? 'Program Mentorat';
             final pdfUrlStr = updatedContract.signedPdfUrl ?? updatedContract.pdfUrl ?? '';
 
-            if (settings.discordWebhookUrl != null && settings.discordWebhookUrl!.isNotEmpty) {
-              await DiscordNotificationService.notifyContractSigned(
-                webhookUrl: settings.discordWebhookUrl!,
-                studentName: studentNameStr,
-                studentCnp: studentCnpStr,
-                programName: programNameStr,
-                contractNumber: updatedContract.contractNumber,
-                signedPdfUrl: pdfUrlStr,
-              );
-            }
-
-            if (settings.mentorNotificationEmail != null && settings.mentorNotificationEmail!.isNotEmpty) {
-              await EmailService.sendContractSignedEmailAlert(
-                mentorEmail: settings.mentorNotificationEmail!,
-                studentName: studentNameStr,
-                studentCnp: studentCnpStr,
-                programName: programNameStr,
-                contractNumber: updatedContract.contractNumber,
-                signedPdfUrl: pdfUrlStr,
-                resendApiKey: settings.resendApiKey,
-              );
-            }
+            await Future.wait([
+              // 1. Dispatch Discord Webhook
+              Future(() async {
+                try {
+                  if (settings.discordWebhookUrl != null && settings.discordWebhookUrl!.isNotEmpty) {
+                    await DiscordNotificationService.notifyContractSigned(
+                      webhookUrl: settings.discordWebhookUrl!,
+                      studentName: studentNameStr,
+                      studentCnp: studentCnpStr,
+                      programName: programNameStr,
+                      contractNumber: updatedContract.contractNumber,
+                      signedPdfUrl: pdfUrlStr,
+                    );
+                  }
+                } catch (e) {
+                  debugPrint('Discord Webhook alert error: $e');
+                }
+              }),
+              // 2. Dispatch Email Alert
+              Future(() async {
+                try {
+                  if (settings.mentorNotificationEmail != null && settings.mentorNotificationEmail!.isNotEmpty) {
+                    await EmailService.sendContractSignedEmailAlert(
+                      mentorEmail: settings.mentorNotificationEmail!,
+                      studentName: studentNameStr,
+                      studentCnp: studentCnpStr,
+                      programName: programNameStr,
+                      contractNumber: updatedContract.contractNumber,
+                      signedPdfUrl: pdfUrlStr,
+                      resendApiKey: settings.resendApiKey,
+                    );
+                  }
+                } catch (e) {
+                  debugPrint('Email alert error: $e');
+                }
+              }),
+            ]);
           }
         } catch (e) {
           debugPrint('Notification dispatch failed: $e');

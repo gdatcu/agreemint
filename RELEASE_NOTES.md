@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.4.3 Release Notes
+# 🚀 Agreemint v1.4.4 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,10 +22,9 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.4.3
+## 🎨 What's New in Version 1.4.4
 
-- ☁️ **Supabase Cloud Sync for Business & Notification Settings**:
-  - Saved settings (Discord Webhook URL & Mentor Notification Email) are now automatically synced to Supabase PostgreSQL database `business_settings`.
-  - Solved cross-device & external browser tab issue: public client signing links opened on external student devices (mobile phones/incognito tabs) can now fetch mentor's notification settings from Supabase cloud database automatically.
-  - Added notification dispatch to `ContractSigningView` for contracts uploaded/signed directly on mentor screen.
-- 📦 **Patch Version Bump**: Promoted release version to `v1.4.3` (`1.4.3+115`).
+- ⚡ **Independent Parallel Real-Time Notification Dispatch**:
+  - Isolated Discord Webhook and Resend Email notifications into parallel `Future.wait` workers with independent error handlers, ensuring that Discord latency or errors can never delay or block Email delivery.
+  - Added dual-endpoint Resend API dispatch fallback for web clients.
+- 📦 **Patch Version Bump**: Promoted release version to `v1.4.4` (`1.4.4+116`).

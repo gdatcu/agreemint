@@ -188,3 +188,41 @@ DROP POLICY IF EXISTS "Authenticated users full access to prospects" ON public.p
 -- Mentors: Full access
 CREATE POLICY "Authenticated users full access to prospects" ON public.prospects
   FOR ALL TO authenticated USING (public.is_mentor());
+
+
+-- ============================================================================
+-- 7. BUSINESS SETTINGS TABLE
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS public.business_settings (
+  id INT PRIMARY KEY DEFAULT 1,
+  company_name TEXT,
+  company_address TEXT,
+  reg_com TEXT,
+  cui_cif TEXT,
+  euid TEXT,
+  iban TEXT,
+  bank_name TEXT,
+  beneficiary_entity TEXT,
+  service_description TEXT,
+  payment_term TEXT,
+  refund_deadline TEXT,
+  mentor_signature_base64 TEXT,
+  discord_webhook_url TEXT,
+  mentor_notification_email TEXT,
+  resend_api_key TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.business_settings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public can read business settings for signing" ON public.business_settings;
+DROP POLICY IF EXISTS "Mentors full access to business settings" ON public.business_settings;
+
+-- 🛡️ Public: Allow reading notification URLs & company details for public signing links
+CREATE POLICY "Public can read business settings for signing" ON public.business_settings
+  FOR SELECT USING (true);
+
+-- 🔐 Mentors: Full access to insert/update company settings & notification keys
+CREATE POLICY "Mentors full access to business settings" ON public.business_settings
+  FOR ALL TO authenticated USING (public.is_mentor());
