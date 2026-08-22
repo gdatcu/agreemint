@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.4.0 Release Notes
+# 🚀 Agreemint v1.4.1 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,10 +22,9 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.4.0
+## 🎨 What's New in Version 1.4.1
 
-- 🔔 **Omnichannel Real-Time Notifications for Signed Contracts**:
-  - **Option 1: Supabase Realtime Listener**: Subscribes to live Postgres contract changes in the app. Shows a live banner toast (*"🎉 Contract #X semnat de cursant în timp real!"*) and automatically refreshes payments and prospects on screen.
-  - **Option 2: Email Alert Notification**: Sends an instant email notification to your configured mentor email address with student info and a direct PDF download link. Includes a **"Trimite Email de Test"** button in Settings.
-  - **Option 3: Discord Webhook Alert**: Sends a rich Discord Embed push alert to your Discord server channel with direct 1-click links to the signed PDF.
-- 📦 **Minor Version Bump**: Promoted release version to `v1.4.0` (`1.4.0+112`).
+- ✉️ **Resend REST API Direct Email Integration**:
+  - Upgraded `EmailService` to dispatch email alerts directly via **Resend REST API** (`https://api.resend.com/emails`).
+  - Added helpful status messages on the **Trimite Email de Test** button: if no Resend API key is provided, Agreemint gives actionable guidance (*"💡 Pentru trimiterea de emailuri pe telefon, obține o cheie gratuită pe Resend.com (100% gratuit) și lipește-o în câmpul 'Cheie API Resend'"*).
+- 📦 **Patch Version Bump**: Promoted release version to `v1.4.1` (`1.4.1+113`).

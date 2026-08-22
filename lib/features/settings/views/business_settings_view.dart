@@ -985,18 +985,17 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
                           );
                           return;
                         }
-                        final success = await EmailService.sendTestEmailAlert(
+                        final result = await EmailService.sendTestEmailAlert(
                           mentorEmail: email,
                           resendApiKey: _resendApiKeyController.text.trim(),
                         );
                         if (context.mounted) {
+                          final isSuccess = result['success'] == true;
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(success
-                                  ? '🎉 Mesaj de test email trimis cu succes!'
-                                  : '❌ Trimiterea a eșuat. Verifică adresa email.'),
-                              backgroundColor:
-                                  success ? Colors.green : Colors.red,
+                              content: Text(result['message'] ?? 'Notificare finalizată.'),
+                              backgroundColor: isSuccess ? Colors.green : Colors.orange.shade800,
+                              duration: const Duration(seconds: 5),
                             ),
                           );
                         }
