@@ -8,6 +8,7 @@ import '../services/pdf_generator_service.dart';
 import '../../../core/services/email_service.dart';
 import '../../../core/services/discord_notification_service.dart';
 import '../../settings/controllers/business_settings_controller.dart';
+import '../../settings/services/business_settings_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ClientWebSignatureView extends ConsumerStatefulWidget {
@@ -337,7 +338,7 @@ class _ClientWebSignatureViewState
 
       // 5. Dispatch Realtime Alerts (Discord + Email) to Mentor
       try {
-        final settings = await ref.read(businessSettingsControllerProvider.notifier).build();
+        final settings = await BusinessSettingsService.loadSettings();
         final studentNameStr = d['student_name'] as String? ?? student?.name ?? 'Cursant';
         final studentCnpStr = d['cnp_cursant'] as String? ?? student?.cui ?? '';
         final programNameStr = d['program_name'] as String? ?? program?.name ?? 'Program Mentorat';

@@ -12,7 +12,10 @@ import '../controllers/contract_controller.dart';
 import '../models/contract_model.dart';
 import '../../../core/constants.dart';
 import '../../../core/services/frankfurter_service.dart';
+import '../../../core/services/discord_notification_service.dart';
+import '../../../core/services/email_service.dart';
 import '../../settings/controllers/business_settings_controller.dart';
+import '../../settings/services/business_settings_service.dart';
 
 class ContractSigningView extends ConsumerStatefulWidget {
   final EnrollmentModel enrollment;
@@ -421,6 +424,43 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
           ),
         );
       } else {
+        // Dispatch notifications to Discord and Email
+        try {
+          final settings = await BusinessSettingsService.loadSettings();
+          final updatedContract = resultState.value;
+          if (updatedContract != null) {
+            final studentNameStr = widget.enrollment.student?.name ?? 'Cursant';
+            final studentCnpStr = widget.enrollment.student?.cui ?? '';
+            final programNameStr = widget.enrollment.program?.name ?? 'Program Mentorat';
+            final pdfUrlStr = updatedContract.signedPdfUrl ?? updatedContract.pdfUrl ?? '';
+
+            if (settings.discordWebhookUrl != null && settings.discordWebhookUrl!.isNotEmpty) {
+              await DiscordNotificationService.notifyContractSigned(
+                webhookUrl: settings.discordWebhookUrl!,
+                studentName: studentNameStr,
+                studentCnp: studentCnpStr,
+                programName: programNameStr,
+                contractNumber: updatedContract.contractNumber,
+                signedPdfUrl: pdfUrlStr,
+              );
+            }
+
+            if (settings.mentorNotificationEmail != null && settings.mentorNotificationEmail!.isNotEmpty) {
+              await EmailService.sendContractSignedEmailAlert(
+                mentorEmail: settings.mentorNotificationEmail!,
+                studentName: studentNameStr,
+                studentCnp: studentCnpStr,
+                programName: programNameStr,
+                contractNumber: updatedContract.contractNumber,
+                signedPdfUrl: pdfUrlStr,
+                resendApiKey: settings.resendApiKey,
+              );
+            }
+          }
+        } catch (e) {
+          debugPrint('Notification dispatch failed: $e');
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Signed contract uploaded successfully!'),
