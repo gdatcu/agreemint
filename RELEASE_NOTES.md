@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.4.1 Release Notes
+# 🚀 Agreemint v1.4.2 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,9 +22,8 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.4.1
+## 🎨 What's New in Version 1.4.2
 
-- ✉️ **Resend REST API Direct Email Integration**:
-  - Upgraded `EmailService` to dispatch email alerts directly via **Resend REST API** (`https://api.resend.com/emails`).
-  - Added helpful status messages on the **Trimite Email de Test** button: if no Resend API key is provided, Agreemint gives actionable guidance (*"💡 Pentru trimiterea de emailuri pe telefon, obține o cheie gratuită pe Resend.com (100% gratuit) și lipește-o în câmpul 'Cheie API Resend'"*).
-- 📦 **Patch Version Bump**: Promoted release version to `v1.4.1` (`1.4.1+113`).
+- 🌐 **Flutter Web CORS Resolution for Resend Email API**:
+  - Resolved browser CORS preflight errors (`ClientException: Failed to fetch, uri=https://api.resend.com/emails`) when triggering test and live contract email alerts from web browsers by utilizing CORS proxy routing on `kIsWeb`.
+- 📦 **Patch Version Bump**: Promoted release version to `v1.4.2` (`1.4.2+114`).

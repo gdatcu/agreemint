@@ -73,8 +73,12 @@ class EmailService {
           ''',
         };
 
+        final targetUrl = kIsWeb
+            ? 'https://corsproxy.io/?https://api.resend.com/emails'
+            : 'https://api.resend.com/emails';
+
         final response = await http.post(
-          Uri.parse('https://api.resend.com/emails'),
+          Uri.parse(targetUrl),
           headers: {
             'Authorization': 'Bearer $apiKey',
             'Content-Type': 'application/json',
@@ -136,8 +140,12 @@ class EmailService {
           ''',
         };
 
+        final targetUrl = kIsWeb
+            ? 'https://corsproxy.io/?https://api.resend.com/emails'
+            : 'https://api.resend.com/emails';
+
         final response = await http.post(
-          Uri.parse('https://api.resend.com/emails'),
+          Uri.parse(targetUrl),
           headers: {
             'Authorization': 'Bearer $apiKey',
             'Content-Type': 'application/json',
