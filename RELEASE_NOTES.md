@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.4.4 Release Notes
+# 🚀 Agreemint v1.4.5 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,9 +22,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.4.4
+## 🎨 What's New in Version 1.4.5
 
-- ⚡ **Independent Parallel Real-Time Notification Dispatch**:
-  - Isolated Discord Webhook and Resend Email notifications into parallel `Future.wait` workers with independent error handlers, ensuring that Discord latency or errors can never delay or block Email delivery.
-  - Added dual-endpoint Resend API dispatch fallback for web clients.
-- 📦 **Patch Version Bump**: Promoted release version to `v1.4.4` (`1.4.4+116`).
+- ✍️ **Auto-Applied Saved Mentor Signature**:
+  - Automatically applies your saved mentor signature from Business Settings whenever generating a new contract, removing the requirement to re-draw on the pad every time. Drawing on the signature canvas acts as an ad-hoc override when needed.
+  - Added visual indicator badge: *"✓ Semnătura salvată în Profil este activă implicit (desenează pe pad mai jos doar dacă dorești să o înlocuiești ad-hoc)"*.
+- 🔄 **Real-Time Settings Form Auto-Population**:
+  - Resolved empty input fields issue in `BusinessSettingsView`: form controllers (Discord Webhook URL, Mentor Email, Resend Key, and Company details) now auto-update in real time the second AsyncData arrives from Supabase DB.
+- 📦 **Patch Version Bump**: Promoted release version to `v1.4.5` (`1.4.5+117`).

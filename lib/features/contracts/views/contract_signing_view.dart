@@ -302,9 +302,17 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
     });
 
     try {
-      final pngBytes = await _signatureController.toPngBytes();
-      if (pngBytes == null) {
-        throw Exception('Failed to export signature image.');
+      Uint8List? pngBytes;
+      if (_signatureController.isNotEmpty) {
+        pngBytes = await _signatureController.toPngBytes();
+      } else {
+        final settings = await BusinessSettingsService.loadSettings();
+        pngBytes = settings.mentorSignatureBytes;
+      }
+
+      if (pngBytes == null || pngBytes.isEmpty) {
+        throw Exception(
+            'Te rugăm să aplici o semnătură pe ecran sau să salvezi o semnătură implicită în Profil / Settings.');
       }
 
       final notifier = ref.read(
@@ -1366,6 +1374,28 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
+          ),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.green.shade50,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: Colors.green.shade200),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.verified_rounded, color: Colors.green.shade700, size: 16),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    '✓ Semnătura salvată în Profil este activă implicit (desenează pe pad mai jos doar dacă dorești să o înlocuiești ad-hoc)',
+                    style: TextStyle(fontSize: 12, color: Colors.green.shade900, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 8),
           Card(

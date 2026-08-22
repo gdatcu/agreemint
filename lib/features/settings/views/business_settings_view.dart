@@ -84,6 +84,56 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
     _existingSignatureBytes = settings.mentorSignatureBytes;
   }
 
+  void _updateControllersIfChanged(BusinessSettingsModel settings) {
+    if (_companyNameController.text.isEmpty && settings.companyName.isNotEmpty) {
+      _companyNameController.text = settings.companyName;
+    }
+    if (_companyAddressController.text.isEmpty && settings.companyAddress.isNotEmpty) {
+      _companyAddressController.text = settings.companyAddress;
+    }
+    if (_regComController.text.isEmpty && settings.regCom.isNotEmpty) {
+      _regComController.text = settings.regCom;
+    }
+    if (_cuiCifController.text.isEmpty && settings.cuiCif.isNotEmpty) {
+      _cuiCifController.text = settings.cuiCif;
+    }
+    if (_euidController.text.isEmpty && settings.euid.isNotEmpty) {
+      _euidController.text = settings.euid;
+    }
+    if (_ibanController.text.isEmpty && settings.iban.isNotEmpty) {
+      _ibanController.text = settings.iban;
+    }
+    if (_bankNameController.text.isEmpty && settings.bankName.isNotEmpty) {
+      _bankNameController.text = settings.bankName;
+    }
+    if (_beneficiaryEntityController.text.isEmpty && settings.beneficiaryEntity.isNotEmpty) {
+      _beneficiaryEntityController.text = settings.beneficiaryEntity;
+    }
+    if (_serviceDescriptionController.text.isEmpty && settings.serviceDescription.isNotEmpty) {
+      _serviceDescriptionController.text = settings.serviceDescription;
+    }
+    if (_paymentTermController.text.isEmpty && settings.paymentTerm.isNotEmpty) {
+      _paymentTermController.text = settings.paymentTerm;
+    }
+    if (_refundDeadlineController.text.isEmpty && settings.refundDeadline.isNotEmpty) {
+      _refundDeadlineController.text = settings.refundDeadline;
+    }
+    if (_discordWebhookController.text.isEmpty && (settings.discordWebhookUrl?.isNotEmpty ?? false)) {
+      _discordWebhookController.text = settings.discordWebhookUrl!;
+    }
+    if (_mentorNotificationEmailController.text.isEmpty && (settings.mentorNotificationEmail?.isNotEmpty ?? false)) {
+      _mentorNotificationEmailController.text = settings.mentorNotificationEmail!;
+    }
+    if (_resendApiKeyController.text.isEmpty && (settings.resendApiKey?.isNotEmpty ?? false)) {
+      _resendApiKeyController.text = settings.resendApiKey!;
+    }
+    if (_existingSignatureBytes == null && settings.mentorSignatureBytes != null) {
+      setState(() {
+        _existingSignatureBytes = settings.mentorSignatureBytes;
+      });
+    }
+  }
+
   @override
   void dispose() {
     _companyNameController.dispose();
@@ -209,22 +259,7 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
       ),
       body: settingsAsync.when(
         data: (settings) {
-          if (_existingSignatureBytes == null && settings.mentorSignatureBytes != null) {
-            _existingSignatureBytes = settings.mentorSignatureBytes;
-          }
-          if (_companyNameController.text.isEmpty) {
-            _companyNameController.text = settings.companyName;
-            _companyAddressController.text = settings.companyAddress;
-            _regComController.text = settings.regCom;
-            _cuiCifController.text = settings.cuiCif;
-            _euidController.text = settings.euid;
-            _ibanController.text = settings.iban;
-            _bankNameController.text = settings.bankName;
-            _beneficiaryEntityController.text = settings.beneficiaryEntity;
-            _serviceDescriptionController.text = settings.serviceDescription;
-            _paymentTermController.text = settings.paymentTerm;
-            _refundDeadlineController.text = settings.refundDeadline;
-          }
+          _updateControllersIfChanged(settings);
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
