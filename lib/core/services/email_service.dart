@@ -73,33 +73,17 @@ class EmailService {
           ''',
         };
 
-        final payloadJson = jsonEncode(payload);
-        final headers = {
-          'Authorization': 'Bearer $apiKey',
-          'Content-Type': 'application/json',
-        };
-
-        // Try direct Resend endpoint first
-        try {
-          final resDirect = await http.post(
-            Uri.parse('https://api.resend.com/emails'),
-            headers: headers,
-            body: payloadJson,
-          );
-          if (resDirect.statusCode == 200 || resDirect.statusCode == 201) {
-            return true;
-          }
-        } catch (_) {}
-
-        // Fallback to CORS proxy endpoint on web if direct call fails
         final targetUrl = kIsWeb
             ? 'https://corsproxy.io/?https://api.resend.com/emails'
             : 'https://api.resend.com/emails';
 
         final response = await http.post(
           Uri.parse(targetUrl),
-          headers: headers,
-          body: payloadJson,
+          headers: {
+            'Authorization': 'Bearer $apiKey',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode(payload),
         );
 
         if (response.statusCode == 200 || response.statusCode == 201) {

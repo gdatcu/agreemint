@@ -7,27 +7,9 @@ import '../models/business_settings_model.dart';
 class BusinessSettingsService {
   static const String _keySettings = 'agreemint_business_settings_v1';
 
-  /// Loads stored business settings from SharedPreferences or Supabase DB.
+  /// Loads stored business settings from Supabase DB (primary cloud source) or SharedPreferences.
   static Future<BusinessSettingsModel> loadSettings() async {
-    BusinessSettingsModel? localModel;
-
-    // 1. Try local SharedPreferences first
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonStr = prefs.getString(_keySettings);
-      if (jsonStr != null && jsonStr.isNotEmpty) {
-        final map = jsonDecode(jsonStr) as Map<String, dynamic>;
-        localModel = BusinessSettingsModel.fromJson(map);
-        if ((localModel.discordWebhookUrl != null && localModel.discordWebhookUrl!.isNotEmpty) ||
-            (localModel.mentorNotificationEmail != null && localModel.mentorNotificationEmail!.isNotEmpty)) {
-          return localModel;
-        }
-      }
-    } catch (e) {
-      debugPrint('Local settings load warning: $e');
-    }
-
-    // 2. Fallback to Supabase database `business_settings` table for external student signing devices
+    // 1. Try Supabase database `business_settings` table first (authoritative cloud settings)
     try {
       final response = await Supabase.instance.client
           .from('business_settings')
@@ -41,11 +23,23 @@ class BusinessSettingsService {
         await saveSettings(remoteModel);
         return remoteModel;
       }
-    } catch (e) {
-      debugPrint('Supabase business_settings fetch fallback warning: $e');
+    } catch (_) {
+      // Uninitialized in test mode or offline fallback
     }
 
-    return localModel ?? const BusinessSettingsModel();
+    // 2. Fallback to local SharedPreferences if offline or DB unavailable
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonStr = prefs.getString(_keySettings);
+      if (jsonStr != null && jsonStr.isNotEmpty) {
+        final map = jsonDecode(jsonStr) as Map<String, dynamic>;
+        return BusinessSettingsModel.fromJson(map);
+      }
+    } catch (e) {
+      debugPrint('Local settings load warning: $e');
+    }
+
+    return const BusinessSettingsModel();
   }
 
   /// Saves updated business settings into SharedPreferences and Supabase DB.

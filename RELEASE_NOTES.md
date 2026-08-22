@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.4.6 Release Notes
+# 🚀 Agreemint v1.4.7 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,10 +22,9 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.4.6
+## 🎨 What's New in Version 1.4.7
 
-- ✍️ **Visual Pre-Rendering of Saved Mentor Signature on Canvas**:
-  - Pre-renders your saved mentor signature PNG image directly inside the contract signature box upon opening `ContractSigningView`.
-  - Added 1-tap **"Clear Canvas"** (clears image to draw a one-time custom signature from scratch) and **"Restabilește Semnătura Salvată"** (restores your profile signature).
-  - Enforces *"Please draw your signature first."* prompt if canvas is cleared and left blank.
-- 📦 **Patch Version Bump**: Promoted release version to `v1.4.6` (`1.4.6+118`).
+- ☁️ **Cloud-First Settings Resolution for Cross-Device Email Dispatch**:
+  - Updated `BusinessSettingsService.loadSettings()` to query Supabase Cloud Database first as the primary authoritative source for settings (including `resendApiKey`, `mentorNotificationEmail`, and `discordWebhookUrl`).
+  - Guarantees external student signing pages on any device receive up-to-date Resend API keys and notification emails directly from the cloud.
+- 📦 **Patch Version Bump**: Promoted release version to `v1.4.7` (`1.4.7+119`).
