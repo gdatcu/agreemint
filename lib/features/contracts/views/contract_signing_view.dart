@@ -30,6 +30,8 @@ class ContractSigningView extends ConsumerStatefulWidget {
 class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
   late final SignatureController _signatureController;
   bool _isGenerating = false;
+  Uint8List? _savedMentorSignatureBytes;
+  bool _usingSavedSignature = true;
 
   final _formKey = GlobalKey<FormState>();
   final _smartTextController = TextEditingController();
@@ -85,6 +87,16 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
       penColor: Colors.blue.shade900,
       exportBackgroundColor: Colors.white,
     );
+    _signatureController.addListener(() {
+      if (_signatureController.isNotEmpty && _usingSavedSignature) {
+        setState(() {
+          _usingSavedSignature = false;
+        });
+      }
+    });
+
+    _loadSavedSignature();
+
     _dataIncepereController.text =
         DateTime.now().toIso8601String().split('T')[0];
 
@@ -102,6 +114,9 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
       _serviceDescriptionController.text = settings.serviceDescription;
       _paymentTermController.text = settings.paymentTerm;
       _refundDeadlineController.text = settings.refundDeadline;
+      if (settings.mentorSignatureBytes != null) {
+        _savedMentorSignatureBytes = settings.mentorSignatureBytes;
+      }
     }
 
     final program = widget.enrollment.program;
@@ -142,11 +157,21 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
           _adresaController.text = addressStr.trim();
         }
       }
-      
+
       // Default CI date if not set on the page
       if (_dataEliberariiCiController.text.isEmpty) {
         _dataEliberariiCiController.text = '12.05.2023';
       }
+    }
+  }
+
+  Future<void> _loadSavedSignature() async {
+    final settings = await BusinessSettingsService.loadSettings();
+    if (mounted && settings.mentorSignatureBytes != null) {
+      setState(() {
+        _savedMentorSignatureBytes = settings.mentorSignatureBytes;
+        _usingSavedSignature = true;
+      });
     }
   }
 
@@ -305,14 +330,18 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
       Uint8List? pngBytes;
       if (_signatureController.isNotEmpty) {
         pngBytes = await _signatureController.toPngBytes();
-      } else {
-        final settings = await BusinessSettingsService.loadSettings();
-        pngBytes = settings.mentorSignatureBytes;
+      } else if (_usingSavedSignature && _savedMentorSignatureBytes != null) {
+        pngBytes = _savedMentorSignatureBytes;
       }
 
       if (pngBytes == null || pngBytes.isEmpty) {
-        throw Exception(
-            'Te rugăm să aplici o semnătură pe ecran sau să salvezi o semnătură implicită în Profil / Settings.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please draw your signature first.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
       }
 
       final notifier = ref.read(
@@ -1379,19 +1408,41 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.green.shade50,
+              color: _usingSavedSignature && _savedMentorSignatureBytes != null
+                  ? Colors.green.shade50
+                  : Colors.orange.shade50,
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: Colors.green.shade200),
+              border: Border.all(
+                color: _usingSavedSignature && _savedMentorSignatureBytes != null
+                    ? Colors.green.shade200
+                    : Colors.orange.shade200,
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.verified_rounded, color: Colors.green.shade700, size: 16),
+                Icon(
+                  _usingSavedSignature && _savedMentorSignatureBytes != null
+                      ? Icons.verified_rounded
+                      : Icons.edit_note_rounded,
+                  color: _usingSavedSignature && _savedMentorSignatureBytes != null
+                      ? Colors.green.shade700
+                      : Colors.orange.shade800,
+                  size: 16,
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    '✓ Semnătura salvată în Profil este activă implicit (desenează pe pad mai jos doar dacă dorești să o înlocuiești ad-hoc)',
-                    style: TextStyle(fontSize: 12, color: Colors.green.shade900, fontWeight: FontWeight.w500),
+                    _usingSavedSignature && _savedMentorSignatureBytes != null
+                        ? '✓ Semnătura salvată din Profil este activă în pad (apasă "Clear Canvas" pentru a desena de la zero)'
+                        : '✏️ Semnătura de pe pad este activă pentru acest contract',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: _usingSavedSignature && _savedMentorSignatureBytes != null
+                          ? Colors.green.shade900
+                          : Colors.orange.shade900,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
@@ -1403,21 +1454,58 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
             child: Container(
               height: 180,
               color: Colors.white,
-              child: Signature(
-                controller: _signatureController,
-                backgroundColor: Colors.white,
+              child: Stack(
+                children: [
+                  Signature(
+                    controller: _signatureController,
+                    backgroundColor: Colors.white,
+                  ),
+                  if (_usingSavedSignature &&
+                      _savedMentorSignatureBytes != null &&
+                      _signatureController.isEmpty)
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.white,
+                        padding: const EdgeInsets.all(12),
+                        child: Center(
+                          child: Image.memory(
+                            _savedMentorSignatureBytes!,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
             children: [
               OutlinedButton.icon(
-                onPressed: () => _signatureController.clear(),
+                onPressed: () {
+                  _signatureController.clear();
+                  setState(() {
+                    _usingSavedSignature = false;
+                  });
+                },
                 icon: const Icon(Icons.clear),
                 label: const Text('Clear Canvas'),
               ),
+              if (_savedMentorSignatureBytes != null && !_usingSavedSignature)
+                OutlinedButton.icon(
+                  onPressed: () {
+                    _signatureController.clear();
+                    setState(() {
+                      _usingSavedSignature = true;
+                    });
+                  },
+                  icon: const Icon(Icons.restore),
+                  label: const Text('Restabilește Semnătura Salvată'),
+                ),
               ElevatedButton.icon(
                 onPressed: _signAndGenerateContract,
                 icon: const Icon(Icons.draw),

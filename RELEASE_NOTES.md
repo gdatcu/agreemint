@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.4.5 Release Notes
+# 🚀 Agreemint v1.4.6 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -22,11 +22,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.4.5
+## 🎨 What's New in Version 1.4.6
 
-- ✍️ **Auto-Applied Saved Mentor Signature**:
-  - Automatically applies your saved mentor signature from Business Settings whenever generating a new contract, removing the requirement to re-draw on the pad every time. Drawing on the signature canvas acts as an ad-hoc override when needed.
-  - Added visual indicator badge: *"✓ Semnătura salvată în Profil este activă implicit (desenează pe pad mai jos doar dacă dorești să o înlocuiești ad-hoc)"*.
-- 🔄 **Real-Time Settings Form Auto-Population**:
-  - Resolved empty input fields issue in `BusinessSettingsView`: form controllers (Discord Webhook URL, Mentor Email, Resend Key, and Company details) now auto-update in real time the second AsyncData arrives from Supabase DB.
-- 📦 **Patch Version Bump**: Promoted release version to `v1.4.5` (`1.4.5+117`).
+- ✍️ **Visual Pre-Rendering of Saved Mentor Signature on Canvas**:
+  - Pre-renders your saved mentor signature PNG image directly inside the contract signature box upon opening `ContractSigningView`.
+  - Added 1-tap **"Clear Canvas"** (clears image to draw a one-time custom signature from scratch) and **"Restabilește Semnătura Salvată"** (restores your profile signature).
+  - Enforces *"Please draw your signature first."* prompt if canvas is cleared and left blank.
+- 📦 **Patch Version Bump**: Promoted release version to `v1.4.6` (`1.4.6+118`).
