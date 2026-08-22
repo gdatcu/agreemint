@@ -73,12 +73,9 @@ class EmailService {
           ''',
         };
 
-        final targetUrl = kIsWeb
-            ? 'https://corsproxy.io/?https://api.resend.com/emails'
-            : 'https://api.resend.com/emails';
-
+        debugPrint('[EmailService] Sending contract signed alert via Resend to $cleanEmail...');
         final response = await http.post(
-          Uri.parse(targetUrl),
+          Uri.parse('https://api.resend.com/emails'),
           headers: {
             'Authorization': 'Bearer $apiKey',
             'Content-Type': 'application/json',
@@ -87,11 +84,12 @@ class EmailService {
         );
 
         if (response.statusCode == 200 || response.statusCode == 201) {
+          debugPrint('[EmailService] Resend email delivered successfully: ${response.body}');
           return true;
         }
-        debugPrint('Resend API Error: ${response.statusCode} - ${response.body}');
+        debugPrint('[EmailService] Resend API Error: ${response.statusCode} - ${response.body}');
       } catch (e) {
-        debugPrint('Failed to send email via Resend API: $e');
+        debugPrint('[EmailService] Failed to send email via Resend API: $e');
       }
     }
 
@@ -140,12 +138,9 @@ class EmailService {
           ''',
         };
 
-        final targetUrl = kIsWeb
-            ? 'https://corsproxy.io/?https://api.resend.com/emails'
-            : 'https://api.resend.com/emails';
-
+        debugPrint('[EmailService] Sending test email via Resend to $cleanEmail...');
         final response = await http.post(
-          Uri.parse(targetUrl),
+          Uri.parse('https://api.resend.com/emails'),
           headers: {
             'Authorization': 'Bearer $apiKey',
             'Content-Type': 'application/json',
@@ -154,16 +149,19 @@ class EmailService {
         );
 
         if (response.statusCode == 200 || response.statusCode == 201) {
+          debugPrint('[EmailService] Test email delivered successfully: ${response.body}');
           return {'success': true, 'message': '🎉 Email de test trimis cu succes prin Resend la $cleanEmail!'};
         } else {
           final resJson = jsonDecode(response.body);
           final errorMsg = resJson['message'] ?? response.body;
+          debugPrint('[EmailService] Resend test error: ${response.statusCode} - $errorMsg');
           return {
             'success': false,
             'message': '❌ Eroare Resend (${response.statusCode}): $errorMsg'
           };
         }
       } catch (e) {
+        debugPrint('[EmailService] Resend connection error: $e');
         return {'success': false, 'message': '❌ Eroare conexiune Resend: $e'};
       }
     }

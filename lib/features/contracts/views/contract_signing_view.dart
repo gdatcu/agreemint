@@ -330,8 +330,11 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
       Uint8List? pngBytes;
       if (_signatureController.isNotEmpty) {
         pngBytes = await _signatureController.toPngBytes();
-      } else if (_usingSavedSignature && _savedMentorSignatureBytes != null) {
-        pngBytes = _savedMentorSignatureBytes;
+      }
+      
+      // Fallback to saved mentor signature if drawn export is null/empty
+      if (_usingSavedSignature || pngBytes == null || pngBytes.isEmpty) {
+        pngBytes ??= _savedMentorSignatureBytes;
       }
 
       if (pngBytes == null || pngBytes.isEmpty) {
@@ -1464,13 +1467,16 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
                       _savedMentorSignatureBytes != null &&
                       _signatureController.isEmpty)
                     Positioned.fill(
-                      child: Container(
-                        color: Colors.white,
-                        padding: const EdgeInsets.all(12),
-                        child: Center(
-                          child: Image.memory(
-                            _savedMentorSignatureBytes!,
-                            fit: BoxFit.contain,
+                      child: IgnorePointer(
+                        ignoring: true,
+                        child: Container(
+                          color: Colors.white,
+                          padding: const EdgeInsets.all(12),
+                          child: Center(
+                            child: Image.memory(
+                              _savedMentorSignatureBytes!,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
                       ),
