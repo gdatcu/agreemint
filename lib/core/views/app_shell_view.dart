@@ -61,12 +61,14 @@ class AppShellView extends ConsumerWidget {
     );
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            const UpdateCheckBanner(),
-            Expanded(child: navigationShell),
-          ],
+      body: SelectionArea(
+        child: SafeArea(
+          child: Column(
+            children: [
+              const UpdateCheckBanner(),
+              Expanded(child: navigationShell),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: NavigationBar(

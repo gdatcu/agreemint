@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.5.2 Release Notes
+# 🚀 Agreemint v1.5.3 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -21,10 +21,8 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.5.2
+## 🎨 What's New in Version 1.5.3
 
-- 🔑 **Resend API Key Resolution Fix**:
-  - Prioritized active `resend_api_key` from Supabase `business_settings` over compile-time environment variables in `contract_signing_view`, `payment_tracker_view`, and `pending_dashboard_view`.
-- 📧 **Premium QualiAdept Email Design**:
-  - Redesigned all transactional emails (Contract Signing Links, Signed Contract Alerts, Payment Reminders, Receipts, and Test Notifications) with consistent QualiAdept header branding, structured metadata cards, modern CTA buttons, direct link fallbacks, and updated legal footers.
-- 📦 **Version Bump**: Promoted release version to `v1.5.2` (`1.5.2+124`).
+- 📋 **Native Text Selection & Copy Support Across the Entire App**:
+  - Wrapped all primary views and shells in `SelectionArea`, enabling cursor highlighting and copying (`Ctrl + C` / Right-click Copy) for student names, emails, phone numbers, prospect messages/notes, contract amounts, dates, and IDs anywhere in the web & mobile application.
+- 📦 **Version Bump**: Promoted release version to `v1.5.3` (`1.5.3+125`).

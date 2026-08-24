@@ -257,7 +257,8 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
           ),
         ],
       ),
-      body: settingsAsync.when(
+      body: SelectionArea(
+        child: settingsAsync.when(
         data: (settings) {
           _updateControllersIfChanged(settings);
 
@@ -562,8 +563,9 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSectionHeader(
       {required IconData icon, required String title}) {

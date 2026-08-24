@@ -177,7 +177,8 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
           ),
         ],
       ),
-      body: paymentsState.when(
+      body: SelectionArea(
+        child: paymentsState.when(
         data: (payments) {
           if (payments.isEmpty) {
             return Center(
@@ -915,8 +916,9 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   void _showGeneratePlanDialog(BuildContext context, WidgetRef ref) {
     final program = widget.enrollment.program;

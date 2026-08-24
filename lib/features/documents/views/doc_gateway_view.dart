@@ -132,12 +132,14 @@ class _DocGatewayViewState extends State<DocGatewayView> {
             ),
         ],
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: _isUnlocked && _pdfBytes != null
-              ? _buildUnlockedPdfViewer()
-              : _buildPinGatewayCard(),
+      body: SelectionArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: _isUnlocked && _pdfBytes != null
+                ? _buildUnlockedPdfViewer()
+                : _buildPinGatewayCard(),
+          ),
         ),
       ),
     );

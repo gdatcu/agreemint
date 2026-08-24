@@ -424,8 +424,9 @@ class _ClientWebSignatureViewState
         title: const Text('QualiAdept — Client Contract Signing'),
         centerTitle: true,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+      body: SelectionArea(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
               ? Center(
                   child: Padding(
@@ -681,6 +682,7 @@ class _ClientWebSignatureViewState
                     ),
                   ),
                 ),
+      ),
     );
   }
 

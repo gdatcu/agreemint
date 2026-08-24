@@ -30,10 +30,11 @@ class VerifyCertificateView extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
-          child: Container(
+      body: SelectionArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0),
+            child: Container(
             constraints: const BoxConstraints(maxWidth: 600),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF1E293B) : Colors.white,
@@ -151,8 +152,9 @@ class VerifyCertificateView extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildDetailRow(BuildContext context, String label, String value,
       {bool isBold = false}) {

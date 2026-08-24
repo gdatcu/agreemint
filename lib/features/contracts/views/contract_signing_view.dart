@@ -676,77 +676,79 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
       appBar: AppBar(
         title: const Text('Contract Management'),
       ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (program != null) ...[
-                  Card(
-                    child: ListTile(
-                      title: Text(program.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text(
-                          'Mentorship Price: ${displayPrice.toStringAsFixed(2)} RON'),
-                      leading: const Icon(Icons.school),
+      body: SelectionArea(
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (program != null) ...[
+                    Card(
+                      child: ListTile(
+                        title: Text(program.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text(
+                            'Mentorship Price: ${displayPrice.toStringAsFixed(2)} RON'),
+                        leading: const Icon(Icons.school),
+                      ),
                     ),
+                    const SizedBox(height: 12),
+                  ],
+                  if (student != null) ...[
+                    Card(
+                      child: ListTile(
+                        title: Text(student.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text(
+                            '${student.email} | ${student.phone ?? "No phone"}'),
+                        leading: const Icon(Icons.person),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                  contractAsync.when(
+                    data: (contract) {
+                      if (contract != null && contract.status != 'Draft') {
+                        return _buildContractStatusCard(context, contract);
+                      }
+                      return _buildContractForm(context, student, program);
+                    },
+                    loading: () => const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(24.0),
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                    error: (err, stack) =>
+                        _buildContractForm(context, student, program),
                   ),
-                  const SizedBox(height: 12),
                 ],
-                if (student != null) ...[
-                  Card(
-                    child: ListTile(
-                      title: Text(student.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text(
-                          '${student.email} | ${student.phone ?? "No phone"}'),
-                      leading: const Icon(Icons.person),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-                contractAsync.when(
-                  data: (contract) {
-                    if (contract != null && contract.status != 'Draft') {
-                      return _buildContractStatusCard(context, contract);
-                    }
-                    return _buildContractForm(context, student, program);
-                  },
-                  loading: () => const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(24.0),
-                      child: CircularProgressIndicator(),
-                    ),
-                  ),
-                  error: (err, stack) =>
-                      _buildContractForm(context, student, program),
-                ),
-              ],
+              ),
             ),
-          ),
-          if (_isGenerating)
-            Container(
-              color: Colors.black45,
-              child: const Center(
-                child: Card(
-                  child: Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 16),
-                        Text('Processing Contract...'),
-                      ],
+            if (_isGenerating)
+              Container(
+                color: Colors.black45,
+                child: const Center(
+                  child: Card(
+                    child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text('Processing Contract...'),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
