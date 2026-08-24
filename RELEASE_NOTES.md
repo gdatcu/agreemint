@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.5.0 Release Notes
+# 🚀 Agreemint v1.5.1 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -6,7 +6,7 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ## 🌟 What the App Does & Key Features
 
-* **Dual-Channel Outgoing Notifications (WhatsApp & Email)**: Direct deep-linking WhatsApp notifications and transactional Resend emails with personalized templates for contract signing, installment payment reminders, receipts, and student follow-ups.
+* **Dual-Channel Outgoing Notifications (WhatsApp & Email)**: Direct deep-linking WhatsApp notifications and transactional Resend emails with personalized Romanian templates for contract signing, installment payment reminders, receipts, and student follow-ups.
 * **Mentorship Cohort Management**: Create, edit, and track mentorship cohorts in **RON** and **EUR**.
 * **Student & Enrollment Roster**: Manage active students and enrollments with automatic history archiving upon program deletion.
 * **Prospect Follow-ups & Lead Pipeline CRM**: Lead tracking with top KPI metrics (Total Leads, Due/Overdue, Contacted, Converted & Conversion Rate %, Lost), live search, sorting, and 1-tap WhatsApp outreach.
@@ -21,23 +21,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.5.0
+## 🎨 What's New in Version 1.5.1
 
-- 💬 **Centralized WhatsApp Service (`WhatsAppService`)**:
-  - Implemented automatic phone cleaning & Romanian national prefix formatting (`07xx` $\rightarrow$ `407...`).
-  - Added conversational personalized templates for:
-    - Contract Review & Signing Link.
-    - Upcoming Payment Installment Reminders.
-    - Payment Received Confirmation Receipts.
-    - Enrolled Student General Follow-ups.
-  - Zero-cost direct deep linking via `whatsapp://send` to protect personal accounts from spam filters.
-- 📧 **Transactional Email Service with Resend API (`EmailService`)**:
-  - Direct HTTP REST API integration with `https://api.resend.com/emails`.
-  - Responsive, branded HTML email templates for contract review links, payment reminders, and payment receipts.
-  - Configured environment variable `RESEND_API_KEY` (`resendApiKeyProvider`) with seamless in-app Business Settings fallback.
-- ⚡ **Dual-Channel Action Controls Across UI**:
-  - **Payment Tracker View**: 1-tap WhatsApp and Email buttons for pending reminders and paid installment receipts with real-time loading feedback.
-  - **Pending Dashboard View**: Dual WhatsApp/Email reminder icons for all overdue and pending student installments.
-  - **Enrolled Students View**: 1-tap WhatsApp check-in button on each student card.
-  - **Contract Signing View**: Direct "Send via WhatsApp" and "Send via Email" action buttons alongside link sharing.
-- 📦 **Version Bump**: Promoted release version to `v1.5.0` (`1.5.0+122`).
+- 🛡️ **Fixed Web CORS for Resend Transactional Emails**:
+  - `EmailService._sendEmail` now routes through Supabase RPC `send_resend_email` (server-side with `pg_net`), completely eliminating browser CORS errors (`No 'Access-Control-Allow-Origin' header`) on Flutter Web (`agreemint.qualiadept.eu`).
+- 🇷🇴 **Romanian WhatsApp & Email Templates**:
+  - Updated all WhatsApp messaging templates to professional Romanian with QualiAdept branding (Contracts, Payment Reminders, Receipts, and Student Check-ins).
+  - Updated all Resend HTML email templates to clean, responsive Romanian designs.
+- 📦 **Version Bump**: Promoted release version to `v1.5.1` (`1.5.1+123`).

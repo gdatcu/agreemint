@@ -331,6 +331,7 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                                   name: student?.name ?? 'Cursant',
                                   amount: amountDueNow,
                                   dueDate: dateStr,
+                                  currency: currency,
                                 ),
                               );
                             },
@@ -357,6 +358,7 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                                   name: student.name,
                                   amount: amountDueNow,
                                   dueDate: dateStr,
+                                  currency: currency,
                                 ),
                               );
                             },

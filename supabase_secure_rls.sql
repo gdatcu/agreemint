@@ -237,7 +237,8 @@ CREATE OR REPLACE FUNCTION public.send_resend_email(
   p_to TEXT,
   p_subject TEXT,
   p_html TEXT,
-  p_api_key TEXT DEFAULT NULL
+  p_api_key TEXT DEFAULT NULL,
+  p_from TEXT DEFAULT 'Mentoring <mentoring@qualiadept.eu>'
 )
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -245,6 +246,7 @@ SECURITY DEFINER
 AS $$
 DECLARE
   v_api_key TEXT;
+  v_from TEXT;
   v_response_id BIGINT;
 BEGIN
   -- Use provided API key or fallback to business_settings table in Supabase
@@ -258,6 +260,8 @@ BEGIN
     RETURN jsonb_build_object('success', false, 'error', 'Missing Resend API Key');
   END IF;
 
+  v_from := COALESCE(NULLIF(TRIM(p_from), ''), 'Mentoring <mentoring@qualiadept.eu>');
+
   -- Server-side HTTP POST to Resend (100% immune to browser CORS)
   SELECT net.http_post(
     url := 'https://api.resend.com/emails',
@@ -266,7 +270,7 @@ BEGIN
       'Content-Type', 'application/json'
     ),
     body := jsonb_build_object(
-      'from', 'Agreemint Alerts <onboarding@resend.dev>',
+      'from', v_from,
       'to', jsonb_build_array(p_to),
       'subject', p_subject,
       'html', p_html

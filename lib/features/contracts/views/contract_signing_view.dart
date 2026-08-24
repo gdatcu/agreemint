@@ -269,11 +269,13 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
   Future<void> _sendContractViaWhatsApp(String contractId) async {
     final link = '${AppConstants.clientPortalBaseUrl}$contractId';
     final student = widget.enrollment.student;
+    final programName = widget.enrollment.program?.name;
     try {
       await WhatsAppService.sendContractLink(
         phone: student?.phone ?? '',
         name: student?.name ?? 'Cursant',
         url: link,
+        programName: programName,
       );
     } catch (_) {
       if (mounted) {
@@ -291,6 +293,7 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
   Future<void> _sendContractViaEmail(String contractId) async {
     final link = '${AppConstants.clientPortalBaseUrl}$contractId';
     final student = widget.enrollment.student;
+    final programName = widget.enrollment.program?.name;
     if (student == null || student.email.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Student email is missing.')),
@@ -323,6 +326,7 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
         email: student.email,
         name: student.name,
         url: link,
+        programName: programName,
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

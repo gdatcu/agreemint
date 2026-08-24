@@ -735,6 +735,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                           amount: payment.amountDue -
                                               payment.amountPaid,
                                           dueDate: dateStr,
+                                          currency: currency,
                                         ),
                                       );
                                     },
@@ -763,6 +764,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                           amount: payment.amountDue -
                                               payment.amountPaid,
                                           dueDate: dateStr,
+                                          currency: currency,
                                         ),
                                       );
                                     },
@@ -793,6 +795,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                             phone: student?.phone ?? '',
                                             name: student?.name ?? 'Cursant',
                                             amount: effectivePaid,
+                                            currency: currency,
                                           ),
                                         );
                                       },
@@ -819,6 +822,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                             email: student.email,
                                             name: student.name,
                                             amount: effectivePaid,
+                                            currency: currency,
                                           ),
                                         );
                                       },
