@@ -30,10 +30,9 @@ void main() {
 
       expect(msgWithLinks, contains('Salut *George Test*'));
       expect(msgWithLinks, contains('1000.00 RON'));
-      expect(msgWithLinks, contains('• ✍️ *Contract Semnat:* https://agreemint.qualiadept.eu/#/sign/abc-123'));
-      expect(msgWithLinks, contains('• 🧾 *Factură Fiscală (SOLO #1024):* https://agreemint.qualiadept.eu/#/view-doc?url=inv_1&pin=5678&title=Factura'));
-      expect(msgWithLinks, contains('🔐 *PIN Deblocare Factură:* Ultimele 4 cifre ale numărului tău de telefon (*5678*)'));
-      expect(msgWithLinks, contains('✉️ *Acces Securizat Contract:* Necesită validare prin cod OTP expediat pe email'));
+      expect(msgWithLinks, contains('Portal Securizat Documente (Contract & Factură)'));
+      expect(msgWithLinks, contains('https://agreemint.qualiadept.eu/#/sign/abc-123'));
+      expect(msgWithLinks, contains('5678'));
       expect(msgWithLinks, contains('Flutter Masterclass'));
     });
 

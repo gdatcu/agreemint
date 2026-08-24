@@ -34,6 +34,7 @@ class _ClientWebSignatureViewState
   bool _isEmailVerified = false;
   bool _otpSent = false;
   final _emailVerifyController = TextEditingController();
+  final _phoneVerifyController = TextEditingController();
   final _otpController = TextEditingController();
   String? _emailVerifyError;
   int _emailVerifyAttempts = 0;
@@ -55,6 +56,7 @@ class _ClientWebSignatureViewState
   void dispose() {
     _signatureController.dispose();
     _emailVerifyController.dispose();
+    _phoneVerifyController.dispose();
     _otpController.dispose();
     super.dispose();
   }
@@ -73,7 +75,7 @@ class _ClientWebSignatureViewState
     if (_emailVerifyAttempts >= _maxEmailAttempts) {
       setState(() {
         _emailVerifyError =
-            'Too many failed attempts. Please contact your mentor for assistance.';
+            'Prea multe încercări eșuate. Te rugăm să contactezi mentorul pentru asistență.';
       });
       return;
     }
@@ -82,19 +84,41 @@ class _ClientWebSignatureViewState
     final studentEmail = _contract?.enrollment?.student?.email
         .trim()
         .toLowerCase();
+    final enteredPhoneLast4 = _phoneVerifyController.text.trim().replaceAll(RegExp(r'\D'), '');
+
+    final rawPhone = _contract?.details?['telefon_cursant'] as String? ?? _contract?.enrollment?.student?.phone ?? '';
+    final studentPhoneDigits = rawPhone.replaceAll(RegExp(r'\D'), '');
+    final expectedLast4 = studentPhoneDigits.length >= 4 ? studentPhoneDigits.substring(studentPhoneDigits.length - 4) : '';
 
     if (enteredEmail.isEmpty) {
       setState(() {
-        _emailVerifyError = 'Please enter your email address.';
+        _emailVerifyError = 'Te rugăm să introduci adresa ta de email.';
       });
       return;
+    }
+
+    if (expectedLast4.isNotEmpty) {
+      if (enteredPhoneLast4.isEmpty || enteredPhoneLast4.length < 4) {
+        setState(() {
+          _emailVerifyError = 'Te rugăm să introduci ultimele 4 cifre ale numărului tău de telefon.';
+        });
+        return;
+      }
+      if (enteredPhoneLast4 != expectedLast4) {
+        _emailVerifyAttempts++;
+        setState(() {
+          _emailVerifyError =
+              'Ultimele 4 cifre ale telefonului nu corespund dosarului. ${_maxEmailAttempts - _emailVerifyAttempts} încercări rămase.';
+        });
+        return;
+      }
     }
 
     if (studentEmail != null && studentEmail.isNotEmpty && enteredEmail != studentEmail) {
       _emailVerifyAttempts++;
       setState(() {
         _emailVerifyError =
-            'Email does not match our records. ${_maxEmailAttempts - _emailVerifyAttempts} attempts remaining.';
+            'Adresa de email nu corespunde dosarului de cursant. ${_maxEmailAttempts - _emailVerifyAttempts} încercări rămase.';
       });
       return;
     }
@@ -529,7 +553,7 @@ class _ClientWebSignatureViewState
                                     Text(
                                       'Both parties have signed this agreement. A copy has been generated for your records.',
                                       style: theme.textTheme.bodyMedium
-                                          ?.copyWith(
+                                      ?.copyWith(
                                         color: Colors.green.shade900,
                                       ),
                                       textAlign: TextAlign.center,
@@ -550,11 +574,161 @@ class _ClientWebSignatureViewState
                                         ),
                                         icon: const Icon(Icons.download),
                                         label: const Text(
-                                            'Download Final Signed Contract'),
+                                            'Descarcă Contract Semnat (PDF)'),
                                       ),
                                   ],
                                 ),
                               ),
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Invoices & Payment Schedule Card
+                            Builder(
+                              builder: (context) {
+                                final payments = _contract?.enrollment?.payments ?? [];
+                                final currency = _contract?.enrollment?.program?.currency ?? 'RON';
+
+                                return Card(
+                                  elevation: 2,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(20),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(Icons.receipt_long_rounded,
+                                                color: Colors.blue.shade800, size: 28),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Facturi Fiscale & Grafic Tranșe de Plată',
+                                                    style: theme.textTheme.titleMedium?.copyWith(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.blue.shade900,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    'Consultă tranșele de plată și descarcă facturile fiscale SOLO emise',
+                                                    style: theme.textTheme.bodySmall?.copyWith(
+                                                      color: Colors.grey.shade600,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const Divider(height: 28),
+                                        if (payments.isEmpty)
+                                          Container(
+                                            width: double.infinity,
+                                            padding: const EdgeInsets.all(16),
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey.shade50,
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: Colors.grey.shade200),
+                                            ),
+                                            child: const Center(
+                                              child: Text(
+                                                'Nu au fost configurate încă tranșe de plată pentru acest contract.',
+                                                style: TextStyle(color: Colors.grey),
+                                              ),
+                                            ),
+                                          )
+                                        else
+                                          ...payments.asMap().entries.map((entry) {
+                                            final idx = entry.key + 1;
+                                            final p = entry.value;
+                                            final isPaid = p.status == 'Paid';
+                                            final hasInvoice = p.externalInvoiceUrl != null && p.externalInvoiceUrl!.trim().isNotEmpty;
+                                            final invNumber = p.externalInvoiceNumber;
+
+                                            return Container(
+                                              margin: const EdgeInsets.only(bottom: 12),
+                                              padding: const EdgeInsets.all(16),
+                                              decoration: BoxDecoration(
+                                                color: isPaid ? Colors.green.shade50 : Colors.blue.shade50.withOpacity(0.5),
+                                                borderRadius: BorderRadius.circular(10),
+                                                border: Border.all(
+                                                  color: isPaid ? Colors.green.shade200 : Colors.blue.shade200,
+                                                ),
+                                              ),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      Text(
+                                                        'Tranșa #$idx: ${p.amountDue.toStringAsFixed(2)} $currency',
+                                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                                      ),
+                                                      Container(
+                                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                        decoration: BoxDecoration(
+                                                          color: isPaid ? Colors.green.shade700 : Colors.amber.shade700,
+                                                          borderRadius: BorderRadius.circular(12),
+                                                        ),
+                                                        child: Text(
+                                                          isPaid ? 'PLĂTIT' : 'ÎN AȘTEPTARE',
+                                                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 6),
+                                                  Text(
+                                                    'Scadență: ${p.dueDate.toIso8601String().split("T")[0]}',
+                                                    style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                                                  ),
+                                                  if (hasInvoice) ...[
+                                                    const SizedBox(height: 12),
+                                                    ElevatedButton.icon(
+                                                      onPressed: () => _viewPdf(p.externalInvoiceUrl!),
+                                                      style: ElevatedButton.styleFrom(
+                                                        backgroundColor: Colors.green.shade700,
+                                                        foregroundColor: Colors.white,
+                                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                                      ),
+                                                      icon: const Icon(Icons.download_rounded, size: 18),
+                                                      label: Text('Descarcă Factură Fiscală ${invNumber != null && invNumber.isNotEmpty ? "(SOLO #$invNumber)" : "(SOLO)"}'),
+                                                    ),
+                                                  ],
+                                                ],
+                                              ),
+                                            );
+                                          }),
+                                        const SizedBox(height: 12),
+                                        // Bank details info box
+                                        Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.all(14),
+                                          decoration: BoxDecoration(
+                                            color: Colors.blue.shade50,
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(color: Colors.blue.shade200),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const Text('🏦 Date Virament Bancar:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                              const SizedBox(height: 4),
+                                              Text('• Beneficiar: ${_contract?.details?['prestator_nume'] ?? 'DATCU GEORGE-CRISTIAN PFA'}', style: const TextStyle(fontSize: 12)),
+                                              Text('• IBAN: ${_contract?.details?['prestator_iban'] ?? 'RO54ROIN4021Q3YWTH1KTUTH'}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                              Text('• Bancă: ${_contract?.details?['prestator_banca'] ?? 'Salt Bank'}', style: const TextStyle(fontSize: 12)),
+                                              Text('• Detalii Plată: Plată mentorat CTR-${_contract?.contractNumber ?? ""} - ${_contract?.details?['student_name'] ?? _contract?.enrollment?.student?.name ?? ""}', style: const TextStyle(fontSize: 12)),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ] else ...[
                             // Step 1: Review Mentor Signed Contract Draft PDF
@@ -776,7 +950,20 @@ class _ClientWebSignatureViewState
                         labelText: 'Adresa ta de Email / Your Email Address',
                         prefixIcon: const Icon(Icons.email_outlined),
                         border: const OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _phoneVerifyController,
+                      keyboardType: TextInputType.number,
+                      maxLength: 4,
+                      decoration: InputDecoration(
+                        labelText: 'Ultimele 4 cifre ale nr. de telefon (PIN)',
+                        prefixIcon: const Icon(Icons.phone_iphone_rounded),
+                        border: const OutlineInputBorder(),
+                        counterText: '',
                         errorText: _emailVerifyError,
+                        hintText: 'ex: 5225',
                       ),
                       onSubmitted: (_) => _verifyEmailAndSendOtp(),
                     ),

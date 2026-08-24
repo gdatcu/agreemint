@@ -37,7 +37,7 @@ class ContractRepository {
     try {
       final response = await _client
           .from('contracts')
-          .select('*, enrollments(*, students(*), programs(*))')
+          .select('*, enrollments(*, students(*), programs(*), payments(*))')
           .order('created_at', ascending: false);
 
       if (response is List) {
@@ -59,7 +59,7 @@ class ContractRepository {
 
       final response = await _client
           .from('contracts')
-          .select('*, enrollments(*, students(*), programs(*))')
+          .select('*, enrollments(*, students(*), programs(*), payments(*))')
           .eq('id', contractId);
 
       if (response is List && response.isNotEmpty) {

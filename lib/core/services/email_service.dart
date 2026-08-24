@@ -274,8 +274,29 @@ class EmailService {
         '''
         : '';
 
-    final docsSection = hasDocs
-        ? '''
+    final isPortalLink = contractUrl != null && contractUrl.trim().contains('/sign/');
+
+    String docsSection;
+    if (isPortalLink) {
+      docsSection = '''
+        <!-- Unified Secure Portal Section -->
+        <div style="margin: 24px 0 16px 0; padding: 18px 20px; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px;">
+          <div style="text-align: center;">
+            <div style="font-size: 15px; font-weight: bold; color: #166534; margin-bottom: 6px;">🔐 Portal Securizat Documente (Contract & Factură)</div>
+            <div style="font-size: 13px; color: #15803d; margin-bottom: 16px;">Accesează contractul tău de mentorat semnat și descarcă factura fiscală SOLO</div>
+            <a href="${contractUrl.trim()}" target="_blank" style="display: inline-block; background-color: #16a34a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: bold;">Accesează Documentele Securizate ↗</a>
+          </div>
+          <div style="background-color: #ffffff; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px 14px; margin-top: 16px; font-size: 12px; color: #475569; line-height: 1.6;">
+            🛡️ <strong>Instrucțiuni de securitate:</strong><br/>
+            La deschiderea portalului, introduceți adresa dvs. de email, ultimele 4 cifre ale numărului de telefon (<strong>$pin</strong>) și codul de securitate OTP primit pe email.
+          </div>
+          <div style="margin-top: 10px; font-size: 11px; color: #64748b; word-break: break-all; text-align: center;">
+            Link direct: <a href="${contractUrl.trim()}" target="_blank" style="color: #166534;">${contractUrl.trim()}</a>
+          </div>
+        </div>
+      ''';
+    } else if (hasDocs) {
+      docsSection = '''
         <!-- Document Links Section -->
         <div style="margin: 24px 0 16px 0;">
           <p style="font-size: 13px; font-weight: bold; color: #334155; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.5px;">📄 Documente Securizate & Detalii de Plată</p>
@@ -284,8 +305,10 @@ class EmailService {
           $securityBoxHtml
           $fallbackDirectLinksHtml
         </div>
-        '''
-        : '';
+      ''';
+    } else {
+      docsSection = '';
+    }
 
     final progText = (programName != null && programName.trim().isNotEmpty)
         ? ' pentru programul tău de mentorat (<strong>$programName</strong>)'

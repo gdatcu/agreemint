@@ -96,30 +96,32 @@ class WhatsAppService {
     final dueText = formatRelativeDueText(dueDate, dueDateTime);
     final pin = WhatsAppReminderService.extractPinFromPhone(studentPhone);
 
-    final docsList = <String>[];
-    if (contractUrl != null && contractUrl.trim().isNotEmpty) {
-      docsList.add('• \u{270D}\u{FE0F} *Contract Semnat:* ${contractUrl.trim()}');
-    }
-    if (invoiceUrl != null && invoiceUrl.trim().isNotEmpty) {
-      final invNumText = (invoiceNumber != null && invoiceNumber.trim().isNotEmpty)
-          ? ' (SOLO #$invoiceNumber)'
-          : ' (SOLO)';
-      docsList.add('• \u{1F9FE} *Factură Fiscală$invNumText:* ${invoiceUrl.trim()}');
-    }
+    final isPortalLink = contractUrl != null && contractUrl.contains('/sign/');
 
-    final securityNotes = <String>[];
-    if (invoiceUrl != null && invoiceUrl.trim().isNotEmpty && studentPhone != null && studentPhone.trim().isNotEmpty) {
-      securityNotes.add('🔐 *PIN Deblocare Factură:* Ultimele 4 cifre ale numărului tău de telefon (*$pin*)');
+    String docsSection;
+    if (isPortalLink) {
+      docsSection = '\n\n\u{1F510} *Portal Securizat Documente (Contract & Factură):*\n'
+          '${contractUrl.trim()}\n\n'
+          '\u{1F6E1}\u{FE0F} *Instrucțiuni de Acces Securizat:*\n'
+          'La deschidere, introduceți adresa dvs. de email, ultimele 4 cifre ale nr. de telefon (*$pin*) și codul OTP primit pe email.';
+    } else {
+      final docsList = <String>[];
+      if (contractUrl != null && contractUrl.trim().isNotEmpty) {
+        docsList.add('• \u{270D}\u{FE0F} *Contract Semnat:* ${contractUrl.trim()}');
+      }
+      if (invoiceUrl != null && invoiceUrl.trim().isNotEmpty) {
+        final invNumText = (invoiceNumber != null && invoiceNumber.trim().isNotEmpty)
+            ? ' (SOLO #$invoiceNumber)'
+            : ' (SOLO)';
+        docsList.add('• \u{1F9FE} *Factură Fiscală$invNumText:* ${invoiceUrl.trim()}');
+      }
+      if (docsList.isNotEmpty) {
+        docsList.add('🔐 *PIN Securitate:* Ultimele 4 cifre ale numărului de telefon (*$pin*)');
+        docsSection = '\n\n\u{1F4C4} *Documente Securizate & Detalii de Plată:*\n${docsList.join('\n')}';
+      } else {
+        docsSection = '';
+      }
     }
-    if (contractUrl != null && contractUrl.trim().isNotEmpty && contractUrl.contains('/sign/')) {
-      securityNotes.add('✉️ *Acces Securizat Contract:* Necesită validare prin cod OTP expediat pe email');
-    }
-
-    final securitySection = securityNotes.isNotEmpty ? '\n${securityNotes.join('\n')}' : '';
-
-    final docsSection = docsList.isNotEmpty
-        ? '\n\n\u{1F4C4} *Documente Securizate & Detalii de Plată:*\n${docsList.join('\n')}$securitySection'
-        : '';
 
     final progText = (programName != null && programName.trim().isNotEmpty)
         ? ' pentru programul de mentorat *$programName*'
