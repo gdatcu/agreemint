@@ -443,9 +443,13 @@ class _ClientWebSignatureViewState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final isContractSigned = _contract?.status == 'FullySigned';
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('QualiAdept — Client Contract Signing'),
+        title: Text(isContractSigned
+            ? 'QualiAdept — Portal Securizat Documente & Facturi'
+            : 'QualiAdept — Semnare Contract Mentorat'),
         centerTitle: true,
       ),
       body: SelectionArea(
@@ -864,6 +868,7 @@ class _ClientWebSignatureViewState
     final clientName = (_contract?.details?['student_name'] as String?)?.trim() ??
         _contract?.enrollment?.student?.name.trim();
     final greetingSuffix = (clientName != null && clientName.isNotEmpty) ? ', $clientName' : '';
+    final isContractSigned = _contract?.status == 'FullySigned';
 
     return Center(
       child: SingleChildScrollView(
@@ -890,7 +895,9 @@ class _ClientWebSignatureViewState
                     child: Column(
                       children: [
                         Text(
-                          '👋 Bine ai venit în comunitatea QualiAdept$greetingSuffix!',
+                          isContractSigned
+                              ? '👋 Bine ai venit pe Portalul Securizat$greetingSuffix!'
+                              : '👋 Bine ai venit în comunitatea QualiAdept$greetingSuffix!',
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Colors.blue.shade900,
@@ -899,7 +906,9 @@ class _ClientWebSignatureViewState
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Ne bucurăm că ai decis să colaborezi cu noi pentru dezvoltarea ta profesională! Pentru a revizui și aplica semnătura ta pe contractul de servicii de mentorat, te rugăm mai întâi să confirmi adresa ta de email de mai jos.',
+                          isContractSigned
+                              ? 'Pentru a accesa contractul tău de mentorat semnat și facturile fiscale SOLO aferente, te rugăm să confirmi adresa ta de email și ultimele 4 cifre ale numărului de telefon.'
+                              : 'Ne bucurăm că ai decis să colaborezi cu noi pentru dezvoltarea ta profesională! Pentru a revizui și aplica semnătura ta pe contractul de servicii de mentorat, te rugăm mai întâi să confirmi adresa ta de email de mai jos.',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: Colors.blue.shade900,
                             height: 1.4,
@@ -924,7 +933,9 @@ class _ClientWebSignatureViewState
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    _otpSent ? 'Secured OTP Verification' : 'Identity Verification',
+                    _otpSent
+                        ? 'Validare Cod OTP Securizat'
+                        : (isContractSigned ? 'Acces Securizat Documente & Facturi' : 'Verificare Identitate Cursant'),
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -933,8 +944,10 @@ class _ClientWebSignatureViewState
                   const SizedBox(height: 12),
                   Text(
                     _otpSent
-                        ? 'Un cod de securitate OTP din 6 cifre a fost generat pentru adresa ${_emailVerifyController.text.trim()}. Introduceți codul mai jos pentru a accesa și semna contractul.'
-                        : 'Pentru a accesa și semna contractul, vă rugăm să confirmați adresa de email asociată înscrierii.',
+                        ? 'Un cod de securitate OTP din 6 cifre a fost generat pentru adresa ${_emailVerifyController.text.trim()}. Introduceți codul mai jos pentru a debloca contractul și facturile.'
+                        : (isContractSigned
+                            ? 'Pentru a accesa contractul semnat și facturile fiscale, vă rugăm să confirmați adresa de email și ultimele 4 cifre ale numărului de telefon asociate dosarului.'
+                            : 'Pentru a accesa și semna contractul, vă rugăm să confirmați adresa de email și numărul de telefon asociate înscrierii.'),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: Colors.grey.shade700,
                     ),
@@ -1010,7 +1023,9 @@ class _ClientWebSignatureViewState
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
                         icon: const Icon(Icons.check_circle_outline),
-                        label: const Text('Validare Cod OTP & Deschidere Contract'),
+                        label: Text(isContractSigned
+                            ? 'Validare Cod OTP & Deschidere Documente'
+                            : 'Validare Cod OTP & Deschidere Contract'),
                       ),
                     ),
                   ],
