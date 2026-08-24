@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.5.6 Release Notes
+# 🚀 Agreemint v1.5.8 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -21,13 +21,11 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.5.6
+## 🎨 What's New in Version 1.5.8
 
-- 🔐 **Single Unified Secured Document Portal (`#/sign/<contractId>`)**:
-  - Unified contract signing and payment/invoice tracking under a single secure gateway link.
-  - **Dual Identity Verification Gate**: Access requires confirming the student's **Email Address**, **Last 4 Digits of Phone Number (PIN)**, and the **6-digit OTP Code** sent via Email.
-  - **Executed Portal Display**: Once verified, displays both:
-    1. **Contract Semnat (Signed Contract)** with 1-tap PDF preview & download.
-    2. **Facturi Fiscale & Grafic Tranșe de Plată**: Real-time installment status (Plătit / În așteptare), due dates, direct download buttons for all uploaded SOLO invoices, and bank transfer IBAN details.
-  - WhatsApp & Email payment reminders now dispatch a single unified secured portal link instead of fragmented links.
-- 📦 **Version Bump**: Promoted release version to `v1.5.6` (`1.5.6+128`).
+- 🎨 **High Contrast & Dark Mode Design System for Document Portal**:
+  - Fixed low-contrast text colors across all cards on the client document portal.
+  - **Date Virament Bancar (Bank Details Box)**: Redesigned with theme-adaptive styling (`#1E293B` background in dark mode, crisp `#F1F5F9` and highlighted `#FDE047` IBAN text, and `#3B82F6` accents).
+  - **Facturi Fiscale & Grafic Tranșe**: Clean white headers, readable light-grey subtexts, and dark-mode compatible translucent installment status containers.
+  - Cleaned up duplicate invoice prefixes (e.g. `(#GD-35-26/SOLO)`).
+- 📦 **Version Bump**: Promoted release version to `v1.5.8` (`1.5.8+130`).

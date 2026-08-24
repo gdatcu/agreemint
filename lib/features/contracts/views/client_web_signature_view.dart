@@ -442,8 +442,8 @@ class _ClientWebSignatureViewState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     final isContractSigned = _contract?.status == 'FullySigned';
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -536,29 +536,46 @@ class _ClientWebSignatureViewState
                           if (_contract?.status == 'FullySigned') ...[
                             // Success State
                             Card(
-                              color: Colors.green.shade50,
+                              color: isDark
+                                  ? Colors.green.shade900.withOpacity(0.25)
+                                  : Colors.green.shade50,
+                              shape: RoundedRectangleBorder(
+                                side: BorderSide(
+                                  color: isDark
+                                      ? Colors.green.shade700
+                                      : Colors.green.shade200,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                               child: Padding(
                                 padding: const EdgeInsets.all(24),
                                 child: Column(
                                   children: [
-                                    const Icon(Icons.verified,
-                                        size: 72, color: Colors.green),
+                                    Icon(Icons.verified_rounded,
+                                        size: 72,
+                                        color: isDark
+                                            ? Colors.green.shade400
+                                            : Colors.green.shade600),
                                     const SizedBox(height: 16),
                                     Text(
-                                      'Contract Fully Executed!',
+                                      'Contract Asumat & Semnat cu Succes!',
                                       style: theme.textTheme.headlineSmall
                                           ?.copyWith(
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.green.shade900,
+                                        color: isDark
+                                            ? Colors.green.shade300
+                                            : Colors.green.shade900,
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      'Both parties have signed this agreement. A copy has been generated for your records.',
+                                      'Ambele părți au semnat contractul de mentorat. Poți descărca oricând exemplarul tău oficial în format PDF.',
                                       style: theme.textTheme.bodyMedium
-                                      ?.copyWith(
-                                        color: Colors.green.shade900,
+                                          ?.copyWith(
+                                        color: isDark
+                                            ? Colors.grey.shade300
+                                            : Colors.green.shade900,
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
@@ -589,6 +606,7 @@ class _ClientWebSignatureViewState
                             // Invoices & Payment Schedule Card
                             Builder(
                               builder: (context) {
+                                final isDark = theme.brightness == Brightness.dark;
                                 final payments = _contract?.enrollment?.payments ?? [];
                                 final currency = _contract?.enrollment?.program?.currency ?? 'RON';
 
@@ -602,7 +620,8 @@ class _ClientWebSignatureViewState
                                         Row(
                                           children: [
                                             Icon(Icons.receipt_long_rounded,
-                                                color: Colors.blue.shade800, size: 28),
+                                                color: isDark ? Colors.blue.shade300 : Colors.blue.shade800,
+                                                size: 28),
                                             const SizedBox(width: 10),
                                             Expanded(
                                               child: Column(
@@ -612,13 +631,13 @@ class _ClientWebSignatureViewState
                                                     'Facturi Fiscale & Grafic Tranșe de Plată',
                                                     style: theme.textTheme.titleMedium?.copyWith(
                                                       fontWeight: FontWeight.bold,
-                                                      color: Colors.blue.shade900,
+                                                      color: isDark ? Colors.white : Colors.blue.shade900,
                                                     ),
                                                   ),
                                                   Text(
                                                     'Consultă tranșele de plată și descarcă facturile fiscale SOLO emise',
                                                     style: theme.textTheme.bodySmall?.copyWith(
-                                                      color: Colors.grey.shade600,
+                                                      color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                                                     ),
                                                   ),
                                                 ],
@@ -632,14 +651,18 @@ class _ClientWebSignatureViewState
                                             width: double.infinity,
                                             padding: const EdgeInsets.all(16),
                                             decoration: BoxDecoration(
-                                              color: Colors.grey.shade50,
+                                              color: isDark ? Colors.grey.shade800 : Colors.grey.shade50,
                                               borderRadius: BorderRadius.circular(8),
-                                              border: Border.all(color: Colors.grey.shade200),
+                                              border: Border.all(
+                                                color: isDark ? Colors.grey.shade700 : Colors.grey.shade200,
+                                              ),
                                             ),
-                                            child: const Center(
+                                            child: Center(
                                               child: Text(
                                                 'Nu au fost configurate încă tranșe de plată pentru acest contract.',
-                                                style: TextStyle(color: Colors.grey),
+                                                style: TextStyle(
+                                                  color: isDark ? Colors.grey.shade400 : Colors.grey,
+                                                ),
                                               ),
                                             ),
                                           )
@@ -651,14 +674,34 @@ class _ClientWebSignatureViewState
                                             final hasInvoice = p.externalInvoiceUrl != null && p.externalInvoiceUrl!.trim().isNotEmpty;
                                             final invNumber = p.externalInvoiceNumber;
 
+                                            String invoiceBtnLabel;
+                                            if (invNumber != null && invNumber.trim().isNotEmpty) {
+                                              final cleanInv = invNumber.trim();
+                                              if (cleanInv.toUpperCase().contains('SOLO')) {
+                                                invoiceBtnLabel = 'Descarcă Factură Fiscală (#$cleanInv)';
+                                              } else {
+                                                invoiceBtnLabel = 'Descarcă Factură Fiscală (SOLO #$cleanInv)';
+                                              }
+                                            } else {
+                                              invoiceBtnLabel = 'Descarcă Factură Fiscală (SOLO)';
+                                            }
+
                                             return Container(
                                               margin: const EdgeInsets.only(bottom: 12),
                                               padding: const EdgeInsets.all(16),
                                               decoration: BoxDecoration(
-                                                color: isPaid ? Colors.green.shade50 : Colors.blue.shade50.withOpacity(0.5),
+                                                color: isDark
+                                                    ? (isPaid
+                                                        ? Colors.green.shade900.withOpacity(0.25)
+                                                        : Colors.blue.shade900.withOpacity(0.25))
+                                                    : (isPaid
+                                                        ? Colors.green.shade50
+                                                        : Colors.blue.shade50.withOpacity(0.5)),
                                                 borderRadius: BorderRadius.circular(10),
                                                 border: Border.all(
-                                                  color: isPaid ? Colors.green.shade200 : Colors.blue.shade200,
+                                                  color: isDark
+                                                      ? (isPaid ? Colors.green.shade700 : Colors.blue.shade700)
+                                                      : (isPaid ? Colors.green.shade200 : Colors.blue.shade200),
                                                 ),
                                               ),
                                               child: Column(
@@ -669,7 +712,11 @@ class _ClientWebSignatureViewState
                                                     children: [
                                                       Text(
                                                         'Tranșa #$idx: ${p.amountDue.toStringAsFixed(2)} $currency',
-                                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                                        style: TextStyle(
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 16,
+                                                          color: isDark ? Colors.white : Colors.black87,
+                                                        ),
                                                       ),
                                                       Container(
                                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -687,7 +734,10 @@ class _ClientWebSignatureViewState
                                                   const SizedBox(height: 6),
                                                   Text(
                                                     'Scadență: ${p.dueDate.toIso8601String().split("T")[0]}',
-                                                    style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                                                    style: TextStyle(
+                                                      fontSize: 13,
+                                                      color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                                                    ),
                                                   ),
                                                   if (hasInvoice) ...[
                                                     const SizedBox(height: 12),
@@ -699,7 +749,7 @@ class _ClientWebSignatureViewState
                                                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                                       ),
                                                       icon: const Icon(Icons.download_rounded, size: 18),
-                                                      label: Text('Descarcă Factură Fiscală ${invNumber != null && invNumber.isNotEmpty ? "(SOLO #$invNumber)" : "(SOLO)"}'),
+                                                      label: Text(invoiceBtnLabel),
                                                     ),
                                                   ],
                                                 ],
@@ -707,24 +757,72 @@ class _ClientWebSignatureViewState
                                             );
                                           }),
                                         const SizedBox(height: 12),
-                                        // Bank details info box
+                                        // Bank details info box with high contrast for dark & light modes
                                         Container(
                                           width: double.infinity,
-                                          padding: const EdgeInsets.all(14),
+                                          padding: const EdgeInsets.all(16),
                                           decoration: BoxDecoration(
-                                            color: Colors.blue.shade50,
-                                            borderRadius: BorderRadius.circular(8),
-                                            border: Border.all(color: Colors.blue.shade200),
+                                            color: isDark
+                                                ? const Color(0xFF1E293B)
+                                                : const Color(0xFFF0F7FF),
+                                            borderRadius: BorderRadius.circular(10),
+                                            border: Border.all(
+                                              color: isDark
+                                                  ? const Color(0xFF3B82F6)
+                                                  : const Color(0xFFBFDBFE),
+                                              width: 1.5,
+                                            ),
                                           ),
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              const Text('🏦 Date Virament Bancar:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                              Row(
+                                                children: [
+                                                  const Icon(Icons.account_balance_rounded, size: 20, color: Color(0xFF3B82F6)),
+                                                  const SizedBox(width: 8),
+                                                  Text(
+                                                    'Date Virament Bancar:',
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 14,
+                                                      color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1E3A8A),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Text(
+                                                '• Beneficiar: ${_contract?.details?['prestator_nume'] ?? 'DATCU GEORGE-CRISTIAN PFA'}',
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  color: isDark ? const Color(0xFFF1F5F9) : const Color(0xFF1E293B),
+                                                ),
+                                              ),
                                               const SizedBox(height: 4),
-                                              Text('• Beneficiar: ${_contract?.details?['prestator_nume'] ?? 'DATCU GEORGE-CRISTIAN PFA'}', style: const TextStyle(fontSize: 12)),
-                                              Text('• IBAN: ${_contract?.details?['prestator_iban'] ?? 'RO54ROIN4021Q3YWTH1KTUTH'}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                              Text('• Bancă: ${_contract?.details?['prestator_banca'] ?? 'Salt Bank'}', style: const TextStyle(fontSize: 12)),
-                                              Text('• Detalii Plată: Plată mentorat CTR-${_contract?.contractNumber ?? ""} - ${_contract?.details?['student_name'] ?? _contract?.enrollment?.student?.name ?? ""}', style: const TextStyle(fontSize: 12)),
+                                              Text(
+                                                '• IBAN: ${_contract?.details?['prestator_iban'] ?? 'RO54ROIN4021Q3YWTH1KTUTH'}',
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: isDark ? const Color(0xFFFDE047) : const Color(0xFF1E3A8A),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                '• Bancă: ${_contract?.details?['prestator_banca'] ?? 'Salt Bank'}',
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  color: isDark ? const Color(0xFFF1F5F9) : const Color(0xFF1E293B),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                '• Detalii Plată: Plată mentorat CTR-${_contract?.contractNumber ?? ""} - ${_contract?.details?['student_name'] ?? _contract?.enrollment?.student?.name ?? ""}',
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+                                                ),
+                                              ),
                                             ],
                                           ),
                                         ),
@@ -869,6 +967,7 @@ class _ClientWebSignatureViewState
         _contract?.enrollment?.student?.name.trim();
     final greetingSuffix = (clientName != null && clientName.isNotEmpty) ? ', $clientName' : '';
     final isContractSigned = _contract?.status == 'FullySigned';
+    final isDark = theme.brightness == Brightness.dark;
 
     return Center(
       child: SingleChildScrollView(
@@ -888,9 +987,15 @@ class _ClientWebSignatureViewState
                     padding: const EdgeInsets.all(16),
                     margin: const EdgeInsets.only(bottom: 24),
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
+                      color: isDark
+                          ? const Color(0xFF1E293B)
+                          : const Color(0xFFEFF6FF),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue.shade200),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF3B82F6)
+                            : const Color(0xFFBFDBFE),
+                      ),
                     ),
                     child: Column(
                       children: [
@@ -900,7 +1005,7 @@ class _ClientWebSignatureViewState
                               : '👋 Bine ai venit în comunitatea QualiAdept$greetingSuffix!',
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade900,
+                            color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1E3A8A),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -910,7 +1015,7 @@ class _ClientWebSignatureViewState
                               ? 'Pentru a accesa contractul tău de mentorat semnat și facturile fiscale SOLO aferente, te rugăm să confirmi adresa ta de email și ultimele 4 cifre ale numărului de telefon.'
                               : 'Ne bucurăm că ai decis să colaborezi cu noi pentru dezvoltarea ta profesională! Pentru a revizui și aplica semnătura ta pe contractul de servicii de mentorat, te rugăm mai întâi să confirmi adresa ta de email de mai jos.',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.blue.shade900,
+                            color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF1E40AF),
                             height: 1.4,
                           ),
                           textAlign: TextAlign.center,
@@ -922,13 +1027,13 @@ class _ClientWebSignatureViewState
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
+                      color: isDark ? const Color(0xFF1E293B) : Colors.blue.shade50,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       _otpSent ? Icons.lock_clock_outlined : Icons.verified_user_outlined,
                       size: 48,
-                      color: Colors.blue.shade700,
+                      color: isDark ? const Color(0xFF60A5FA) : Colors.blue.shade700,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -949,7 +1054,7 @@ class _ClientWebSignatureViewState
                             ? 'Pentru a accesa contractul semnat și facturile fiscale, vă rugăm să confirmați adresa de email și ultimele 4 cifre ale numărului de telefon asociate dosarului.'
                             : 'Pentru a accesa și semna contractul, vă rugăm să confirmați adresa de email și numărul de telefon asociate înscrierii.'),
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey.shade700,
+                      color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
                     ),
                     textAlign: TextAlign.center,
                   ),
