@@ -4,6 +4,142 @@ import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EmailService {
+  final String apiKey;
+
+  const EmailService({required this.apiKey});
+
+  /// Private helper sending transactional emails via Resend HTTP REST API.
+  Future<void> _sendEmail({
+    required String to,
+    required String subject,
+    required String htmlBody,
+  }) async {
+    final cleanEmail = to.trim().toLowerCase();
+    if (cleanEmail.isEmpty || !cleanEmail.contains('@')) {
+      throw Exception('Invalid recipient email address: $to');
+    }
+
+    final key = apiKey.trim();
+    if (key.isEmpty) {
+      throw Exception(
+          'Resend API key is not configured. Please set RESEND_API_KEY via --dart-define or Business Settings.');
+    }
+
+    final payload = {
+      'from': 'Mentoring <mentoring@qualiadept.eu>',
+      'to': [cleanEmail],
+      'subject': subject,
+      'html': htmlBody,
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://api.resend.com/emails'),
+        headers: {
+          'Authorization': 'Bearer $key',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        String errorDetail = response.body;
+        try {
+          final resJson = jsonDecode(response.body);
+          if (resJson is Map && resJson.containsKey('message')) {
+            errorDetail = resJson['message'].toString();
+          }
+        } catch (_) {}
+        throw Exception('Resend API Error (${response.statusCode}): $errorDetail');
+      }
+    } catch (e) {
+      debugPrint('[EmailService] Failed to send email: $e');
+      rethrow;
+    }
+  }
+
+  /// Sends a contract review and signing link via email.
+  Future<void> sendContractLink({
+    required String email,
+    required String name,
+    required String url,
+  }) async {
+    final subject = 'Mentoring Agreement - Please Review & Sign';
+    final htmlBody = '''
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+        <h2 style="color: #1565c0; margin-top: 0;">✍️ Mentoring Agreement - Review & Sign</h2>
+        <p style="font-size: 15px;">Hi <strong>$name</strong>,</p>
+        <p style="font-size: 15px;">When you have a moment, please review and sign our mentoring agreement using the secure link below:</p>
+        <div style="text-align: center; margin: 25px 0;">
+          <a href="$url" style="background-color: #1565c0; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px;">
+            📄 Review & Sign Agreement
+          </a>
+        </div>
+        <p style="font-size: 13px; color: #666;">Or open this link in your browser:<br/><a href="$url" style="color: #1565c0;">$url</a></p>
+        <p style="font-size: 14px;">Let me know if you have any questions!</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;"/>
+        <p style="font-size: 12px; color: #888; text-align: center;">Agreemint Mentorship • QualiAdept</p>
+      </div>
+    ''';
+
+    await _sendEmail(to: email, subject: subject, htmlBody: htmlBody);
+  }
+
+  /// Sends an upcoming installment reminder via email.
+  Future<void> sendPaymentReminder({
+    required String email,
+    required String name,
+    required double amount,
+    required String dueDate,
+  }) async {
+    final subject = 'Payment Reminder - Upcoming Installment';
+    final htmlBody = '''
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+        <h2 style="color: #e65100; margin-top: 0;">💳 Upcoming Payment Reminder</h2>
+        <p style="font-size: 15px;">Hi <strong>$name</strong>,</p>
+        <p style="font-size: 15px;">Hope you're doing great! Just a quick reminder that your next installment is coming up soon.</p>
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0; background-color: #fafafa; border-radius: 6px; border: 1px solid #eee;">
+          <tr>
+            <td style="padding: 12px; color: #555; font-weight: bold;">Amount Due:</td>
+            <td style="padding: 12px; font-weight: bold; font-size: 16px; color: #e65100;">${amount.toStringAsFixed(2)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; color: #555; font-weight: bold;">Due Date:</td>
+            <td style="padding: 12px; font-weight: bold; color: #333;">$dueDate</td>
+          </tr>
+        </table>
+        <p style="font-size: 14px;">Let me know if you need the payment details or invoice again!</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;"/>
+        <p style="font-size: 12px; color: #888; text-align: center;">Agreemint Mentorship • QualiAdept</p>
+      </div>
+    ''';
+
+    await _sendEmail(to: email, subject: subject, htmlBody: htmlBody);
+  }
+
+  /// Sends a payment receipt confirmation via email.
+  Future<void> sendPaymentReceipt({
+    required String email,
+    required String name,
+    required double amount,
+  }) async {
+    final subject = 'Payment Confirmation Receipt';
+    final htmlBody = '''
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+        <h2 style="color: #2e7d32; margin-top: 0;">🎉 Payment Received</h2>
+        <p style="font-size: 15px;">Hi <strong>$name</strong>,</p>
+        <p style="font-size: 15px;">Just confirming I received your payment of <strong>${amount.toStringAsFixed(2)}</strong>.</p>
+        <p style="font-size: 15px;">Thank you! Let's crush our next session.</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;"/>
+        <p style="font-size: 12px; color: #888; text-align: center;">Agreemint Mentorship • QualiAdept</p>
+      </div>
+    ''';
+
+    await _sendEmail(to: email, subject: subject, htmlBody: htmlBody);
+  }
+
+  // --- Static Helpers for Backwards Compatibility ---
+
   /// Sends a secure 6-digit OTP verification email via Supabase Postgres RPC.
   static Future<bool> sendOtpEmail({
     required String email,
@@ -44,7 +180,6 @@ class EmailService {
     final cleanEmail = mentorEmail.trim().toLowerCase();
     if (cleanEmail.isEmpty || !cleanEmail.contains('@')) return false;
 
-    // 1. Dispatch via Resend REST API if Resend API key is configured
     final apiKey = resendApiKey?.trim();
     if (apiKey != null && apiKey.isNotEmpty) {
       try {
@@ -63,60 +198,18 @@ class EmailService {
               <a href="$signedPdfUrl" style="background-color: #2e7d32; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
                 📄 Vizualizează Contractul PDF Semnat
               </a>
-              <br/><br/>
-              <hr style="border: none; border-top: 1px solid #eee;"/>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;"/>
               <p style="font-size: 12px; color: #888; text-align: center;">Agreemint Realtime Notification System • QualiAdept</p>
             </div>
           ''';
 
-        // 1. Primary: Server-side dispatch via Supabase RPC (100% immune to browser CORS)
-        try {
-          final supabase = Supabase.instance.client;
-          final rpcRes = await supabase.rpc(
-            'send_resend_email',
-            params: {
-              'p_to': cleanEmail,
-              'p_subject': subject,
-              'p_html': htmlContent,
-              'p_api_key': apiKey,
-            },
-          );
-          if (rpcRes != null && (rpcRes['success'] == true || rpcRes is Map)) {
-            debugPrint('[EmailService] Contract signed email dispatched via Supabase RPC: $rpcRes');
-            return true;
-          }
-        } catch (e) {
-          debugPrint('[EmailService] Supabase send_resend_email RPC notice: $e');
-        }
-
-        // 2. Direct REST Fallback (for mobile/desktop platforms without browser CORS)
-        if (!kIsWeb) {
-          final payload = {
-            'from': 'Agreemint Alerts <onboarding@resend.dev>',
-            'to': [cleanEmail],
-            'subject': subject,
-            'html': htmlContent,
-          };
-          debugPrint('[EmailService] Sending contract signed alert via direct Resend API to $cleanEmail...');
-          final response = await http.post(
-            Uri.parse('https://api.resend.com/emails'),
-            headers: {
-              'Authorization': 'Bearer $apiKey',
-              'Content-Type': 'application/json',
-            },
-            body: jsonEncode(payload),
-          );
-
-          if (response.statusCode == 200 || response.statusCode == 201) {
-            debugPrint('[EmailService] Resend email delivered successfully: ${response.body}');
-            return true;
-          }
-        }
+        final service = EmailService(apiKey: apiKey);
+        await service._sendEmail(to: cleanEmail, subject: subject, htmlBody: htmlContent);
+        return true;
       } catch (e) {
-        debugPrint('[EmailService] Failed to send email via Resend API: $e');
+        debugPrint('[EmailService] sendContractSignedEmailAlert error: $e');
       }
     }
-
     return false;
   }
 
@@ -131,6 +224,13 @@ class EmailService {
     }
 
     final apiKey = resendApiKey?.trim();
+    if (apiKey == null || apiKey.isEmpty) {
+      return {
+        'success': false,
+        'message': '❌ Resend API Key lipsește. Configurează cheia în setări.'
+      };
+    }
+
     final htmlContent = '''
       <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
         <h2 style="color: #1565c0;">✅ Test Notificare Email Reușit!</h2>
@@ -139,70 +239,22 @@ class EmailService {
       </div>
     ''';
 
-    // 1. Primary: Server-side dispatch via Supabase RPC (immune to browser CORS)
     try {
-      final supabase = Supabase.instance.client;
-      final rpcRes = await supabase.rpc(
-        'send_resend_email',
-        params: {
-          'p_to': cleanEmail,
-          'p_subject': '✅ Test Notificare Email Agreemint',
-          'p_html': htmlContent,
-          if (apiKey != null && apiKey.isNotEmpty) 'p_api_key': apiKey,
-        },
+      final service = EmailService(apiKey: apiKey);
+      await service._sendEmail(
+        to: cleanEmail,
+        subject: '✅ Test Notificare Email Agreemint',
+        htmlBody: htmlContent,
       );
-      if (rpcRes != null && (rpcRes['success'] == true || rpcRes is Map)) {
-        debugPrint('[EmailService] Test email dispatched via Supabase RPC: $rpcRes');
-        return {
-          'success': true,
-          'message': '🎉 Email de test expediat cu succes prin Resend la $cleanEmail!'
-        };
-      }
+      return {
+        'success': true,
+        'message': '🎉 Email de test expediat cu succes prin Resend la $cleanEmail!'
+      };
     } catch (e) {
-      debugPrint('[EmailService] Supabase send_resend_email RPC notice: $e');
+      return {
+        'success': false,
+        'message': '❌ Eroare trimitere email: $e'
+      };
     }
-
-    // 2. Direct REST Fallback (for mobile/desktop platforms)
-    if (apiKey != null && apiKey.isNotEmpty && !kIsWeb) {
-      try {
-        final payload = {
-          'from': 'Agreemint Alerts <onboarding@resend.dev>',
-          'to': [cleanEmail],
-          'subject': '✅ Test Notificare Email Agreemint',
-          'html': htmlContent,
-        };
-
-        debugPrint('[EmailService] Sending test email via direct Resend API to $cleanEmail...');
-        final response = await http.post(
-          Uri.parse('https://api.resend.com/emails'),
-          headers: {
-            'Authorization': 'Bearer $apiKey',
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode(payload),
-        );
-
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          debugPrint('[EmailService] Test email delivered successfully: ${response.body}');
-          return {'success': true, 'message': '🎉 Email de test trimis cu succes prin Resend la $cleanEmail!'};
-        } else {
-          final resJson = jsonDecode(response.body);
-          final errorMsg = resJson['message'] ?? response.body;
-          debugPrint('[EmailService] Resend test error: ${response.statusCode} - $errorMsg');
-          return {
-            'success': false,
-            'message': '❌ Eroare Resend (${response.statusCode}): $errorMsg'
-          };
-        }
-      } catch (e) {
-        debugPrint('[EmailService] Resend connection error: $e');
-        return {'success': false, 'message': '❌ Eroare conexiune Resend: $e'};
-      }
-    }
-
-    return {
-      'success': false,
-      'message': '❌ Pentru activare, rulează scriptul SQL în Supabase Dashboard > SQL Editor.'
-    };
   }
 }

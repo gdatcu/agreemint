@@ -34,7 +34,7 @@ final class MentorAuthControllerProvider
 }
 
 String _$mentorAuthControllerHash() =>
-    r'530dbb66e1c8790fca5010f3fb07f8e8e6fadf25';
+    r'15347f79759ffa69fd519244f201f97495a36f65';
 
 abstract class _$MentorAuthController extends $AsyncNotifier<bool> {
   FutureOr<bool> build();

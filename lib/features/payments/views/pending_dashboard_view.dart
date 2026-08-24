@@ -4,8 +4,11 @@ import '../controllers/payment_controller.dart';
 import '../../contracts/controllers/contract_controller.dart';
 import '../../contracts/views/unsigned_contracts_view.dart';
 import '../../../core/services/notification_service.dart';
-import '../../../core/services/whatsapp_reminder_service.dart';
+import '../../../core/services/whatsapp_service.dart';
+import '../../../core/services/email_service.dart';
 import '../../../core/services/local_whatsapp_bot_service.dart';
+import '../../../main.dart';
+import '../../settings/controllers/business_settings_controller.dart';
 import '../models/payment_model.dart';
 
 class PendingDashboardView extends ConsumerStatefulWidget {
@@ -19,6 +22,75 @@ class PendingDashboardView extends ConsumerStatefulWidget {
 class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _isSendingEmail = false;
+
+  void _sendWhatsAppNotification({
+    required Future<void> Function() action,
+  }) async {
+    try {
+      await action();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'Could not open WhatsApp. Ensure it is installed and the phone number is valid.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _sendEmailNotification({
+    required String recipientEmail,
+    required Future<void> Function(EmailService service) action,
+  }) async {
+    final settings =
+        ref.read(businessSettingsControllerProvider).asData?.value ??
+            ref.read(businessSettingsControllerProvider).value;
+    final envApiKey = ref.read(resendApiKeyProvider);
+    final effectiveKey =
+        envApiKey.isNotEmpty ? envApiKey : (settings?.resendApiKey ?? '');
+
+    if (effectiveKey.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Resend API key is not configured. Please set it in Business Settings or via --dart-define.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSendingEmail = true);
+    try {
+      final emailService = EmailService(apiKey: effectiveKey);
+      await action(emailService);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Email sent successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send email: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSendingEmail = false);
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -117,6 +189,7 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
 
         return Column(
           children: [
+            if (_isSendingEmail) const LinearProgressIndicator(),
             if (overduePayments.isNotEmpty)
               Container(
                 margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -144,7 +217,7 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                           ),
                           const SizedBox(height: 2),
                           const Text(
-                            'Past due agreed payments. Click the WhatsApp icon to send reminders.',
+                            'Past due agreed payments. Click the WhatsApp or Email icon to send reminders.',
                             style: TextStyle(color: Colors.red, fontSize: 11),
                           ),
                         ],
@@ -164,6 +237,8 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                   final currency = program?.currency ?? 'EUR';
                   final dueLocalDate = payment.dueDate.toLocal();
                   final isOverdue = dueLocalDate.isBefore(today);
+                  final dateStr = dueLocalDate.toString().split(' ')[0];
+                  final amountDueNow = payment.amountDue - payment.amountPaid;
 
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
@@ -223,14 +298,14 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               Text(
-                                'Due: ${(payment.amountDue - payment.amountPaid).toStringAsFixed(2)} $currency',
+                                'Due: ${amountDueNow.toStringAsFixed(2)} $currency',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                               Text(
-                                'Due Date: ${dueLocalDate.toString().split(' ')[0]}',
+                                'Due Date: $dateStr',
                                 style: TextStyle(
                                   color: isOverdue
                                       ? Colors.redAccent
@@ -248,25 +323,41 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                           IconButton(
                             icon: Icon(Icons.chat_outlined,
                                 color: Colors.green.shade600),
-                            tooltip: 'Send WhatsApp Reminder',
+                            tooltip: 'Remind via WhatsApp',
                             onPressed: () {
-                              final dueDay = DateTime(dueLocalDate.year, dueLocalDate.month, dueLocalDate.day);
-                              final daysUntilDue = dueDay.difference(today).inDays;
-
-                              final contractPdf = payment.enrollment?.contract?.signedPdfUrl ?? payment.enrollment?.contract?.pdfUrl;
-
-                              WhatsAppReminderService.sendReminder(
-                                context: context,
-                                phone: student?.phone,
-                                studentName: student?.name ?? 'Cursant',
-                                programName: program?.name ?? 'Program Mentorat',
-                                amount: payment.amountDue - payment.amountPaid,
-                                currency: currency,
-                                dueDateStr: dueLocalDate.toString().split(' ')[0],
-                                daysUntilDue: daysUntilDue,
-                                invoiceUrl: payment.invoiceUrl,
-                                invoiceNumber: payment.invoiceNumber,
-                                contractPdfUrl: contractPdf,
+                              _sendWhatsAppNotification(
+                                action: () => WhatsAppService.sendPaymentReminder(
+                                  phone: student?.phone ?? '',
+                                  name: student?.name ?? 'Cursant',
+                                  amount: amountDueNow,
+                                  dueDate: dateStr,
+                                ),
+                              );
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.email_outlined,
+                                color: Colors.blue),
+                            tooltip: 'Remind via Email',
+                            onPressed: () {
+                              if (student?.email == null ||
+                                  student!.email.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content:
+                                          Text('Student email is missing.')),
+                                );
+                                return;
+                              }
+                              _sendEmailNotification(
+                                recipientEmail: student.email,
+                                action: (service) =>
+                                    service.sendPaymentReminder(
+                                  email: student.email,
+                                  name: student.name,
+                                  amount: amountDueNow,
+                                  dueDate: dateStr,
+                                ),
                               );
                             },
                           ),

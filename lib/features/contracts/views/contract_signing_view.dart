@@ -14,6 +14,8 @@ import '../../../core/constants.dart';
 import '../../../core/services/frankfurter_service.dart';
 import '../../../core/services/discord_notification_service.dart';
 import '../../../core/services/email_service.dart';
+import '../../../core/services/whatsapp_service.dart';
+import '../../../main.dart';
 import '../../settings/controllers/business_settings_controller.dart';
 import '../../settings/services/business_settings_service.dart';
 
@@ -261,6 +263,88 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
       );
     } catch (_) {
       // Fallback silently if platform share isn't supported
+    }
+  }
+
+  Future<void> _sendContractViaWhatsApp(String contractId) async {
+    final link = '${AppConstants.clientPortalBaseUrl}$contractId';
+    final student = widget.enrollment.student;
+    try {
+      await WhatsAppService.sendContractLink(
+        phone: student?.phone ?? '',
+        name: student?.name ?? 'Cursant',
+        url: link,
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'Could not open WhatsApp. Ensure it is installed and the phone number is valid.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _sendContractViaEmail(String contractId) async {
+    final link = '${AppConstants.clientPortalBaseUrl}$contractId';
+    final student = widget.enrollment.student;
+    if (student == null || student.email.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Student email is missing.')),
+      );
+      return;
+    }
+
+    final settings =
+        ref.read(businessSettingsControllerProvider).asData?.value ??
+            ref.read(businessSettingsControllerProvider).value;
+    final envApiKey = ref.read(resendApiKeyProvider);
+    final effectiveKey =
+        envApiKey.isNotEmpty ? envApiKey : (settings?.resendApiKey ?? '');
+
+    if (effectiveKey.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Resend API key is not configured. Please set it in Business Settings or via --dart-define.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isGenerating = true);
+    try {
+      final emailService = EmailService(apiKey: effectiveKey);
+      await emailService.sendContractLink(
+        email: student.email,
+        name: student.name,
+        url: link,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Email sent successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send email: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isGenerating = false);
+      }
     }
   }
 
@@ -862,8 +946,42 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 14),
                     ),
-                    icon: const Icon(Icons.send),
-                    label: const Text('Trimite Contractul spre Semnare'),
+                    icon: const Icon(Icons.share),
+                    label: const Text('Share Signing Link'),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _sendContractViaWhatsApp(contract.id),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.green.shade800,
+                            side: BorderSide(color: Colors.green.shade600),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 12),
+                          ),
+                          icon: Icon(Icons.chat_outlined,
+                              size: 18, color: Colors.green.shade700),
+                          label: const Text('Send via WhatsApp'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _sendContractViaEmail(contract.id),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.indigo.shade800,
+                            side: BorderSide(color: Colors.indigo.shade400),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 12),
+                          ),
+                          icon: const Icon(Icons.email_outlined,
+                              size: 18, color: Colors.indigo),
+                          label: const Text('Send via Email'),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   Row(

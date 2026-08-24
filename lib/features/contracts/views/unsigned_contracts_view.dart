@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../controllers/contract_controller.dart';
-import '../models/contract_model.dart';
 import '../../../core/constants.dart';
 import '../../../core/services/whatsapp_reminder_service.dart';
 

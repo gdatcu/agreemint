@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,10 +9,12 @@ import '../controllers/payment_controller.dart';
 import '../models/payment_model.dart';
 import '../repositories/payment_repository.dart';
 import '../../../core/services/frankfurter_service.dart';
-import '../../../core/services/whatsapp_reminder_service.dart';
+import '../../../core/services/whatsapp_service.dart';
+import '../../../core/services/email_service.dart';
+import '../../../main.dart';
+import '../../settings/controllers/business_settings_controller.dart';
 import '../services/receipt_generator_service.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../core/services/invoice_storage_service.dart';
 import 'receipt_preview_dialog.dart';
 
 class PaymentTrackerView extends ConsumerStatefulWidget {
@@ -27,6 +28,75 @@ class PaymentTrackerView extends ConsumerStatefulWidget {
 
 class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
   double? _liveRate;
+  bool _isSendingEmail = false;
+
+  void _sendWhatsAppNotification({
+    required Future<void> Function() action,
+  }) async {
+    try {
+      await action();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'Could not open WhatsApp. Ensure it is installed and the phone number is valid.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _sendEmailNotification({
+    required String recipientEmail,
+    required Future<void> Function(EmailService service) action,
+  }) async {
+    final settings =
+        ref.read(businessSettingsControllerProvider).asData?.value ??
+            ref.read(businessSettingsControllerProvider).value;
+    final envApiKey = ref.read(resendApiKeyProvider);
+    final effectiveKey =
+        envApiKey.isNotEmpty ? envApiKey : (settings?.resendApiKey ?? '');
+
+    if (effectiveKey.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Resend API key is not configured. Please set it in Business Settings or via --dart-define.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSendingEmail = true);
+    try {
+      final emailService = EmailService(apiKey: effectiveKey);
+      await action(emailService);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Email sent successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send email: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSendingEmail = false);
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -173,6 +243,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
 
           return Column(
             children: [
+              if (_isSendingEmail) const LinearProgressIndicator(),
               // Refunded Contract Alert Banner
               if (isContractRefunded) ...[
                 Padding(
@@ -654,27 +725,45 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                   IconButton(
                                     icon: Icon(Icons.chat_outlined,
                                         size: 20, color: Colors.green.shade600),
-                                    tooltip: 'Send WhatsApp Reminder',
+                                    tooltip: 'Remind via WhatsApp',
                                     onPressed: () {
-                                      final now = DateTime.now();
-                                      final today = DateTime(now.year, now.month, now.day);
-                                      final dueDay = DateTime(payment.dueDate.year, payment.dueDate.month, payment.dueDate.day);
-                                      final daysUntilDue = dueDay.difference(today).inDays;
-
-                                      final contractPdf = widget.enrollment.contract?.signedPdfUrl ?? widget.enrollment.contract?.pdfUrl;
-
-                                      WhatsAppReminderService.sendReminder(
-                                        context: context,
-                                        phone: student?.phone,
-                                        studentName: student?.name ?? 'Cursant',
-                                        programName: program?.name ?? 'Program Mentorat',
-                                        amount: payment.amountDue - payment.amountPaid,
-                                        currency: currency,
-                                        dueDateStr: dateStr,
-                                        daysUntilDue: daysUntilDue,
-                                        invoiceUrl: payment.invoiceUrl,
-                                        invoiceNumber: payment.invoiceNumber,
-                                        contractPdfUrl: contractPdf,
+                                      _sendWhatsAppNotification(
+                                        action: () =>
+                                            WhatsAppService.sendPaymentReminder(
+                                          phone: student?.phone ?? '',
+                                          name: student?.name ?? 'Cursant',
+                                          amount: payment.amountDue -
+                                              payment.amountPaid,
+                                          dueDate: dateStr,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.email_outlined,
+                                        size: 20, color: Colors.blue),
+                                    tooltip: 'Remind via Email',
+                                    onPressed: () {
+                                      if (student?.email == null ||
+                                          student!.email.isEmpty) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content: Text(
+                                                  'Student email is missing.')),
+                                        );
+                                        return;
+                                      }
+                                      _sendEmailNotification(
+                                        recipientEmail: student.email,
+                                        action: (service) =>
+                                            service.sendPaymentReminder(
+                                          email: student.email,
+                                          name: student.name,
+                                          amount: payment.amountDue -
+                                              payment.amountPaid,
+                                          dueDate: dateStr,
+                                        ),
                                       );
                                     },
                                   ),
@@ -692,6 +781,49 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                         _showDeleteInstallmentDialog(context, ref, payment),
                                   ),
                                 ] else ...[
+                                  if (displayStatus == 'Paid') ...[
+                                    IconButton(
+                                      icon: Icon(Icons.chat_outlined,
+                                          size: 20, color: Colors.green.shade600),
+                                      tooltip: 'Send Receipt via WhatsApp',
+                                      onPressed: () {
+                                        _sendWhatsAppNotification(
+                                          action: () =>
+                                              WhatsAppService.sendPaymentReceipt(
+                                            phone: student?.phone ?? '',
+                                            name: student?.name ?? 'Cursant',
+                                            amount: effectivePaid,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.email_outlined,
+                                          size: 20, color: Colors.blue),
+                                      tooltip: 'Send Receipt via Email',
+                                      onPressed: () {
+                                        if (student?.email == null ||
+                                            student!.email.isEmpty) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                                content: Text(
+                                                    'Student email is missing.')),
+                                          );
+                                          return;
+                                        }
+                                        _sendEmailNotification(
+                                          recipientEmail: student.email,
+                                          action: (service) =>
+                                              service.sendPaymentReceipt(
+                                            email: student.email,
+                                            name: student.name,
+                                            amount: effectivePaid,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
                                   IconButton(
                                     icon: Icon(Icons.lock_outline,
                                         size: 20, color: Colors.grey.shade400),

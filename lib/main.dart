@@ -6,6 +6,9 @@ import 'package:agreemint/core/routing/app_router.dart';
 
 import 'package:agreemint/core/services/notification_service.dart';
 
+const resendApiKey = String.fromEnvironment('RESEND_API_KEY');
+final resendApiKeyProvider = Provider<String>((ref) => resendApiKey);
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 

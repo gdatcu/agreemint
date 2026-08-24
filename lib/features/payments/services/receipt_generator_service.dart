@@ -158,7 +158,7 @@ class ReceiptGeneratorService {
                               style: const pw.TextStyle(
                                   fontSize: 10, color: PdfColors.black),
                               children: [
-                                const pw.TextSpan(
+                                pw.TextSpan(
                                     text: 'Cursant / Student: ',
                                     style: pw.TextStyle(
                                         fontWeight: pw.FontWeight.bold)),
@@ -173,7 +173,7 @@ class ReceiptGeneratorService {
                               style: const pw.TextStyle(
                                   fontSize: 10, color: PdfColors.black),
                               children: [
-                                const pw.TextSpan(
+                                pw.TextSpan(
                                     text: 'Email: ',
                                     style: pw.TextStyle(
                                         fontWeight: pw.FontWeight.bold)),
@@ -190,7 +190,7 @@ class ReceiptGeneratorService {
                         style: const pw.TextStyle(
                             fontSize: 10, color: PdfColors.black),
                         children: [
-                          const pw.TextSpan(
+                          pw.TextSpan(
                               text: 'Program Mentorat / Program: ',
                               style: pw.TextStyle(
                                   fontWeight: pw.FontWeight.bold)),

@@ -36,7 +36,7 @@ final class AnalyticsSummaryControllerProvider
 }
 
 String _$analyticsSummaryControllerHash() =>
-    r'463071403dc4fc4e5b31aa5bde7c27fa10fcbfb2';
+    r'64bfc081fa06cac79c0d7dd6e743265900ba20ba';
 
 abstract class _$AnalyticsSummaryController
     extends $AsyncNotifier<AnalyticsSummary> {

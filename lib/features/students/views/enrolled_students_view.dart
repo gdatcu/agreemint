@@ -8,6 +8,7 @@ import '../../contracts/controllers/contract_controller.dart';
 import '../controllers/student_controller.dart';
 import '../models/enrollment_model.dart';
 import '../models/student_model.dart';
+import '../../../core/services/whatsapp_service.dart';
 import 'certificate_preview_dialog.dart';
 
 class EnrolledStudentsView extends ConsumerStatefulWidget {
@@ -745,6 +746,31 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                            context.go(
                                                '/programs/${widget.program.id}/students/payments',
                                                extra: enrollment);
+                                         },
+                                       ),
+                                       IconButton(
+                                         icon: Icon(Icons.chat_bubble_outline,
+                                             color: Colors.green.shade600),
+                                         tooltip: 'WhatsApp Follow-Up',
+                                         onPressed: () async {
+                                           try {
+                                             await WhatsAppService
+                                                 .sendGeneralFollowUp(
+                                               phone: student.phone ?? '',
+                                               name: student.name,
+                                             );
+                                           } catch (_) {
+                                             if (context.mounted) {
+                                               ScaffoldMessenger.of(context)
+                                                   .showSnackBar(
+                                                 const SnackBar(
+                                                   content: Text(
+                                                       'Could not open WhatsApp. Ensure it is installed and the phone number is valid.'),
+                                                   backgroundColor: Colors.red,
+                                                 ),
+                                               );
+                                             }
+                                           }
                                          },
                                        ),
                                        IconButton(
