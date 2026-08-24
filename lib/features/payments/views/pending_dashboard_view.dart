@@ -5,6 +5,7 @@ import '../../contracts/controllers/contract_controller.dart';
 import '../../contracts/views/unsigned_contracts_view.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/whatsapp_service.dart';
+import '../../../core/services/whatsapp_reminder_service.dart';
 import '../../../core/services/email_service.dart';
 import '../../../core/services/local_whatsapp_bot_service.dart';
 import '../../../core/constants.dart';
@@ -327,11 +328,24 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                             tooltip: 'Remind via WhatsApp',
                             onPressed: () {
                               final contract = payment.enrollment?.contract;
-                              final contractUrl = contract?.signedPdfUrl ??
-                                  contract?.pdfUrl ??
-                                  (contract?.id != null
-                                      ? '${AppConstants.clientPortalBaseUrl}${contract!.id}'
+                              final secureContractUrl = (contract?.id != null && contract!.id.isNotEmpty)
+                                  ? '${AppConstants.clientPortalBaseUrl}${contract.id}'
+                                  : (contract?.signedPdfUrl != null
+                                      ? WhatsAppReminderService.buildDocGatewayUrl(
+                                          rawPdfUrl: contract!.signedPdfUrl!,
+                                          studentPhone: student?.phone,
+                                          docTitle: 'Contract de Servicii Mentorat',
+                                        )
                                       : null);
+
+                              final secureInvoiceUrl = (payment.externalInvoiceUrl != null && payment.externalInvoiceUrl!.trim().isNotEmpty)
+                                  ? WhatsAppReminderService.buildDocGatewayUrl(
+                                      rawPdfUrl: payment.externalInvoiceUrl!,
+                                      studentPhone: student?.phone,
+                                      docTitle: 'Factură Fiscală SOLO ${payment.externalInvoiceNumber != null ? "#${payment.externalInvoiceNumber}" : ""}',
+                                    )
+                                  : null;
+
                               _sendWhatsAppNotification(
                                 action: () => WhatsAppService.sendPaymentReminder(
                                   phone: student?.phone ?? '',
@@ -339,8 +353,8 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                                   amount: amountDueNow,
                                   dueDate: dateStr,
                                   currency: currency,
-                                  contractUrl: contractUrl,
-                                  invoiceUrl: payment.externalInvoiceUrl,
+                                  contractUrl: secureContractUrl,
+                                  invoiceUrl: secureInvoiceUrl,
                                   invoiceNumber: payment.externalInvoiceNumber,
                                   programName: program?.name,
                                   dueDateTime: payment.dueDate,
@@ -363,11 +377,24 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                                 return;
                               }
                               final contract = payment.enrollment?.contract;
-                              final contractUrl = contract?.signedPdfUrl ??
-                                  contract?.pdfUrl ??
-                                  (contract?.id != null
-                                      ? '${AppConstants.clientPortalBaseUrl}${contract!.id}'
+                              final secureContractUrl = (contract?.id != null && contract!.id.isNotEmpty)
+                                  ? '${AppConstants.clientPortalBaseUrl}${contract.id}'
+                                  : (contract?.signedPdfUrl != null
+                                      ? WhatsAppReminderService.buildDocGatewayUrl(
+                                          rawPdfUrl: contract!.signedPdfUrl!,
+                                          studentPhone: student?.phone,
+                                          docTitle: 'Contract de Servicii Mentorat',
+                                        )
                                       : null);
+
+                              final secureInvoiceUrl = (payment.externalInvoiceUrl != null && payment.externalInvoiceUrl!.trim().isNotEmpty)
+                                  ? WhatsAppReminderService.buildDocGatewayUrl(
+                                      rawPdfUrl: payment.externalInvoiceUrl!,
+                                      studentPhone: student?.phone,
+                                      docTitle: 'Factură Fiscală SOLO ${payment.externalInvoiceNumber != null ? "#${payment.externalInvoiceNumber}" : ""}',
+                                    )
+                                  : null;
+
                               _sendEmailNotification(
                                 recipientEmail: student.email,
                                 action: (service) =>
@@ -377,10 +404,11 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                                   amount: amountDueNow,
                                   dueDate: dateStr,
                                   currency: currency,
-                                  contractUrl: contractUrl,
-                                  invoiceUrl: payment.externalInvoiceUrl,
+                                  contractUrl: secureContractUrl,
+                                  invoiceUrl: secureInvoiceUrl,
                                   invoiceNumber: payment.externalInvoiceNumber,
                                   programName: program?.name,
+                                  studentPhone: student?.phone,
                                   dueDateTime: payment.dueDate,
                                 ),
                               );

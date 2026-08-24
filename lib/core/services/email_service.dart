@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'whatsapp_reminder_service.dart';
 
 class EmailService {
   final String apiKey;
@@ -191,11 +192,13 @@ class EmailService {
     String? invoiceUrl,
     String? invoiceNumber,
     String? programName,
+    String? studentPhone,
     DateTime? dueDateTime,
   }) async {
     final subject = '💳 Memento Plată Tranșă - QualiAdept';
     final currentYear = DateTime.now().year;
     final relativeDueText = formatRelativeDueTextHtml(dueDate, dueDateTime);
+    final pin = WhatsAppReminderService.extractPinFromPhone(studentPhone);
 
     final hasContract = contractUrl != null && contractUrl.trim().isNotEmpty;
     final hasInvoice = invoiceUrl != null && invoiceUrl.trim().isNotEmpty;
@@ -245,10 +248,27 @@ class EmailService {
       directLinksList.add('• <strong>Factură:</strong> <a href="${invoiceUrl.trim()}" target="_blank" style="color: #16a34a;">${invoiceUrl.trim()}</a>');
     }
 
+    final securityInstructions = <String>[];
+    if (hasInvoice && studentPhone != null && studentPhone.trim().isNotEmpty) {
+      securityInstructions.add('• <strong>Factură Fiscală:</strong> La accesare, introduceți PIN-ul format din ultimele 4 cifre ale numărului dvs. de telefon (<strong>$pin</strong>).');
+    }
+    if (hasContract && contractUrl.trim().contains('/sign/')) {
+      securityInstructions.add('• <strong>Contract Mentorat:</strong> La deschiderea portalului, introduceți codul de securitate OTP expediat pe adresa dvs. de email.');
+    }
+
+    final securityBoxHtml = securityInstructions.isNotEmpty
+        ? '''
+        <div style="background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px 14px; margin-top: 14px; font-size: 11px; color: #475569; line-height: 1.6;">
+          🔒 <strong>Instrucțiuni de securitate pentru accesarea documentelor:</strong><br/>
+          ${securityInstructions.join('<br/>')}
+        </div>
+        '''
+        : '';
+
     final fallbackDirectLinksHtml = directLinksList.isNotEmpty
         ? '''
-        <div style="background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 10px 14px; margin-top: 14px; font-size: 11px; color: #64748b; line-height: 1.6; word-break: break-all;">
-          <strong>Linkuri directe pentru acces rapid:</strong><br/>
+        <div style="background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 10px 14px; margin-top: 10px; font-size: 11px; color: #64748b; line-height: 1.6; word-break: break-all;">
+          <strong>Linkuri directe:</strong><br/>
           ${directLinksList.join('<br/>')}
         </div>
         '''
@@ -258,9 +278,10 @@ class EmailService {
         ? '''
         <!-- Document Links Section -->
         <div style="margin: 24px 0 16px 0;">
-          <p style="font-size: 13px; font-weight: bold; color: #334155; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.5px;">📄 Documente & Detalii de Plată</p>
+          <p style="font-size: 13px; font-weight: bold; color: #334155; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.5px;">📄 Documente Securizate & Detalii de Plată</p>
           $contractHtml
           $invoiceHtml
+          $securityBoxHtml
           $fallbackDirectLinksHtml
         </div>
         '''

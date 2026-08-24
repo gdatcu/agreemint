@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.5.4 Release Notes
+# 🚀 Agreemint v1.5.5 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -21,15 +21,12 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.5.4
+## 🎨 What's New in Version 1.5.5
 
-- 🔗 **Direct Contract & Invoice Links in Payment Reminders (WhatsApp & Email)**:
-  - Both WhatsApp messages and Email notifications now automatically attach direct links to the **Signed Contract** (terms & agreement) and the **SOLO Fiscal Invoice** (if uploaded to Supabase).
-- ⏱️ **Smart Dynamic Due Date Phrasing**:
-  - Automatically calculates relative days between the notification dispatch date and the payment due date:
-    - *0 zile*: **„cu scadența astăzi, 24.08.2026”**
-    - *1 zi*: **„cu scadența mâine, 25.08.2026”**
-    - *X zile viitoare*: **„cu scadența în X zile (pe data de DD.MM.YYYY)”**
-    - *1 zi întârziere*: **„care a înregistrat scadența ieri, DD.MM.YYYY (restantă de 1 zi)”**
-    - *X zile întârziere*: **„care a depășit termenul de scadență cu X zile”**
-- 📦 **Version Bump**: Promoted release version to `v1.5.4` (`1.5.4+126`).
+- 🔐 **Agreemint Secure Document Gateway & OTP Protection**:
+  - Encapsulated raw storage links inside secured Agreemint Gateways:
+    - **Contract Signing / Review Portal (`#/sign/<id>`)**: Enforces 6-digit email OTP verification before granting access to contract terms and signed PDF download.
+    - **SOLO Invoice PIN Gateway (`#/view-doc`)**: Requires the student's 4-digit phone PIN (last 4 digits of phone number) to unlock, view, and download fiscal invoices.
+  - Added dedicated security instruction badges in both WhatsApp messages and Email notifications.
+- ⏱️ **Smart Dynamic Due Date Calculation**: Automatically phrases relative due dates (`astăzi`, `mâine`, `în X zile`, `restantă de X zile`).
+- 📦 **Version Bump**: Promoted release version to `v1.5.5` (`1.5.5+127`).

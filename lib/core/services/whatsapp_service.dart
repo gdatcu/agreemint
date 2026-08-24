@@ -1,4 +1,5 @@
 import 'package:url_launcher/url_launcher.dart';
+import 'whatsapp_reminder_service.dart';
 
 class WhatsAppService {
   /// Cleans the phone string:
@@ -88,10 +89,12 @@ class WhatsAppService {
     String? invoiceUrl,
     String? invoiceNumber,
     String? programName,
+    String? studentPhone,
     DateTime? dueDateTime,
   }) {
     final amountFormatted = '${amount.toStringAsFixed(2)} $currency';
     final dueText = formatRelativeDueText(dueDate, dueDateTime);
+    final pin = WhatsAppReminderService.extractPinFromPhone(studentPhone);
 
     final docsList = <String>[];
     if (contractUrl != null && contractUrl.trim().isNotEmpty) {
@@ -104,8 +107,18 @@ class WhatsAppService {
       docsList.add('• \u{1F9FE} *Factură Fiscală$invNumText:* ${invoiceUrl.trim()}');
     }
 
+    final securityNotes = <String>[];
+    if (invoiceUrl != null && invoiceUrl.trim().isNotEmpty && studentPhone != null && studentPhone.trim().isNotEmpty) {
+      securityNotes.add('🔐 *PIN Deblocare Factură:* Ultimele 4 cifre ale numărului tău de telefon (*$pin*)');
+    }
+    if (contractUrl != null && contractUrl.trim().isNotEmpty && contractUrl.contains('/sign/')) {
+      securityNotes.add('✉️ *Acces Securizat Contract:* Necesită validare prin cod OTP expediat pe email');
+    }
+
+    final securitySection = securityNotes.isNotEmpty ? '\n${securityNotes.join('\n')}' : '';
+
     final docsSection = docsList.isNotEmpty
-        ? '\n\n\u{1F4C4} *Documente & Detalii de Plată:*\n${docsList.join('\n')}'
+        ? '\n\n\u{1F4C4} *Documente Securizate & Detalii de Plată:*\n${docsList.join('\n')}$securitySection'
         : '';
 
     final progText = (programName != null && programName.trim().isNotEmpty)
@@ -142,6 +155,7 @@ class WhatsAppService {
       invoiceUrl: invoiceUrl,
       invoiceNumber: invoiceNumber,
       programName: programName,
+      studentPhone: phone,
       dueDateTime: dueDateTime,
     );
     await _launch(phone, message);

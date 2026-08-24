@@ -22,16 +22,18 @@ void main() {
         dueDate: '2026-08-24',
         currency: 'RON',
         contractUrl: 'https://agreemint.qualiadept.eu/#/sign/abc-123',
-        invoiceUrl: 'https://rlyfzvciozjkbouvnzft.supabase.co/storage/v1/object/public/invoices/inv_1.pdf',
+        invoiceUrl: 'https://agreemint.qualiadept.eu/#/view-doc?url=inv_1&pin=5678&title=Factura',
         invoiceNumber: '1024',
         programName: 'Flutter Masterclass',
+        studentPhone: '0712345678',
       );
 
       expect(msgWithLinks, contains('Salut *George Test*'));
       expect(msgWithLinks, contains('1000.00 RON'));
-      expect(msgWithLinks, contains('2026-08-24'));
       expect(msgWithLinks, contains('• ✍️ *Contract Semnat:* https://agreemint.qualiadept.eu/#/sign/abc-123'));
-      expect(msgWithLinks, contains('• 🧾 *Factură Fiscală (SOLO #1024):* https://rlyfzvciozjkbouvnzft.supabase.co/storage/v1/object/public/invoices/inv_1.pdf'));
+      expect(msgWithLinks, contains('• 🧾 *Factură Fiscală (SOLO #1024):* https://agreemint.qualiadept.eu/#/view-doc?url=inv_1&pin=5678&title=Factura'));
+      expect(msgWithLinks, contains('🔐 *PIN Deblocare Factură:* Ultimele 4 cifre ale numărului tău de telefon (*5678*)'));
+      expect(msgWithLinks, contains('✉️ *Acces Securizat Contract:* Necesită validare prin cod OTP expediat pe email'));
       expect(msgWithLinks, contains('Flutter Masterclass'));
     });
 

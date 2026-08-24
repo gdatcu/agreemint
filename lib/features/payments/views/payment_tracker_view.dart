@@ -10,6 +10,7 @@ import '../models/payment_model.dart';
 import '../repositories/payment_repository.dart';
 import '../../../core/services/frankfurter_service.dart';
 import '../../../core/services/whatsapp_service.dart';
+import '../../../core/services/whatsapp_reminder_service.dart';
 import '../../../core/services/email_service.dart';
 import '../../../core/constants.dart';
 import '../../../main.dart';
@@ -725,34 +726,47 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                         payment, index + 1, payments.length),
                                   ),
                                   IconButton(
-                                     icon: Icon(Icons.chat_outlined,
-                                         size: 20, color: Colors.green.shade600),
-                                     tooltip: 'Remind via WhatsApp',
-                                     onPressed: () {
-                                       final contract = widget.enrollment.contract;
-                                       final contractUrl = contract?.signedPdfUrl ??
-                                           contract?.pdfUrl ??
-                                           (contract?.id != null
-                                               ? '${AppConstants.clientPortalBaseUrl}${contract!.id}'
-                                               : null);
-                                       _sendWhatsAppNotification(
-                                         action: () =>
-                                             WhatsAppService.sendPaymentReminder(
-                                           phone: student?.phone ?? '',
-                                           name: student?.name ?? 'Cursant',
-                                           amount: payment.amountDue -
-                                               payment.amountPaid,
-                                           dueDate: dateStr,
-                                           currency: currency,
-                                           contractUrl: contractUrl,
-                                           invoiceUrl: payment.externalInvoiceUrl,
-                                           invoiceNumber: payment.externalInvoiceNumber,
-                                           programName: program?.name,
-                                           dueDateTime: payment.dueDate,
-                                         ),
-                                       );
-                                     },
-                                   ),
+                                    icon: Icon(Icons.chat_outlined,
+                                        size: 20, color: Colors.green.shade600),
+                                    tooltip: 'Remind via WhatsApp',
+                                    onPressed: () {
+                                      final contract = widget.enrollment.contract;
+                                      final secureContractUrl = (contract?.id != null && contract!.id.isNotEmpty)
+                                          ? '${AppConstants.clientPortalBaseUrl}${contract.id}'
+                                          : (contract?.signedPdfUrl != null
+                                              ? WhatsAppReminderService.buildDocGatewayUrl(
+                                                  rawPdfUrl: contract!.signedPdfUrl!,
+                                                  studentPhone: student?.phone,
+                                                  docTitle: 'Contract de Servicii Mentorat',
+                                                )
+                                              : null);
+
+                                      final secureInvoiceUrl = (payment.externalInvoiceUrl != null && payment.externalInvoiceUrl!.trim().isNotEmpty)
+                                          ? WhatsAppReminderService.buildDocGatewayUrl(
+                                              rawPdfUrl: payment.externalInvoiceUrl!,
+                                              studentPhone: student?.phone,
+                                              docTitle: 'Factură Fiscală SOLO ${payment.externalInvoiceNumber != null ? "#${payment.externalInvoiceNumber}" : ""}',
+                                            )
+                                          : null;
+
+                                      _sendWhatsAppNotification(
+                                        action: () =>
+                                            WhatsAppService.sendPaymentReminder(
+                                          phone: student?.phone ?? '',
+                                          name: student?.name ?? 'Cursant',
+                                          amount: payment.amountDue -
+                                              payment.amountPaid,
+                                          dueDate: dateStr,
+                                          currency: currency,
+                                          contractUrl: secureContractUrl,
+                                          invoiceUrl: secureInvoiceUrl,
+                                          invoiceNumber: payment.externalInvoiceNumber,
+                                          programName: program?.name,
+                                          dueDateTime: payment.dueDate,
+                                        ),
+                                      );
+                                    },
+                                  ),
                                    IconButton(
                                      icon: const Icon(Icons.email_outlined,
                                          size: 20, color: Colors.blue),
@@ -769,11 +783,24 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                          return;
                                        }
                                        final contract = widget.enrollment.contract;
-                                       final contractUrl = contract?.signedPdfUrl ??
-                                           contract?.pdfUrl ??
-                                           (contract?.id != null
-                                               ? '${AppConstants.clientPortalBaseUrl}${contract!.id}'
+                                       final secureContractUrl = (contract?.id != null && contract!.id.isNotEmpty)
+                                           ? '${AppConstants.clientPortalBaseUrl}${contract.id}'
+                                           : (contract?.signedPdfUrl != null
+                                               ? WhatsAppReminderService.buildDocGatewayUrl(
+                                                   rawPdfUrl: contract!.signedPdfUrl!,
+                                                   studentPhone: student?.phone,
+                                                   docTitle: 'Contract de Servicii Mentorat',
+                                                 )
                                                : null);
+
+                                       final secureInvoiceUrl = (payment.externalInvoiceUrl != null && payment.externalInvoiceUrl!.trim().isNotEmpty)
+                                           ? WhatsAppReminderService.buildDocGatewayUrl(
+                                               rawPdfUrl: payment.externalInvoiceUrl!,
+                                               studentPhone: student?.phone,
+                                               docTitle: 'Factură Fiscală SOLO ${payment.externalInvoiceNumber != null ? "#${payment.externalInvoiceNumber}" : ""}',
+                                             )
+                                           : null;
+
                                        _sendEmailNotification(
                                          recipientEmail: student.email,
                                          action: (service) =>
@@ -784,10 +811,11 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                                payment.amountPaid,
                                            dueDate: dateStr,
                                            currency: currency,
-                                           contractUrl: contractUrl,
-                                           invoiceUrl: payment.externalInvoiceUrl,
+                                           contractUrl: secureContractUrl,
+                                           invoiceUrl: secureInvoiceUrl,
                                            invoiceNumber: payment.externalInvoiceNumber,
                                            programName: program?.name,
+                                           studentPhone: student?.phone,
                                            dueDateTime: payment.dueDate,
                                          ),
                                        );
