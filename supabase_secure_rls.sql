@@ -233,6 +233,10 @@ CREATE POLICY "Mentors full access to business settings" ON public.business_sett
 -- ============================================================================
 CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
 
+-- Drop previous overloaded signatures to avoid PostgreSQL 42725 ambiguity error
+DROP FUNCTION IF EXISTS public.send_resend_email(TEXT, TEXT, TEXT, TEXT);
+DROP FUNCTION IF EXISTS public.send_resend_email(TEXT, TEXT, TEXT, TEXT, TEXT);
+
 CREATE OR REPLACE FUNCTION public.send_resend_email(
   p_to TEXT,
   p_subject TEXT,
