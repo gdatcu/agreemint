@@ -7,6 +7,7 @@ import '../../../core/services/notification_service.dart';
 import '../../../core/services/whatsapp_service.dart';
 import '../../../core/services/email_service.dart';
 import '../../../core/services/local_whatsapp_bot_service.dart';
+import '../../../core/constants.dart';
 import '../../../main.dart';
 import '../../settings/controllers/business_settings_controller.dart';
 import '../models/payment_model.dart';
@@ -325,6 +326,12 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                                 color: Colors.green.shade600),
                             tooltip: 'Remind via WhatsApp',
                             onPressed: () {
+                              final contract = payment.enrollment?.contract;
+                              final contractUrl = contract?.signedPdfUrl ??
+                                  contract?.pdfUrl ??
+                                  (contract?.id != null
+                                      ? '${AppConstants.clientPortalBaseUrl}${contract!.id}'
+                                      : null);
                               _sendWhatsAppNotification(
                                 action: () => WhatsAppService.sendPaymentReminder(
                                   phone: student?.phone ?? '',
@@ -332,6 +339,11 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                                   amount: amountDueNow,
                                   dueDate: dateStr,
                                   currency: currency,
+                                  contractUrl: contractUrl,
+                                  invoiceUrl: payment.externalInvoiceUrl,
+                                  invoiceNumber: payment.externalInvoiceNumber,
+                                  programName: program?.name,
+                                  dueDateTime: payment.dueDate,
                                 ),
                               );
                             },
@@ -350,6 +362,12 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                                 );
                                 return;
                               }
+                              final contract = payment.enrollment?.contract;
+                              final contractUrl = contract?.signedPdfUrl ??
+                                  contract?.pdfUrl ??
+                                  (contract?.id != null
+                                      ? '${AppConstants.clientPortalBaseUrl}${contract!.id}'
+                                      : null);
                               _sendEmailNotification(
                                 recipientEmail: student.email,
                                 action: (service) =>
@@ -359,6 +377,11 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                                   amount: amountDueNow,
                                   dueDate: dateStr,
                                   currency: currency,
+                                  contractUrl: contractUrl,
+                                  invoiceUrl: payment.externalInvoiceUrl,
+                                  invoiceNumber: payment.externalInvoiceNumber,
+                                  programName: program?.name,
+                                  dueDateTime: payment.dueDate,
                                 ),
                               );
                             },

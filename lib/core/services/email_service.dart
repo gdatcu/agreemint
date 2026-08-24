@@ -155,6 +155,31 @@ class EmailService {
     await _sendEmail(to: email, subject: subject, htmlBody: htmlBody);
   }
 
+  /// Calculează și formatează exprimarea temporală relativă a scadenței în HTML (astăzi, mâine, în X zile, restantă).
+  static String formatRelativeDueTextHtml(String dueDateStr, [DateTime? dueDateTime]) {
+    DateTime? parsed = dueDateTime ?? DateTime.tryParse(dueDateStr);
+    if (parsed == null) {
+      return 'cu scadența pe data de <strong>$dueDateStr</strong>';
+    }
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final targetDay = DateTime(parsed.year, parsed.month, parsed.day);
+    final diffDays = targetDay.difference(today).inDays;
+
+    if (diffDays == 0) {
+      return 'cu scadența <strong>astăzi, $dueDateStr</strong>';
+    } else if (diffDays == 1) {
+      return 'cu scadența <strong>mâine, $dueDateStr</strong>';
+    } else if (diffDays > 1) {
+      return 'cu scadența în <strong>$diffDays zile</strong> (pe data de <strong>$dueDateStr</strong>)';
+    } else if (diffDays == -1) {
+      return 'care a înregistrat scadența <strong>ieri, $dueDateStr</strong> (restantă de 1 zi)';
+    } else {
+      final overdueDays = -diffDays;
+      return 'care a depășit termenul de scadență cu <strong>$overdueDays zile</strong> (scadență inițială: <strong>$dueDateStr</strong>)';
+    }
+  }
+
   /// Trimite un memento de plată pentru o tranșă viitoare sau restantă prin email.
   Future<void> sendPaymentReminder({
     required String email,
@@ -162,9 +187,88 @@ class EmailService {
     required double amount,
     required String dueDate,
     String currency = 'RON',
+    String? contractUrl,
+    String? invoiceUrl,
+    String? invoiceNumber,
+    String? programName,
+    DateTime? dueDateTime,
   }) async {
     final subject = '💳 Memento Plată Tranșă - QualiAdept';
     final currentYear = DateTime.now().year;
+    final relativeDueText = formatRelativeDueTextHtml(dueDate, dueDateTime);
+
+    final hasContract = contractUrl != null && contractUrl.trim().isNotEmpty;
+    final hasInvoice = invoiceUrl != null && invoiceUrl.trim().isNotEmpty;
+    final hasDocs = hasContract || hasInvoice;
+
+    final contractHtml = hasContract
+        ? '''
+        <div style="margin-bottom: 12px; padding: 14px 16px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="vertical-align: middle;">
+                <div style="font-size: 14px; font-weight: bold; color: #1e3a8a;">✍️ Contract Semnat & Termeni Agreați</div>
+                <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Consultă clauzele contractuale și graficul de plăți agreat</div>
+              </td>
+              <td style="text-align: right; vertical-align: middle; padding-left: 12px;">
+                <a href="${contractUrl.trim()}" target="_blank" style="display: inline-block; background-color: #1e3a8a; color: #ffffff; text-decoration: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: bold; white-space: nowrap;">Vizualizează Contract ↗</a>
+              </td>
+            </tr>
+          </table>
+        </div>
+        '''
+        : '';
+
+    final invoiceHtml = hasInvoice
+        ? '''
+        <div style="margin-bottom: 12px; padding: 14px 16px; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="vertical-align: middle;">
+                <div style="font-size: 14px; font-weight: bold; color: #166534;">🧾 Factură Fiscală ${invoiceNumber != null && invoiceNumber.trim().isNotEmpty ? "(SOLO #$invoiceNumber)" : "(SOLO)"}</div>
+                <div style="font-size: 12px; color: #15803d; margin-top: 2px;">Conține datele complete de facturare și contul bancar IBAN</div>
+              </td>
+              <td style="text-align: right; vertical-align: middle; padding-left: 12px;">
+                <a href="${invoiceUrl.trim()}" target="_blank" style="display: inline-block; background-color: #16a34a; color: #ffffff; text-decoration: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: bold; white-space: nowrap;">Descarcă Factura ↗</a>
+              </td>
+            </tr>
+          </table>
+        </div>
+        '''
+        : '';
+
+    final directLinksList = <String>[];
+    if (hasContract) {
+      directLinksList.add('• <strong>Contract:</strong> <a href="${contractUrl.trim()}" target="_blank" style="color: #1e3a8a;">${contractUrl.trim()}</a>');
+    }
+    if (hasInvoice) {
+      directLinksList.add('• <strong>Factură:</strong> <a href="${invoiceUrl.trim()}" target="_blank" style="color: #16a34a;">${invoiceUrl.trim()}</a>');
+    }
+
+    final fallbackDirectLinksHtml = directLinksList.isNotEmpty
+        ? '''
+        <div style="background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 10px 14px; margin-top: 14px; font-size: 11px; color: #64748b; line-height: 1.6; word-break: break-all;">
+          <strong>Linkuri directe pentru acces rapid:</strong><br/>
+          ${directLinksList.join('<br/>')}
+        </div>
+        '''
+        : '';
+
+    final docsSection = hasDocs
+        ? '''
+        <!-- Document Links Section -->
+        <div style="margin: 24px 0 16px 0;">
+          <p style="font-size: 13px; font-weight: bold; color: #334155; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.5px;">📄 Documente & Detalii de Plată</p>
+          $contractHtml
+          $invoiceHtml
+          $fallbackDirectLinksHtml
+        </div>
+        '''
+        : '';
+
+    final progText = (programName != null && programName.trim().isNotEmpty)
+        ? ' pentru programul tău de mentorat (<strong>$programName</strong>)'
+        : ' pentru programul tău de mentorat';
 
     final htmlBody = '''
       <div style="font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 28px 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; color: #1e293b;">
@@ -176,7 +280,7 @@ class EmailService {
         <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-bottom: 24px;" />
 
         <p style="font-size: 15px; line-height: 1.6; margin: 0 0 12px 0;">Salut <strong>$name</strong>,</p>
-        <p style="font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">Îți transmitem un memento prietenos referitor la următoarea tranșă de plată pentru programul tău de mentorat:</p>
+        <p style="font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">Îți transmitem un memento prietenos referitor la următoarea tranșă de plată$progText, $relativeDueText:</p>
 
         <!-- Payment Details Card -->
         <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 18px; margin: 20px 0;">
@@ -192,7 +296,9 @@ class EmailService {
           </table>
         </div>
 
-        <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin: 20px 0 0 0;">Dacă ai nevoie de detalii suplimentare sau factură emisă pe persoană juridică, te rugăm să ne răspunzi direct la acest mesaj.</p>
+        $docsSection
+
+        <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin: 20px 0 0 0;">Dacă ai nevoie de detalii suplimentare sau asistență, te rugăm să ne răspunzi direct la acest mesaj.</p>
 
         <!-- Footer -->
         <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 24px 0 16px 0;" />
@@ -212,9 +318,18 @@ class EmailService {
     required String name,
     required double amount,
     String currency = 'RON',
+    String? receiptUrl,
   }) async {
     final subject = '🎉 Confirmare Plată Primită - QualiAdept';
     final currentYear = DateTime.now().year;
+
+    final receiptSection = (receiptUrl != null && receiptUrl.trim().isNotEmpty)
+        ? '''
+        <div style="margin: 20px 0; text-align: center;">
+          <a href="${receiptUrl.trim()}" target="_blank" style="display: inline-block; background-color: #16a34a; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: bold;">🧾 Descarcă Chitanța / Dovada Plății (PDF) ↗</a>
+        </div>
+        '''
+        : '';
 
     final htmlBody = '''
       <div style="font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 28px 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; color: #1e293b;">
@@ -241,6 +356,8 @@ class EmailService {
             </tr>
           </table>
         </div>
+
+        $receiptSection
 
         <p style="font-size: 14px; line-height: 1.6; margin: 0;">Să avem o sesiune excelentă și mult succes în continuare! 🚀</p>
 

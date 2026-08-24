@@ -44,5 +44,26 @@ void main() {
         throwsA(isA<Exception>()),
       );
     });
+
+    test('formatRelativeDueTextHtml formats today, tomorrow, future days, yesterday, and overdue', () {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final tomorrow = today.add(const Duration(days: 1));
+      final inThreeDays = today.add(const Duration(days: 3));
+      final yesterday = today.subtract(const Duration(days: 1));
+      final fourDaysAgo = today.subtract(const Duration(days: 4));
+
+      final todayStr = today.toIso8601String().split('T')[0];
+      final tomorrowStr = tomorrow.toIso8601String().split('T')[0];
+      final inThreeDaysStr = inThreeDays.toIso8601String().split('T')[0];
+      final yesterdayStr = yesterday.toIso8601String().split('T')[0];
+      final fourDaysAgoStr = fourDaysAgo.toIso8601String().split('T')[0];
+
+      expect(EmailService.formatRelativeDueTextHtml(todayStr, today), contains('scadența <strong>astăzi'));
+      expect(EmailService.formatRelativeDueTextHtml(tomorrowStr, tomorrow), contains('scadența <strong>mâine'));
+      expect(EmailService.formatRelativeDueTextHtml(inThreeDaysStr, inThreeDays), contains('scadența în <strong>3 zile</strong>'));
+      expect(EmailService.formatRelativeDueTextHtml(yesterdayStr, yesterday), contains('scadența <strong>ieri'));
+      expect(EmailService.formatRelativeDueTextHtml(fourDaysAgoStr, fourDaysAgo), contains('depășit termenul de scadență cu <strong>4 zile</strong>'));
+    });
   });
 }

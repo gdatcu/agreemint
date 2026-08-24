@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.5.3 Release Notes
+# 🚀 Agreemint v1.5.4 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -21,8 +21,15 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.5.3
+## 🎨 What's New in Version 1.5.4
 
-- 📋 **Native Text Selection & Copy Support Across the Entire App**:
-  - Wrapped all primary views and shells in `SelectionArea`, enabling cursor highlighting and copying (`Ctrl + C` / Right-click Copy) for student names, emails, phone numbers, prospect messages/notes, contract amounts, dates, and IDs anywhere in the web & mobile application.
-- 📦 **Version Bump**: Promoted release version to `v1.5.3` (`1.5.3+125`).
+- 🔗 **Direct Contract & Invoice Links in Payment Reminders (WhatsApp & Email)**:
+  - Both WhatsApp messages and Email notifications now automatically attach direct links to the **Signed Contract** (terms & agreement) and the **SOLO Fiscal Invoice** (if uploaded to Supabase).
+- ⏱️ **Smart Dynamic Due Date Phrasing**:
+  - Automatically calculates relative days between the notification dispatch date and the payment due date:
+    - *0 zile*: **„cu scadența astăzi, 24.08.2026”**
+    - *1 zi*: **„cu scadența mâine, 25.08.2026”**
+    - *X zile viitoare*: **„cu scadența în X zile (pe data de DD.MM.YYYY)”**
+    - *1 zi întârziere*: **„care a înregistrat scadența ieri, DD.MM.YYYY (restantă de 1 zi)”**
+    - *X zile întârziere*: **„care a depășit termenul de scadență cu X zile”**
+- 📦 **Version Bump**: Promoted release version to `v1.5.4` (`1.5.4+126`).

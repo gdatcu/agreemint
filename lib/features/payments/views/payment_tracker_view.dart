@@ -11,6 +11,7 @@ import '../repositories/payment_repository.dart';
 import '../../../core/services/frankfurter_service.dart';
 import '../../../core/services/whatsapp_service.dart';
 import '../../../core/services/email_service.dart';
+import '../../../core/constants.dart';
 import '../../../main.dart';
 import '../../settings/controllers/business_settings_controller.dart';
 import '../services/receipt_generator_service.dart';
@@ -724,52 +725,74 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                         payment, index + 1, payments.length),
                                   ),
                                   IconButton(
-                                    icon: Icon(Icons.chat_outlined,
-                                        size: 20, color: Colors.green.shade600),
-                                    tooltip: 'Remind via WhatsApp',
-                                    onPressed: () {
-                                      _sendWhatsAppNotification(
-                                        action: () =>
-                                            WhatsAppService.sendPaymentReminder(
-                                          phone: student?.phone ?? '',
-                                          name: student?.name ?? 'Cursant',
-                                          amount: payment.amountDue -
-                                              payment.amountPaid,
-                                          dueDate: dateStr,
-                                          currency: currency,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.email_outlined,
-                                        size: 20, color: Colors.blue),
-                                    tooltip: 'Remind via Email',
-                                    onPressed: () {
-                                      if (student?.email == null ||
-                                          student!.email.isEmpty) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                              content: Text(
-                                                  'Student email is missing.')),
-                                        );
-                                        return;
-                                      }
-                                      _sendEmailNotification(
-                                        recipientEmail: student.email,
-                                        action: (service) =>
-                                            service.sendPaymentReminder(
-                                          email: student.email,
-                                          name: student.name,
-                                          amount: payment.amountDue -
-                                              payment.amountPaid,
-                                          dueDate: dateStr,
-                                          currency: currency,
-                                        ),
-                                      );
-                                    },
-                                  ),
+                                     icon: Icon(Icons.chat_outlined,
+                                         size: 20, color: Colors.green.shade600),
+                                     tooltip: 'Remind via WhatsApp',
+                                     onPressed: () {
+                                       final contract = widget.enrollment.contract;
+                                       final contractUrl = contract?.signedPdfUrl ??
+                                           contract?.pdfUrl ??
+                                           (contract?.id != null
+                                               ? '${AppConstants.clientPortalBaseUrl}${contract!.id}'
+                                               : null);
+                                       _sendWhatsAppNotification(
+                                         action: () =>
+                                             WhatsAppService.sendPaymentReminder(
+                                           phone: student?.phone ?? '',
+                                           name: student?.name ?? 'Cursant',
+                                           amount: payment.amountDue -
+                                               payment.amountPaid,
+                                           dueDate: dateStr,
+                                           currency: currency,
+                                           contractUrl: contractUrl,
+                                           invoiceUrl: payment.externalInvoiceUrl,
+                                           invoiceNumber: payment.externalInvoiceNumber,
+                                           programName: program?.name,
+                                           dueDateTime: payment.dueDate,
+                                         ),
+                                       );
+                                     },
+                                   ),
+                                   IconButton(
+                                     icon: const Icon(Icons.email_outlined,
+                                         size: 20, color: Colors.blue),
+                                     tooltip: 'Remind via Email',
+                                     onPressed: () {
+                                       if (student?.email == null ||
+                                           student!.email.isEmpty) {
+                                         ScaffoldMessenger.of(context)
+                                             .showSnackBar(
+                                           const SnackBar(
+                                               content: Text(
+                                                   'Student email is missing.')),
+                                         );
+                                         return;
+                                       }
+                                       final contract = widget.enrollment.contract;
+                                       final contractUrl = contract?.signedPdfUrl ??
+                                           contract?.pdfUrl ??
+                                           (contract?.id != null
+                                               ? '${AppConstants.clientPortalBaseUrl}${contract!.id}'
+                                               : null);
+                                       _sendEmailNotification(
+                                         recipientEmail: student.email,
+                                         action: (service) =>
+                                             service.sendPaymentReminder(
+                                           email: student.email,
+                                           name: student.name,
+                                           amount: payment.amountDue -
+                                               payment.amountPaid,
+                                           dueDate: dateStr,
+                                           currency: currency,
+                                           contractUrl: contractUrl,
+                                           invoiceUrl: payment.externalInvoiceUrl,
+                                           invoiceNumber: payment.externalInvoiceNumber,
+                                           programName: program?.name,
+                                           dueDateTime: payment.dueDate,
+                                         ),
+                                       );
+                                     },
+                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.edit_outlined, size: 20),
                                     tooltip: 'Edit / Record Payment',
@@ -797,6 +820,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                             name: student?.name ?? 'Cursant',
                                             amount: effectivePaid,
                                             currency: currency,
+                                            receiptUrl: payment.receiptUrl,
                                           ),
                                         );
                                       },
@@ -824,6 +848,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                             name: student.name,
                                             amount: effectivePaid,
                                             currency: currency,
+                                            receiptUrl: payment.receiptUrl,
                                           ),
                                         );
                                       },
