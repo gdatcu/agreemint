@@ -49,9 +49,9 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
     final settings =
         ref.read(businessSettingsControllerProvider).asData?.value ??
             ref.read(businessSettingsControllerProvider).value;
-    final envApiKey = ref.read(resendApiKeyProvider);
-    final effectiveKey =
-        envApiKey.isNotEmpty ? envApiKey : (settings?.resendApiKey ?? '');
+    final dbKey = settings?.resendApiKey?.trim() ?? '';
+    final envApiKey = ref.read(resendApiKeyProvider).trim();
+    final effectiveKey = dbKey.isNotEmpty ? dbKey : envApiKey;
 
     if (effectiveKey.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(

@@ -100,25 +100,55 @@ class EmailService {
     required String name,
     required String url,
     String? programName,
+    int? contractNumber,
   }) async {
     final subject = '✍️ Contract de Mentorat QualiAdept - Semnare Electronică';
-    final progText = (programName != null && programName.isNotEmpty)
-        ? ' pentru programul <strong>$programName</strong>'
-        : '';
+    final currentYear = DateTime.now().year;
+    final contractNumStr = contractNumber != null ? '#$contractNumber' : '';
+
     final htmlBody = '''
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; color: #333;">
-        <h2 style="color: #1565c0; margin-top: 0;">✍️ Contract Mentorat QualiAdept</h2>
-        <p style="font-size: 15px;">Salut <strong>$name</strong>,</p>
-        <p style="font-size: 15px;">Contractul tău de servicii$progText a fost generat și semnat de mentor. Când ai un moment disponibil, te rugăm să accesezi linkul de mai jos pentru a revizui documentul și a aplica semnătura ta electronică:</p>
-        <div style="text-align: center; margin: 25px 0;">
-          <a href="$url" style="background-color: #1565c0; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px;">
-            📄 Revizuiește și Semnează Contractul
+      <div style="font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 28px 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; color: #1e293b;">
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="color: #1e3a8a; margin: 0; font-size: 22px; font-weight: bold; letter-spacing: 0.5px;">QualiAdept Mentorship</h2>
+          <p style="color: #64748b; font-size: 13px; margin: 6px 0 0 0; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Semnare Contract Digital</p>
+        </div>
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-bottom: 24px;" />
+
+        <!-- Salutation & Message -->
+        <p style="font-size: 15px; line-height: 1.6; margin: 0 0 12px 0;">Salut <strong>$name</strong>,</p>
+        <p style="font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">Contractul tău de servicii pentru programul de mentorat a fost generat și semnat de mentor. Când ai un moment disponibil, te rugăm să accesezi portalul securizat pentru a revizui documentul și a aplica semnătura ta electronică:</p>
+
+        <!-- Contract Details Box -->
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13.5px;">
+            ${contractNumStr.isNotEmpty ? '<tr><td style="padding: 5px 0; color: #64748b; font-weight: 500;">Număr Contract:</td><td style="padding: 5px 0; font-weight: 600; color: #0f172a; text-align: right;">$contractNumStr</td></tr>' : ''}
+            ${(programName != null && programName.isNotEmpty) ? '<tr><td style="padding: 5px 0; color: #64748b; font-weight: 500;">Program:</td><td style="padding: 5px 0; font-weight: 600; color: #0f172a; text-align: right;">$programName</td></tr>' : ''}
+            <tr><td style="padding: 5px 0; color: #64748b; font-weight: 500;">Status Document:</td><td style="padding: 5px 0; font-weight: 600; color: #2563eb; text-align: right;">În așteptarea semnăturii tale</td></tr>
+          </table>
+        </div>
+
+        <!-- Action Button -->
+        <div style="text-align: center; margin: 28px 0;">
+          <a href="$url" style="background-color: #1d4ed8; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 15px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+            ✍️ Revizuiește și Semnează Contractul
           </a>
         </div>
-        <p style="font-size: 13px; color: #666;">Sau deschide acest link direct în browser:<br/><a href="$url" style="color: #1565c0;">$url</a></p>
-        <p style="font-size: 14px;">Dacă ai orice întrebare, suntem la dispoziția ta!</p>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;"/>
-        <p style="font-size: 12px; color: #888; text-align: center;">Agreemint Realtime Notification System • QualiAdept Community</p>
+
+        <!-- Direct Link Box -->
+        <p style="font-size: 12.5px; color: #64748b; margin: 0 0 6px 0;">Sau accesează linkul direct în browser:</p>
+        <div style="background-color: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0; word-break: break-all; font-size: 12px; color: #2563eb;">
+          <a href="$url" style="color: #2563eb; text-decoration: none;">$url</a>
+        </div>
+
+        <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin: 20px 0 0 0; font-style: italic;">Dacă ai orice întrebare legată de contract sau program, suntem cu drag la dispoziția ta.</p>
+
+        <!-- Footer -->
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 24px 0 16px 0;" />
+        <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0; line-height: 1.5;">
+          DATCU GEORGE-CRISTIAN PFA / QualiAdept © $currentYear. Toate drepturile rezervate.<br/>
+          Agreemint Realtime Notification System • QualiAdept Community
+        </p>
       </div>
     ''';
 
@@ -134,24 +164,42 @@ class EmailService {
     String currency = 'RON',
   }) async {
     final subject = '💳 Memento Plată Tranșă - QualiAdept';
+    final currentYear = DateTime.now().year;
+
     final htmlBody = '''
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; color: #333;">
-        <h2 style="color: #e65100; margin-top: 0;">💳 Memento Plată Tranșă</h2>
-        <p style="font-size: 15px;">Salut <strong>$name</strong>,</p>
-        <p style="font-size: 15px;">Îți transmitem un memento prietenos referitor la următoarea tranșă de plată pentru programul de mentorat:</p>
-        <table style="width: 100%; border-collapse: collapse; margin: 20px 0; background-color: #fafafa; border-radius: 6px; border: 1px solid #eee;">
-          <tr>
-            <td style="padding: 12px; color: #555; font-weight: bold;">Sumă de Plată:</td>
-            <td style="padding: 12px; font-weight: bold; font-size: 16px; color: #e65100;">${amount.toStringAsFixed(2)} $currency</td>
-          </tr>
-          <tr>
-            <td style="padding: 12px; color: #555; font-weight: bold;">Dată Scadență:</td>
-            <td style="padding: 12px; font-weight: bold; color: #333;">$dueDate</td>
-          </tr>
-        </table>
-        <p style="font-size: 14px;">Dacă ai nevoie de datele de facturare sau detalii suplimentare, te rugăm să ne răspunzi la acest mesaj.</p>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;"/>
-        <p style="font-size: 12px; color: #888; text-align: center;">Agreemint Realtime Notification System • QualiAdept Community</p>
+      <div style="font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 28px 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; color: #1e293b;">
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="color: #1e3a8a; margin: 0; font-size: 22px; font-weight: bold; letter-spacing: 0.5px;">QualiAdept Mentorship</h2>
+          <p style="color: #d97706; font-size: 13px; margin: 6px 0 0 0; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Înștiințare Plată Tranșă</p>
+        </div>
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-bottom: 24px;" />
+
+        <p style="font-size: 15px; line-height: 1.6; margin: 0 0 12px 0;">Salut <strong>$name</strong>,</p>
+        <p style="font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">Îți transmitem un memento prietenos referitor la următoarea tranșă de plată pentru programul tău de mentorat:</p>
+
+        <!-- Payment Details Card -->
+        <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 18px; margin: 20px 0;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <tr>
+              <td style="padding: 6px 0; color: #92400e; font-weight: 500;">Sumă de Plată:</td>
+              <td style="padding: 6px 0; font-weight: 800; font-size: 18px; color: #b45309; text-align: right;">${amount.toStringAsFixed(2)} $currency</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #92400e; font-weight: 500;">Dată Scadență:</td>
+              <td style="padding: 6px 0; font-weight: 600; color: #78350f; text-align: right;">$dueDate</td>
+            </tr>
+          </table>
+        </div>
+
+        <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin: 20px 0 0 0;">Dacă ai nevoie de detalii suplimentare sau factură emisă pe persoană juridică, te rugăm să ne răspunzi direct la acest mesaj.</p>
+
+        <!-- Footer -->
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 24px 0 16px 0;" />
+        <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0; line-height: 1.5;">
+          DATCU GEORGE-CRISTIAN PFA / QualiAdept © $currentYear. Toate drepturile rezervate.<br/>
+          Agreemint Realtime Notification System • QualiAdept Community
+        </p>
       </div>
     ''';
 
@@ -166,14 +214,42 @@ class EmailService {
     String currency = 'RON',
   }) async {
     final subject = '🎉 Confirmare Plată Primită - QualiAdept';
+    final currentYear = DateTime.now().year;
+
     final htmlBody = '''
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; color: #333;">
-        <h2 style="color: #2e7d32; margin-top: 0;">🎉 Plată Înregistrată cu Succes!</h2>
-        <p style="font-size: 15px;">Salut <strong>$name</strong>,</p>
-        <p style="font-size: 15px;">Confirmăm primirea plății tale în valoare de <strong>${amount.toStringAsFixed(2)} $currency</strong>. Îți mulțumim pentru promptitudine!</p>
-        <p style="font-size: 15px;">Să avem o sesiune excelentă în continuare! 🚀</p>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;"/>
-        <p style="font-size: 12px; color: #888; text-align: center;">Agreemint Realtime Notification System • QualiAdept Community</p>
+      <div style="font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 28px 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; color: #1e293b;">
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="color: #1e3a8a; margin: 0; font-size: 22px; font-weight: bold; letter-spacing: 0.5px;">QualiAdept Mentorship</h2>
+          <p style="color: #16a34a; font-size: 13px; margin: 6px 0 0 0; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Confirmare Plată Înregistrată</p>
+        </div>
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-bottom: 24px;" />
+
+        <p style="font-size: 15px; line-height: 1.6; margin: 0 0 12px 0;">Salut <strong>$name</strong>,</p>
+        <p style="font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">Confirmăm cu succes înregistrarea plății tale pentru programul de mentorat. Îți mulțumim pentru promptitudine!</p>
+
+        <!-- Receipt Box -->
+        <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 18px; margin: 20px 0;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <tr>
+              <td style="padding: 6px 0; color: #166534; font-weight: 500;">Sumă Încasată:</td>
+              <td style="padding: 6px 0; font-weight: 800; font-size: 18px; color: #15803d; text-align: right;">${amount.toStringAsFixed(2)} $currency</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #166534; font-weight: 500;">Status Tranzacție:</td>
+              <td style="padding: 6px 0; font-weight: 600; color: #166534; text-align: right;">Confirmată ✅</td>
+            </tr>
+          </table>
+        </div>
+
+        <p style="font-size: 14px; line-height: 1.6; margin: 0;">Să avem o sesiune excelentă și mult succes în continuare! 🚀</p>
+
+        <!-- Footer -->
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 24px 0 16px 0;" />
+        <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0; line-height: 1.5;">
+          DATCU GEORGE-CRISTIAN PFA / QualiAdept © $currentYear. Toate drepturile rezervate.<br/>
+          Agreemint Realtime Notification System • QualiAdept Community
+        </p>
       </div>
     ''';
 
@@ -224,24 +300,46 @@ class EmailService {
 
     final apiKey = resendApiKey?.trim();
     final subject = '✍️ Contract Semnat de $studentName (Contract #$contractNumber)';
+    final currentYear = DateTime.now().year;
+    final now = DateTime.now();
+    final dateStr = '${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+
     final htmlContent = '''
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px;">
-          <h2 style="color: #2e7d32; margin-top: 0;">🎉 Contract Semnat cu Succes!</h2>
-          <p style="font-size: 15px;">Cursantul <strong>$studentName</strong> a semnat contractul de mentorat.</p>
-          <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
-            <tr><td style="padding: 6px 0; color: #666;"><strong>Contract Nr.:</strong></td><td>#$contractNumber</td></tr>
-            <tr><td style="padding: 6px 0; color: #666;"><strong>CNP / CUI:</strong></td><td>${studentCnp.isNotEmpty ? studentCnp : '-'}</td></tr>
-            <tr><td style="padding: 6px 0; color: #666;"><strong>Program:</strong></td><td>$programName</td></tr>
-            <tr><td style="padding: 6px 0; color: #666;"><strong>Dată Semnare:</strong></td><td>${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().year} ${DateTime.now().hour}:${DateTime.now().minute}</td></tr>
+      <div style="font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding: 28px 24px; color: #1e293b; max-width: 560px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="color: #1e3a8a; margin: 0; font-size: 22px; font-weight: bold; letter-spacing: 0.5px;">QualiAdept Mentorship</h2>
+          <p style="color: #16a34a; font-size: 13px; margin: 6px 0 0 0; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Notificare Semnare Contract</p>
+        </div>
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-bottom: 24px;" />
+
+        <p style="font-size: 15px; line-height: 1.6; margin: 0 0 16px 0;">Cursantul <strong>$studentName</strong> a finalizat semnarea electronică a contractului de mentorat.</p>
+
+        <!-- Details Box -->
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13.5px;">
+            <tr><td style="padding: 6px 0; color: #64748b; font-weight: 500;">Contract Nr.:</td><td style="padding: 6px 0; font-weight: 700; color: #0f172a; text-align: right;">#$contractNumber</td></tr>
+            <tr><td style="padding: 6px 0; color: #64748b; font-weight: 500;">CNP / CUI Cursant:</td><td style="padding: 6px 0; font-weight: 600; color: #0f172a; text-align: right;">${studentCnp.isNotEmpty ? studentCnp : '-'}</td></tr>
+            <tr><td style="padding: 6px 0; color: #64748b; font-weight: 500;">Program:</td><td style="padding: 6px 0; font-weight: 600; color: #0f172a; text-align: right;">$programName</td></tr>
+            <tr><td style="padding: 6px 0; color: #64748b; font-weight: 500;">Dată Semnare:</td><td style="padding: 6px 0; font-weight: 600; color: #0f172a; text-align: right;">$dateStr</td></tr>
           </table>
-          <br/>
-          <a href="$signedPdfUrl" style="background-color: #2e7d32; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+        </div>
+
+        <!-- Action Button -->
+        <div style="text-align: center; margin: 28px 0;">
+          <a href="$signedPdfUrl" style="background-color: #16a34a; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 15px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
             📄 Vizualizează Contractul PDF Semnat
           </a>
-          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;"/>
-          <p style="font-size: 12px; color: #888; text-align: center;">Agreemint Realtime Notification System • QualiAdept</p>
         </div>
-      ''';
+
+        <!-- Footer -->
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 24px 0 16px 0;" />
+        <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0; line-height: 1.5;">
+          DATCU GEORGE-CRISTIAN PFA / QualiAdept © $currentYear. Toate drepturile rezervate.<br/>
+          Agreemint Realtime Notification System • QualiAdept Community
+        </p>
+      </div>
+    ''';
 
     try {
       final service = EmailService(apiKey: apiKey ?? '');
@@ -264,11 +362,20 @@ class EmailService {
     }
 
     final apiKey = resendApiKey?.trim();
+    final currentYear = DateTime.now().year;
     final htmlContent = '''
-      <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-        <h2 style="color: #1565c0;">✅ Test Notificare Email Reușit!</h2>
-        <p>Notificările prin email pentru contracte semnate sunt configurate activ în Agreemint.</p>
-        <p style="font-size: 12px; color: #777;">Trimis prin Resend la ora ${DateTime.now().toString()}</p>
+      <div style="font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; padding: 28px 24px; color: #1e293b; max-width: 560px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="color: #1e3a8a; margin: 0; font-size: 22px; font-weight: bold; letter-spacing: 0.5px;">QualiAdept Mentorship</h2>
+          <p style="color: #2563eb; font-size: 13px; margin: 6px 0 0 0; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Test Notificare Configurare</p>
+        </div>
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-bottom: 24px;" />
+        <p style="font-size: 15px; line-height: 1.6;">✅ <strong>Test Reușit!</strong> Notificările prin email pentru contracte semnate și linkuri de semnare sunt configurate activ și funcționează optim în Agreemint.</p>
+        <p style="font-size: 12px; color: #64748b;">Trimis prin Resend la ${DateTime.now().toString().split('.')[0]}</p>
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 24px 0 16px 0;" />
+        <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0;">
+          DATCU GEORGE-CRISTIAN PFA / QualiAdept © $currentYear.
+        </p>
       </div>
     ''';
 

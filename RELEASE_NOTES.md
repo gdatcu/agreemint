@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.5.1 Release Notes
+# 🚀 Agreemint v1.5.2 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -21,11 +21,10 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.5.1
+## 🎨 What's New in Version 1.5.2
 
-- 🛡️ **Fixed Web CORS for Resend Transactional Emails**:
-  - `EmailService._sendEmail` now routes through Supabase RPC `send_resend_email` (server-side with `pg_net`), completely eliminating browser CORS errors (`No 'Access-Control-Allow-Origin' header`) on Flutter Web (`agreemint.qualiadept.eu`).
-- 🇷🇴 **Romanian WhatsApp & Email Templates**:
-  - Updated all WhatsApp messaging templates to professional Romanian with QualiAdept branding (Contracts, Payment Reminders, Receipts, and Student Check-ins).
-  - Updated all Resend HTML email templates to clean, responsive Romanian designs.
-- 📦 **Version Bump**: Promoted release version to `v1.5.1` (`1.5.1+123`).
+- 🔑 **Resend API Key Resolution Fix**:
+  - Prioritized active `resend_api_key` from Supabase `business_settings` over compile-time environment variables in `contract_signing_view`, `payment_tracker_view`, and `pending_dashboard_view`.
+- 📧 **Premium QualiAdept Email Design**:
+  - Redesigned all transactional emails (Contract Signing Links, Signed Contract Alerts, Payment Reminders, Receipts, and Test Notifications) with consistent QualiAdept header branding, structured metadata cards, modern CTA buttons, direct link fallbacks, and updated legal footers.
+- 📦 **Version Bump**: Promoted release version to `v1.5.2` (`1.5.2+124`).

@@ -304,9 +304,9 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
     final settings =
         ref.read(businessSettingsControllerProvider).asData?.value ??
             ref.read(businessSettingsControllerProvider).value;
-    final envApiKey = ref.read(resendApiKeyProvider);
-    final effectiveKey =
-        envApiKey.isNotEmpty ? envApiKey : (settings?.resendApiKey ?? '');
+    final dbKey = settings?.resendApiKey?.trim() ?? '';
+    final envApiKey = ref.read(resendApiKeyProvider).trim();
+    final effectiveKey = dbKey.isNotEmpty ? dbKey : envApiKey;
 
     if (effectiveKey.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -327,6 +327,7 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
         name: student.name,
         url: link,
         programName: programName,
+        contractNumber: widget.enrollment.contract?.contractNumber,
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
