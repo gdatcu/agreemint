@@ -61,6 +61,13 @@ class NotificationService {
 
     final actionRequiredPayments = payments.where((p) {
       if (p.status == 'Paid' || p.status == 'Refunded') return false;
+      if (p.enrollment?.isRetired ?? false) return false;
+      final contractStatus = p.enrollment?.contract?.status;
+      if (contractStatus == 'Refunded' ||
+          contractStatus == 'Cancelled' ||
+          contractStatus == 'Archived') {
+        return false;
+      }
       final due = DateTime(p.dueDate.year, p.dueDate.month, p.dueDate.day);
       return due.isBefore(tomorrow) || due.isAtSameMomentAs(tomorrow);
     }).toList();

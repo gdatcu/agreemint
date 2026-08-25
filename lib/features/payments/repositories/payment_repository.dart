@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/payment_model.dart';
 
 part 'payment_repository.g.dart';
@@ -30,7 +29,7 @@ class PaymentRepository {
     }
   }
 
-  /// Fetches unpaid installments app-wide with student and program details.
+  /// Fetches unpaid installments app-wide with student and program details, excluding retired/refunded/cancelled contracts.
   Future<List<PaymentModel>> fetchGlobalPendingPayments() async {
     try {
       final response = await _client
@@ -43,6 +42,14 @@ class PaymentRepository {
       final data = response as List<dynamic>;
       return data
           .map((json) => PaymentModel.fromJson(json as Map<String, dynamic>))
+          .where((p) {
+            final isRetired = p.enrollment?.isRetired ?? false;
+            final contractStatus = p.enrollment?.contract?.status;
+            final isArchivedOrCancelled = contractStatus == 'Refunded' ||
+                contractStatus == 'Cancelled' ||
+                contractStatus == 'Archived';
+            return !isRetired && !isArchivedOrCancelled;
+          })
           .toList();
     } catch (e) {
       throw Exception('Failed to fetch global pending payments: $e');
@@ -183,7 +190,7 @@ class PaymentRepository {
   }) async {
     try {
       final prefix = isSigned ? 'signed_' : '';
-      final fileName = 'receipts/${prefix}${enrollmentId}_${paymentId}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      final fileName = 'receipts/$prefix${enrollmentId}_${paymentId}_${DateTime.now().millisecondsSinceEpoch}.pdf';
       await _client.storage.from('contracts').uploadBinary(
             fileName,
             pdfBytes,

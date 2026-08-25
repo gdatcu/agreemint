@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import '../../students/models/enrollment_model.dart';
+import '../../students/views/widgets/edit_student_dialog.dart';
 import '../controllers/payment_controller.dart';
 import '../models/payment_model.dart';
 import '../repositories/payment_repository.dart';
@@ -172,6 +173,16 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
         title:
             Text(student != null ? '${student.name} - Payments' : 'Payments'),
         actions: [
+          if (student != null)
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: 'Editează Nume & Date Cursant',
+              onPressed: () => EditStudentDialog.show(
+                context,
+                student: student,
+                programId: program?.id ?? enrollment.programId,
+              ),
+            ),
           IconButton(
             icon: const Icon(Icons.add_card),
             tooltip: 'Add Installment',

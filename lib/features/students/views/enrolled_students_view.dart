@@ -9,7 +9,9 @@ import '../controllers/student_controller.dart';
 import '../models/enrollment_model.dart';
 import '../models/student_model.dart';
 import '../../../core/services/whatsapp_service.dart';
+import '../../../core/widgets/copyable_text.dart';
 import 'certificate_preview_dialog.dart';
+import 'widgets/edit_student_dialog.dart';
 
 class EnrolledStudentsView extends ConsumerStatefulWidget {
   final ProgramModel program;
@@ -475,8 +477,9 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                             Row(
                                               children: [
                                                 Expanded(
-                                                  child: Text(
-                                                    student.name,
+                                                  child: CopyableText(
+                                                    text: student.name,
+                                                    label: 'Nume',
                                                     style: Theme.of(context)
                                                         .textTheme
                                                         .titleMedium
@@ -509,42 +512,18 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                               ],
                                             ),
                                             const SizedBox(height: 4),
-                                            Row(
-                                              children: [
-                                                Icon(Icons.email_outlined,
-                                                    size: 13,
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .outline),
-                                                const SizedBox(width: 5),
-                                                Expanded(
-                                                  child: Text(
-                                                    student.email,
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyMedium,
-                                                  ),
-                                                ),
-                                              ],
+                                            CopyableText(
+                                              text: student.email,
+                                              label: 'Email',
+                                              icon: Icons.email_outlined,
                                             ),
                                             if (student.phone != null &&
                                                 student.phone!.isNotEmpty) ...[
                                               const SizedBox(height: 2),
-                                              Row(
-                                                children: [
-                                                  Icon(Icons.phone_outlined,
-                                                      size: 13,
-                                                      color: Theme.of(context)
-                                                          .colorScheme
-                                                          .outline),
-                                                  const SizedBox(width: 5),
-                                                  Text(
-                                                    student.phone!,
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyMedium,
-                                                  ),
-                                                ],
+                                              CopyableText(
+                                                text: student.phone!,
+                                                label: 'Telefon',
+                                                icon: Icons.phone_outlined,
                                               ),
                                             ],
                                           ],
@@ -778,6 +757,15 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                              color: Colors.blue.shade700),
                                          tooltip: 'Copiază date client SOLO',
                                          onPressed: () => _copySoloClientData(student),
+                                       ),
+                                       IconButton(
+                                         icon: const Icon(Icons.edit_outlined),
+                                         tooltip: 'Editează Nume & Date Cursant',
+                                         onPressed: () => EditStudentDialog.show(
+                                           context,
+                                           student: student,
+                                           programId: widget.program.id,
+                                         ),
                                        ),
                                       if (enrollment.contract?.status != 'Refunded' &&
                                           enrollment.contract?.status != 'Cancelled')

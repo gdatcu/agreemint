@@ -7,6 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../students/models/enrollment_model.dart';
+import '../../students/views/widgets/edit_student_dialog.dart';
+import '../../../core/widgets/copyable_text.dart';
 import '../../payments/controllers/payment_controller.dart';
 import '../controllers/contract_controller.dart';
 import '../models/contract_model.dart';
@@ -699,11 +701,37 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
                   if (student != null) ...[
                     Card(
                       child: ListTile(
-                        title: Text(student.name,
-                            style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text(
-                            '${student.email} | ${student.phone ?? "No phone"}'),
+                        title: CopyableText(
+                          text: student.name,
+                          label: 'Nume',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Wrap(
+                          spacing: 12,
+                          children: [
+                            CopyableText(
+                              text: student.email,
+                              label: 'Email',
+                              icon: Icons.email_outlined,
+                            ),
+                            if (student.phone != null && student.phone!.isNotEmpty)
+                              CopyableText(
+                                text: student.phone!,
+                                label: 'Telefon',
+                                icon: Icons.phone_outlined,
+                              ),
+                          ],
+                        ),
                         leading: const Icon(Icons.person),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.edit_outlined),
+                          tooltip: 'Editează Nume & Date Cursant',
+                          onPressed: () => EditStudentDialog.show(
+                            context,
+                            student: student,
+                            programId: program?.id ?? widget.enrollment.programId,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),

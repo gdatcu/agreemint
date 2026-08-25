@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.5.8 Release Notes
+# 🚀 Agreemint v1.5.9 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -21,11 +21,14 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.5.8
+## 🎨 What's New in Version 1.5.9
 
-- 🎨 **High Contrast & Dark Mode Design System for Document Portal**:
-  - Fixed low-contrast text colors across all cards on the client document portal.
-  - **Date Virament Bancar (Bank Details Box)**: Redesigned with theme-adaptive styling (`#1E293B` background in dark mode, crisp `#F1F5F9` and highlighted `#FDE047` IBAN text, and `#3B82F6` accents).
-  - **Facturi Fiscale & Grafic Tranșe**: Clean white headers, readable light-grey subtexts, and dark-mode compatible translucent installment status containers.
-  - Cleaned up duplicate invoice prefixes (e.g. `(#GD-35-26/SOLO)`).
-- 📦 **Version Bump**: Promoted release version to `v1.5.8` (`1.5.8+130`).
+- 👤 **Student Name & Details Editor (Diacritics Support)**:
+  - Added full capability for mentors to adjust student names, add/remove Romanian diacritics (`ă, î, ș, ț, â`), phone numbers, email, client type, and billing info at any time.
+  - Added a 1-click **"Fără Diacritice"** helper button to instantly strip diacritics when needed.
+  - Available right from the Student Roster, Contract Management screen, and Payment Tracker.
+- 📋 **1-Tap & Long-Press Field Copy for Mobile**:
+  - Implemented seamless 1-tap/long-press copy on student Name, Email, and Phone number across mobile devices and desktop with instant visual feedback snackbars.
+- 🛑 **Pending Dashboard Retired Student Filter Fix**:
+  - Excluded retired, refunded, and cancelled student enrollments from the Global Pending Installments list and automated overdue notifications.
+- 📦 **Version Bump**: Promoted release version to `v1.5.9` (`1.5.9+131`).

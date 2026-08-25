@@ -334,11 +334,12 @@ class EnrollmentContractController extends _$EnrollmentContractController {
       // 2. Mark payments as refunded
       await paymentRepo.markPaymentsAsRefunded(enrollmentId);
 
-      // 3. Invalidate analytics summary provider, enrollment payments provider, and program enrollments provider to refresh UI
+      // 3. Invalidate analytics summary provider, enrollment payments provider, program enrollments provider, and pending dashboard to refresh UI
       ref.invalidate(analyticsSummaryControllerProvider);
       ref.invalidate(enrollmentPaymentsControllerProvider(enrollmentId));
       ref.invalidate(programEnrollmentsControllerProvider);
       ref.invalidate(globalContractsControllerProvider);
+      ref.invalidate(globalPendingPaymentsControllerProvider);
       return updatedContract;
     });
   }

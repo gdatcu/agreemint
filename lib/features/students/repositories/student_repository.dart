@@ -1,6 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/enrollment_model.dart';
 
 part 'student_repository.g.dart';
@@ -74,6 +73,36 @@ class StudentRepository {
     }
   }
 
+  /// Updates an existing student's details (name, phone, email, client type, billing details).
+  Future<void> updateStudent({
+    required String studentId,
+    required String name,
+    String? email,
+    String? phone,
+    String? clientType,
+    String? cui,
+    String? regCom,
+    String? billingAddress,
+  }) async {
+    try {
+      final updateData = <String, dynamic>{
+        'name': name.trim(),
+        if (email != null) 'email': email.trim(),
+        if (phone != null) 'phone': phone.trim(),
+        if (clientType != null) 'client_type': clientType,
+        'cui': cui?.trim(),
+        'reg_com': regCom?.trim(),
+        'billing_address': billingAddress?.trim(),
+      };
+
+      await _client
+          .from('students')
+          .update(updateData)
+          .eq('id', studentId);
+    } catch (e) {
+      throw Exception('Failed to update student: $e');
+    }
+  }
 
   /// Deletes an enrollment (and associated unsigned contracts/payments) for a student.
   /// If the student has no other active enrollments, cleans up the student record.
