@@ -756,10 +756,11 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
                       ),
                       child: Icon(Icons.rocket_launch_outlined, color: Colors.blue.shade700, size: 20),
                     ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'SaaS Feature: 1-Click Invoice & Client Autofill',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    Expanded(
+                      child: Text(
+                        'SaaS Feature: 1-Click Invoice & Client Autofill',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
                     ),
                   ],
                 ),
@@ -866,11 +867,12 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
                       child: Icon(Icons.chat_bubble_outline_rounded,
                           color: Colors.indigo.shade700, size: 20),
                     ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Discord Real-Time Contract Signed Alerts',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    Expanded(
+                      child: Text(
+                        'Discord Real-Time Contract Signed Alerts',
+                        style:
+                            TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
                     ),
                   ],
                 ),
@@ -970,11 +972,12 @@ class _BusinessSettingsViewState extends ConsumerState<BusinessSettingsView> {
                       child: Icon(Icons.email_outlined,
                           color: Colors.green.shade700, size: 20),
                     ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Email Alerts for Signed Contracts',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    Expanded(
+                      child: Text(
+                        'Email Alerts for Signed Contracts',
+                        style:
+                            TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
                     ),
                   ],
                 ),

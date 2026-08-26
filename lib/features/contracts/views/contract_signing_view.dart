@@ -381,7 +381,12 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
       return;
     }
 
-    if (_signatureController.isEmpty) {
+    final hasDrawnSig = _signatureController.isNotEmpty;
+    final hasSavedSig = _usingSavedSignature &&
+        _savedMentorSignatureBytes != null &&
+        _savedMentorSignatureBytes!.isNotEmpty;
+
+    if (!hasDrawnSig && !hasSavedSig) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please draw your signature first.'),
@@ -419,22 +424,27 @@ class _ContractSigningViewState extends ConsumerState<ContractSigningView> {
 
     try {
       Uint8List? pngBytes;
-      if (_signatureController.isNotEmpty) {
+      if (_signatureController.isNotEmpty && !_usingSavedSignature) {
         pngBytes = await _signatureController.toPngBytes();
       }
-      
-      // Fallback to saved mentor signature if drawn export is null/empty
+
+      // Fallback to saved mentor signature if drawn export is null/empty or using saved signature
       if (_usingSavedSignature || pngBytes == null || pngBytes.isEmpty) {
         pngBytes ??= _savedMentorSignatureBytes;
       }
 
       if (pngBytes == null || pngBytes.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please draw your signature first.'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        if (mounted) {
+          setState(() {
+            _isGenerating = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Please draw your signature first.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
         return;
       }
 

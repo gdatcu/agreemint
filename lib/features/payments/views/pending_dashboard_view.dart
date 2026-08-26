@@ -257,12 +257,16 @@ class _PendingDashboardViewState extends ConsumerState<PendingDashboardView>
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8),
                       title: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            student?.name ?? 'Cursant Neidentificat',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          Expanded(
+                            child: Text(
+                              student?.name ?? 'Cursant Neidentificat',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),

@@ -153,7 +153,12 @@ class _EditStudentDialogState extends ConsumerState<EditStudentDialog> {
         children: [
           Icon(Icons.edit_note, color: Colors.blueAccent),
           SizedBox(width: 8),
-          Text('Editare Date Cursant'),
+          Flexible(
+            child: Text(
+              'Editare Date Cursant',
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
       content: SizedBox(
@@ -172,16 +177,10 @@ class _EditStudentDialogState extends ConsumerState<EditStudentDialog> {
                     labelText: 'Nume Complet *',
                     hintText: 'ex: Bălan Lorena-Dumitrița sau Balan Lorena',
                     prefixIcon: const Icon(Icons.person_outline),
-                    suffixIcon: Tooltip(
-                      message: 'Elimină diacriticele din nume (ă, î, ș, ț, â ➔ a, i, s, t, a)',
-                      child: TextButton.icon(
-                        onPressed: _stripDiacritics,
-                        icon: const Icon(Icons.spellcheck, size: 16),
-                        label: const Text('Fără Diacritice', style: TextStyle(fontSize: 11)),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                        ),
-                      ),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.spellcheck_rounded),
+                      tooltip: 'Elimină diacriticele (ă, î, ș, ț, â ➔ a, i, s, t, a)',
+                      onPressed: _stripDiacritics,
                     ),
                   ),
                   validator: (val) =>
@@ -214,21 +213,32 @@ class _EditStudentDialogState extends ConsumerState<EditStudentDialog> {
                 const SizedBox(height: 16),
 
                 // Client Type Selector
-                Row(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Tip Client:', style: TextStyle(fontWeight: FontWeight.w600)),
-                    const SizedBox(width: 12),
-                    SegmentedButton<String>(
-                      segments: const [
-                        ButtonSegment(value: 'PF', label: Text('PF (Persoană Fizică)')),
-                        ButtonSegment(value: 'PFA', label: Text('PFA / PJ')),
-                      ],
-                      selected: {_clientType == 'PF' ? 'PF' : 'PFA'},
-                      onSelectionChanged: (set) {
-                        setState(() {
-                          _clientType = set.first;
-                        });
-                      },
+                    const Text('Tip Client:',
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                    const SizedBox(height: 6),
+                    SizedBox(
+                      width: double.infinity,
+                      child: SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(
+                            value: 'PF',
+                            label: Text('Persoană Fizică'),
+                          ),
+                          ButtonSegment(
+                            value: 'PFA',
+                            label: Text('PFA / PJ'),
+                          ),
+                        ],
+                        selected: {_clientType == 'PF' ? 'PF' : 'PFA'},
+                        onSelectionChanged: (set) {
+                          setState(() {
+                            _clientType = set.first;
+                          });
+                        },
+                      ),
                     ),
                   ],
                 ),

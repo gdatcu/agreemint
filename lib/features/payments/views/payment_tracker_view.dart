@@ -540,7 +540,10 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                               ],
                             ),
                             const SizedBox(height: 4),
-                            Row(
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 4,
+                              crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
                                 Text(
                                   'Due Date: $dateStr',
@@ -553,8 +556,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                             .outline,
                                       ),
                                 ),
-                                if (payment.isReceiptSigned) ...[
-                                  const SizedBox(width: 8),
+                                if (payment.isReceiptSigned)
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 6, vertical: 2),
@@ -582,10 +584,8 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                       ],
                                     ),
                                   ),
-                                ],
                                 if (payment.externalInvoiceNumber != null &&
-                                    payment.externalInvoiceNumber!.isNotEmpty) ...[
-                                  const SizedBox(width: 8),
+                                    payment.externalInvoiceNumber!.isNotEmpty)
                                   InkWell(
                                     onTap: () async {
                                       if (payment.externalInvoiceUrl != null &&
@@ -632,9 +632,8 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ] else ...[
-                                  const SizedBox(width: 8),
+                                  )
+                                else
                                   InkWell(
                                     onTap: () => _showSoloInvoiceDialog(
                                         context, ref, payment),
@@ -673,7 +672,6 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                       ),
                                     ),
                                   ),
-                                ],
                               ],
                             ),
                             if (payment.paymentMethod != null &&

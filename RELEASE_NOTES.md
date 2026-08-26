@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.5.9 Release Notes
+# 🚀 Agreemint v1.5.10 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -21,14 +21,15 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.5.9
+## 🎨 What's New in Version 1.5.10
 
-- 👤 **Student Name & Details Editor (Diacritics Support)**:
-  - Added full capability for mentors to adjust student names, add/remove Romanian diacritics (`ă, î, ș, ț, â`), phone numbers, email, client type, and billing info at any time.
-  - Added a 1-click **"Fără Diacritice"** helper button to instantly strip diacritics when needed.
-  - Available right from the Student Roster, Contract Management screen, and Payment Tracker.
-- 📋 **1-Tap & Long-Press Field Copy for Mobile**:
-  - Implemented seamless 1-tap/long-press copy on student Name, Email, and Phone number across mobile devices and desktop with instant visual feedback snackbars.
-- 🛑 **Pending Dashboard Retired Student Filter Fix**:
-  - Excluded retired, refunded, and cancelled student enrollments from the Global Pending Installments list and automated overdue notifications.
-- 📦 **Version Bump**: Promoted release version to `v1.5.9` (`1.5.9+131`).
+- ✍️ **Universal Profile Signature Integration**:
+  - **Business Settings Default Signature Across All Screens**: Connects your saved mentor signature across Payment Receipts, Contracts, and Certificates.
+  - **Receipt Signing Modal (`ReceiptSignatureDialog`)**: Preloads your saved signature automatically with 1-click **"Aplică / Confirm"** confirmation, visual status banner, and the ability to draw a custom signature or restore the profile signature.
+  - **Contract Issuance Guard Fix**: Fixed the contract issuance guard in `ContractSigningView` so issuing contracts using your saved Business Settings profile signature works seamlessly without requiring manual strokes on the canvas.
+- 📱 **Comprehensive Mobile Viewport & RenderFlex Overflow Fixes**:
+  - **Student Roster Action Buttons (`EnrolledStudentsView`)**: Replaced rigid action `Row` with responsive `Wrap`, preventing horizontal overflows on narrow screens (e.g. Samsung S8+ / 360px).
+  - **Pending Dashboard Student Cards (`PendingDashboardView`)**: Added `Expanded` with text ellipsis on student names to eliminate card overflows.
+  - **Edit Student Modal (`EditStudentDialog`)**: Replaced horizontal client type `SegmentedButton` with a clean responsive layout and optimized the diacritics button into a compact tooltip icon button.
+  - **Business Settings Integration Cards (`BusinessSettingsView`)**: Made headers for SOLO bookmarklet, Discord alerts, and Email notifications fully responsive.
+- 📦 **Version Bump**: Promoted release version to `v1.5.10` (`1.5.10+132`).

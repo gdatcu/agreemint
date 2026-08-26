@@ -690,8 +690,12 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                     ],
                                   ),
                                   const Divider(height: 16),
-                                   Row(
-                                     mainAxisAlignment: MainAxisAlignment.end,
+                                   Wrap(
+                                     alignment: WrapAlignment.end,
+                                     crossAxisAlignment:
+                                         WrapCrossAlignment.center,
+                                     spacing: 2,
+                                     runSpacing: 2,
                                      children: [
                                        IconButton(
                                          icon: const Icon(

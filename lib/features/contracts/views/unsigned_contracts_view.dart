@@ -162,7 +162,10 @@ class UnsignedContractsView extends ConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      Row(
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
@@ -183,14 +186,12 @@ class UnsignedContractsView extends ConsumerWidget {
                             icon: const Icon(Icons.chat, size: 18),
                             label: const Text('Send WhatsApp Follow-Up'),
                           ),
-                          const SizedBox(width: 8),
                           if (rawPdfUrl.isNotEmpty) ...[
                             OutlinedButton.icon(
                               onPressed: () => launchUrl(Uri.parse(rawPdfUrl)),
                               icon: const Icon(Icons.picture_as_pdf, size: 18),
                               label: const Text('PDF'),
                             ),
-                            const SizedBox(width: 4),
                             IconButton(
                               icon: const Icon(Icons.copy, size: 18),
                               tooltip: 'Copiază Link Semnătură',
