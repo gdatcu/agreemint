@@ -8,6 +8,8 @@ import '../../contracts/controllers/contract_controller.dart';
 import '../controllers/student_controller.dart';
 import '../models/enrollment_model.dart';
 import '../models/student_model.dart';
+import '../../../core/services/celebration_service.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../core/services/whatsapp_service.dart';
 import '../../../core/widgets/copyable_text.dart';
 import 'certificate_preview_dialog.dart';
@@ -71,7 +73,14 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
         return e.contract?.status == 'Refunded' || e.contract?.status == 'Cancelled';
       } else if (_selectedFilter == 'Archived') {
         return e.contract?.status == 'Archived';
+      } else if (_selectedFilter == 'Sărbători') {
+        final st = e.student;
+        if (st == null) return false;
+        final celebrations =
+            CelebrationService.getUpcomingCelebrations([st], daysAhead: 365);
+        return celebrations.isNotEmpty;
       } else if (_selectedFilter == 'Retired') {
+
         return e.isRetired;
       }
       return true;
@@ -101,13 +110,165 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
     return list;
   }
 
-  Widget _buildSummaryHeader(List<EnrollmentModel> enrollments) {
+  void _showCelebrationsDialog(
+      BuildContext context, List<StudentModel> students) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final allCelebrations =
+            CelebrationService.getUpcomingCelebrations(students, daysAhead: 365);
+
+        return AlertDialog(
+          title: Row(
+            children: [
+              const Text('🎉', style: TextStyle(fontSize: 22)),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Calendar Sărbătoriți & Onomastică',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade700,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${allCelebrations.length}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: 520,
+            height: 480,
+            child: allCelebrations.isEmpty
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(24.0),
+                      child: Text(
+                        'Nu au fost găsite zile de naștere sau onomastici pentru cursanții din acest program.',
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  )
+                : ListView.separated(
+                    itemCount: allCelebrations.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (ctx, i) {
+                      final c = allCelebrations[i];
+                      final isToday = c.isToday;
+                      final isTomorrow = c.isTomorrow;
+                      final icon =
+                          c.type == CelebrationType.birthday ? '🎂' : '🌸';
+                      final dateFormatted =
+                          '${c.date.day.toString().padLeft(2, '0')}.${c.date.month.toString().padLeft(2, '0')}.${c.date.year}';
+
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: isToday
+                              ? Colors.green.shade100
+                              : (c.type == CelebrationType.birthday
+                                  ? Colors.amber.shade100
+                                  : Colors.purple.shade100),
+                          child: Text(icon, style: const TextStyle(fontSize: 16)),
+                        ),
+                        title: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                c.student.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: isToday
+                                    ? Colors.green.shade600
+                                    : (isTomorrow
+                                        ? Colors.amber.shade700
+                                        : (c.daysUntil <= 30
+                                            ? Colors.blueGrey.shade700
+                                            : Colors.grey.shade600)),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                c.relativeLabel,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        subtitle: Text(
+                          '${c.title} • $dateFormatted',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? Colors.white70 : Colors.black54,
+                          ),
+                        ),
+                        trailing: (c.student.phone != null &&
+                                c.student.phone!.isNotEmpty)
+                            ? IconButton(
+                                icon: const Icon(
+                                  Icons.chat_bubble_outline_rounded,
+                                  color: Colors.green,
+                                  size: 18,
+                                ),
+                                tooltip: 'Felicită pe WhatsApp',
+                                onPressed: () async {
+                                  final msg = CelebrationService
+                                      .generateGreetingMessage(c);
+                                  await WhatsAppService.sendCelebrationGreeting(
+                                    phone: c.student.phone!,
+                                    message: msg,
+                                  );
+                                },
+                              )
+                            : null,
+                      );
+                    },
+                  ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Închide'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildSummaryHeader(
+      List<EnrollmentModel> enrollments, List<StudentModel> students) {
     final totalCount = enrollments.length;
     final signedCount =
         enrollments.where((e) => e.isSignedByBeneficiary).length;
     final noPlanCount = enrollments.where((e) => !e.hasPaymentPlan).length;
     final fullyPaidCount = enrollments.where((e) => e.isFullyPaid).length;
     final retiredCount = enrollments.where((e) => e.isRetired).length;
+    final upcomingCelebrationsCount =
+        CelebrationService.getUpcomingCelebrations(students, daysAhead: 365).length;
+
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -123,51 +284,64 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
           _buildStatCard('Fully Paid', '$fullyPaidCount', Icons.payments, Colors.teal),
           const SizedBox(width: 8),
           _buildStatCard('Retired', '$retiredCount', Icons.replay_rounded, Colors.orange),
+          const SizedBox(width: 8),
+          _buildStatCard(
+            'Sărbători',
+            '$upcomingCelebrationsCount',
+            Icons.cake_rounded,
+            Colors.amber.shade800,
+            onTap: () => _showCelebrationsDialog(context, students),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildStatCard(
-      String label, String value, IconData icon, Color color) {
+      String label, String value, IconData icon, Color color,
+      {VoidCallback? onTap}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      width: 92,
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      decoration: BoxDecoration(
-        color: color.withAlpha(isDark ? 30 : 15),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withAlpha(80)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 14, color: color),
-              const SizedBox(width: 4),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? color : color.withAlpha(220),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        width: 92,
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        decoration: BoxDecoration(
+          color: color.withAlpha(isDark ? 30 : 15),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withAlpha(80)),
+        ),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 14, color: color),
+                const SizedBox(width: 4),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? color : color.withAlpha(220),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white70 : Colors.black87,
+              ],
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white70 : Colors.black87,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -188,6 +362,195 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
     );
   }
 
+  Widget _buildCelebrationsBanner(
+      List<CelebrationEvent> celebrations, List<StudentModel> students) {
+    if (celebrations.isEmpty) return const SizedBox.shrink();
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final todayCount = celebrations.where((c) => c.isToday).length;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 2, 12, 6),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2C2213) : const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark
+              ? const Color(0xFFD97706).withAlpha(120)
+              : const Color(0xFFFDE68A),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('🎉', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  todayCount > 0
+                      ? 'Sărbătoriți Astăzi & În Următoarele Zile'
+                      : 'Următoarele Zile de Naștere & Onomastice',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: isDark
+                        ? const Color(0xFFFDE68A)
+                        : const Color(0xFF92400E),
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: () => _showCelebrationsDialog(context, students),
+                borderRadius: BorderRadius.circular(6),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Vezi tot (${celebrations.length})',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: isDark
+                              ? const Color(0xFFFDE68A)
+                              : const Color(0xFFB45309),
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        size: 14,
+                        color: isDark
+                            ? const Color(0xFFFDE68A)
+                            : const Color(0xFFB45309),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: celebrations.map((e) {
+                final isToday = e.isToday;
+                final isTomorrow = e.isTomorrow;
+                final icon = e.type == CelebrationType.birthday ? '🎂' : '🌸';
+                final student = e.student;
+
+                return Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? (isToday
+                            ? const Color(0xFF451A03)
+                            : const Color(0xFF1E293B))
+                        : (isToday ? const Color(0xFFFEF3C7) : Colors.white),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isToday
+                          ? const Color(0xFFF59E0B)
+                          : (isDark ? Colors.white12 : Colors.black12),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(icon, style: const TextStyle(fontSize: 16)),
+                      const SizedBox(width: 6),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                student.name,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? Colors.white : Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: isToday
+                                      ? Colors.green.shade600
+                                      : (isTomorrow
+                                          ? Colors.amber.shade700
+                                          : Colors.blueGrey.shade600),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  e.relativeLabel,
+                                  style: const TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            e.title,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: isDark ? Colors.white70 : Colors.black54,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (student.phone != null &&
+                          student.phone!.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        InkWell(
+                          onTap: () async {
+                            final msg =
+                                CelebrationService.generateGreetingMessage(e);
+                            await WhatsAppService.sendCelebrationGreeting(
+                              phone: student.phone!,
+                              message: msg,
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(4),
+                          child: Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade500
+                                  .withAlpha(isDark ? 50 : 30),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Icon(
+                              Icons.chat_bubble_outline_rounded,
+                              size: 14,
+                              color: Colors.green,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final enrollmentsAsync =
@@ -197,6 +560,18 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
       appBar: AppBar(
         title: Text('${widget.program.name} - Students'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.cake_rounded, color: Colors.amber),
+            tooltip: 'Calendar Sărbătoriți & Onomastică',
+            onPressed: () {
+              final students = enrollmentsAsync.value
+                      ?.map((e) => e.student)
+                      .whereType<StudentModel>()
+                      .toList() ??
+                  [];
+              _showCelebrationsDialog(context, students);
+            },
+          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.sort_rounded),
             tooltip: 'Sort Students',
@@ -257,12 +632,47 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
             );
           }
 
+          final students = enrollments.map((e) {
+            final st = e.student;
+            if (st == null) return null;
+            // Fallback: If student cui (CNP) is empty on student row, look in contract details
+            if ((st.cui == null || st.cui!.isEmpty) &&
+                e.contract?.details != null) {
+              final cnpFromContract =
+                  e.contract!.details!['cnp_cursant'] as String?;
+              if (cnpFromContract != null && cnpFromContract.isNotEmpty) {
+                return StudentModel(
+                  id: st.id,
+                  name: st.name,
+                  email: st.email,
+                  phone: st.phone,
+                  createdAt: st.createdAt,
+                  clientType: st.clientType,
+                  cui: cnpFromContract,
+                  regCom: st.regCom,
+                  billingAddress: st.billingAddress,
+                );
+              }
+            }
+            return st;
+          }).whereType<StudentModel>().toList();
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            NotificationService.checkAndNotifyCelebrations(students);
+          });
+
+          final upcomingCelebrations =
+              CelebrationService.getUpcomingCelebrations(students, daysAhead: 365);
           final filtered = _filterAndSortEnrollments(enrollments);
+
 
           return Column(
             children: [
               // Summary Header Cards
-              _buildSummaryHeader(enrollments),
+              _buildSummaryHeader(enrollments, students),
+
+              // Upcoming Celebrations Banner (Birthdays & Name Days)
+              _buildCelebrationsBanner(upcomingCelebrations, students),
 
               // Live Search Bar
               Padding(
@@ -330,6 +740,8 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                             const SizedBox(width: 6),
                             _buildFilterChip('Fully Paid'),
                             const SizedBox(width: 6),
+                            _buildFilterChip('Sărbători'),
+                            const SizedBox(width: 6),
                             _buildFilterChip('Refunded'),
                             const SizedBox(width: 6),
                             _buildFilterChip('Retired'),
@@ -342,6 +754,7 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                   ],
                 ),
               ),
+
 
               if (_searchQuery.isNotEmpty || _selectedFilter != 'All')
                 Padding(
@@ -531,9 +944,85 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                       ),
                                     ],
                                   ),
+                                  if (upcomingCelebrations
+                                      .any((c) => c.student.id == student.id)) ...[
+                                    const SizedBox(height: 8),
+                                    ...upcomingCelebrations
+                                        .where((c) => c.student.id == student.id)
+                                        .map((c) => Container(
+                                              margin:
+                                                  const EdgeInsets.only(bottom: 4),
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8, vertical: 4),
+                                              decoration: BoxDecoration(
+                                                color: c.isToday
+                                                    ? Colors.amber.shade100
+                                                    : Colors.amber.shade50,
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                                border: Border.all(
+                                                  color: Colors.amber.shade400,
+                                                ),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    c.type ==
+                                                            CelebrationType
+                                                                .birthday
+                                                        ? '🎂'
+                                                        : '🌸',
+                                                    style: const TextStyle(
+                                                        fontSize: 13),
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Flexible(
+                                                    child: Text(
+                                                      '${c.title} (${c.relativeLabel})',
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      maxLines: 1,
+                                                      style: TextStyle(
+                                                        fontSize: 11,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color:
+                                                            Colors.amber.shade900,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  if (student.phone != null &&
+                                                      student
+                                                          .phone!.isNotEmpty) ...[
+                                                    const SizedBox(width: 6),
+                                                    InkWell(
+                                                      onTap: () async {
+                                                        final msg = CelebrationService
+                                                            .generateGreetingMessage(
+                                                                c);
+                                                        await WhatsAppService
+                                                            .sendCelebrationGreeting(
+                                                          phone: student.phone!,
+                                                          message: msg,
+                                                        );
+                                                      },
+                                                      child: const Icon(
+                                                        Icons
+                                                            .chat_bubble_outline_rounded,
+                                                        size: 13,
+                                                        color: Colors.green,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ],
+                                              ),
+                                            )),
+                                  ],
                                   const SizedBox(height: 10),
 
                                   // Status Badges Row (Contract + Payments)
+
                                   Wrap(
                                     spacing: 6,
                                     runSpacing: 4,

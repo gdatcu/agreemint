@@ -198,4 +198,13 @@ class WhatsAppService {
         '_Echipa QualiAdept_';
     await _launch(phone, message);
   }
+
+  /// Trimite o urare de zi de naștere sau onomastică pe WhatsApp.
+  static Future<void> sendCelebrationGreeting({
+    required String phone,
+    required String message,
+  }) async {
+    await _launch(phone, message);
+  }
 }
+

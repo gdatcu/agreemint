@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/contracts/models/contract_model.dart';
 import '../../features/payments/models/payment_model.dart';
 import '../../features/prospects/models/prospect_model.dart';
+import '../../features/students/models/student_model.dart';
+import 'celebration_service.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
@@ -209,6 +211,66 @@ class NotificationService {
       await prefs.setString('last_prospect_followup_notified_date', todayStr);
     } catch (_) {}
   }
+
+  /// Evaluates students list and dispatches a notification for today's and tomorrow's celebrations at most ONCE PER DAY.
+  static Future<void> checkAndNotifyCelebrations(
+      List<StudentModel> students) async {
+    final now = DateTime.now();
+    final todayStr = '${now.year}-${now.month}-${now.day}';
+
+    final upcoming = CelebrationService.getUpcomingCelebrations(
+      students,
+      daysAhead: 1, // Focus notifications on today and tomorrow
+    );
+
+    if (upcoming.isEmpty) return;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final lastNotified =
+          prefs.getString('last_celebration_notified_date');
+      if (lastNotified == todayStr) {
+        return;
+      }
+
+      final todayEvents = upcoming.where((e) => e.isToday).toList();
+      final tomorrowEvents = upcoming.where((e) => e.isTomorrow).toList();
+
+      String title;
+      String body;
+
+      if (todayEvents.isNotEmpty) {
+        if (todayEvents.length == 1) {
+          final e = todayEvents.first;
+          final typeIcon = e.type == CelebrationType.birthday ? '🎂' : '🌸';
+          title = '$typeIcon Sărbătoare Astăzi: ${e.student.name}';
+          body = e.type == CelebrationType.birthday
+              ? '${e.student.name} împlinește astăzi ${e.age ?? ''} de ani! Trimite-i o urare pe WhatsApp.'
+              : 'Astăzi este ${e.title}! Nu uita să-l feliciți pe ${e.student.name}.';
+        } else {
+          title = '🎉 ${todayEvents.length} Cursanți Sărbătoriți Astăzi!';
+          final names = todayEvents.map((e) => e.student.name).join(', ');
+          body = 'Sărbătoriți astăzi: $names.';
+        }
+      } else {
+        // Tomorrow events
+        if (tomorrowEvents.length == 1) {
+          final e = tomorrowEvents.first;
+          final typeIcon = e.type == CelebrationType.birthday ? '🎂' : '🌸';
+          title = '$typeIcon Mâine este ${e.title}!';
+          body = 'Mâine este sărbătorit ${e.student.name}. Pregătește urarea!';
+        } else {
+          title = '⏰ ${tomorrowEvents.length} Sărbători Mâine!';
+          final names = tomorrowEvents.map((e) => e.student.name).join(', ');
+          body = 'Mâine își sărbătoresc ziua: $names.';
+        }
+      }
+
+      await showOverdueNotification(id: 405, title: title, body: body);
+      await prefs.setString('last_celebration_notified_date', todayStr);
+    } catch (_) {}
+  }
+
 
   /// Triggers a push notification reminding the mentor to sign and issue a payment receipt.
   static Future<void> showReceiptPendingNotification({

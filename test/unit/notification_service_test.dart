@@ -45,5 +45,13 @@ void main() {
         completes,
       );
     });
+
+    test('checkAndNotifyCelebrations evaluates students list without errors', () async {
+      await expectLater(
+        NotificationService.checkAndNotifyCelebrations([]),
+        completes,
+      );
+    });
+
   });
 }

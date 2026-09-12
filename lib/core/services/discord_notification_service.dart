@@ -78,6 +78,61 @@ class DiscordNotificationService {
     }
   }
 
+  /// Sends a rich Discord embed notification for upcoming or today's celebrations (Birthdays & Name Days).
+  static Future<bool> notifyCelebrations({
+    required String webhookUrl,
+    required List<dynamic> celebrations, // List<CelebrationEvent>
+  }) async {
+    final cleanUrl = webhookUrl.trim();
+    if (cleanUrl.isEmpty || !cleanUrl.startsWith('http')) return false;
+    if (celebrations.isEmpty) return false;
+
+    final fields = <Map<String, dynamic>>[];
+    for (final event in celebrations) {
+      final studentName = event.student.name;
+      final typeIcon = event.type.toString().contains('birthday') ? '🎂' : '🌸';
+      final timing = event.daysUntil == 0
+          ? '🎉 **ASTĂZI**'
+          : (event.daysUntil == 1 ? '⏰ Mâine' : '📅 în ${event.daysUntil} zile (${event.date.day}.${event.date.month})');
+
+      fields.add({
+        'name': '$typeIcon $studentName',
+        'value': '$timing • **${event.title}**${event.student.phone != null && event.student.phone!.isNotEmpty ? '\n📞 ${event.student.phone}' : ''}',
+        'inline': false,
+      });
+    }
+
+    final payload = {
+      'username': 'Agreemint Celebrations',
+      'avatar_url': 'https://agreemint.qualiadept.eu/icons/Icon-192.png',
+      'embeds': [
+        {
+          'title': '🎉 Sărbătoriții Cursanți (Zile de Naștere & Onomastică)',
+          'description':
+              'Iată cursanții care își sărbătoresc ziua de naștere sau onomastica în perioada următoare:',
+          'color': 15844367, // Gold/Champagne #F1C40F
+          'fields': fields,
+          'footer': {
+            'text': 'Agreemint Community & Celebrations Hub • QualiAdept',
+          },
+          'timestamp': DateTime.now().toIso8601String(),
+        }
+      ],
+    };
+
+    try {
+      final res = await http.post(
+        Uri.parse(cleanUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+      return res.statusCode == 200 || res.statusCode == 204;
+    } catch (e) {
+      debugPrint('Failed to send Discord celebrations notification: $e');
+      return false;
+    }
+  }
+
   /// Sends a test message to verify Discord Webhook configuration.
   static Future<bool> sendTestMessage(String webhookUrl) async {
     final cleanUrl = webhookUrl.trim();
@@ -101,3 +156,4 @@ class DiscordNotificationService {
     }
   }
 }
+

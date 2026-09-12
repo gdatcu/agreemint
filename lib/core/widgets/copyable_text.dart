@@ -65,40 +65,39 @@ class CopyableText extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectiveIconColor = iconColor ?? Theme.of(context).colorScheme.outline;
 
-    return Tooltip(
-      message: 'Apasă pentru a copia ${label?.toLowerCase() ?? ""}'.trim(),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(4),
-          onTap: () => copy(context, text: text, label: label),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                if (icon != null) ...[
-                  Icon(
-                    icon,
-                    size: iconSize,
-                    color: effectiveIconColor,
-                  ),
-                  const SizedBox(width: 5),
-                ],
-                Flexible(
-                  child: Text(
-                    text,
-                    style: style ?? Theme.of(context).textTheme.bodyMedium,
-                    maxLines: maxLines,
-                    overflow: overflow,
-                  ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(4),
+        mouseCursor: SystemMouseCursors.click,
+        onTap: () => copy(context, text: text, label: label),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (icon != null) ...[
+                Icon(
+                  icon,
+                  size: iconSize,
+                  color: effectiveIconColor,
                 ),
+                const SizedBox(width: 5),
               ],
-            ),
+              Flexible(
+                child: Text(
+                  text,
+                  style: style ?? Theme.of(context).textTheme.bodyMedium,
+                  maxLines: maxLines,
+                  overflow: overflow,
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 }
+
