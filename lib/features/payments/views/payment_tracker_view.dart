@@ -19,6 +19,7 @@ import '../../settings/controllers/business_settings_controller.dart';
 import '../services/receipt_generator_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'receipt_preview_dialog.dart';
+import 'solo_invoice_dialog.dart';
 
 class PaymentTrackerView extends ConsumerStatefulWidget {
   final EnrollmentModel enrollment;
@@ -1197,167 +1198,10 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
 
   void _showSoloInvoiceDialog(
       BuildContext context, WidgetRef ref, PaymentModel payment) {
-    final invoiceNumberController =
-        TextEditingController(text: payment.externalInvoiceNumber ?? '');
-    final invoiceUrlController =
-        TextEditingController(text: payment.externalInvoiceUrl ?? '');
-
-    showDialog(
+    SoloInvoiceDialog.show(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Row(
-            children: const [
-              Icon(Icons.description_outlined, color: Colors.blue),
-              SizedBox(width: 8),
-              Expanded(child: Text('SOLO External Invoice')),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Record invoice number and PDF link generated in SOLO or external billing software.',
-                  style: TextStyle(fontSize: 13, color: Colors.grey),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: invoiceNumberController,
-                  decoration: const InputDecoration(
-                    labelText: 'SOLO Invoice Number (e.g. SOLO-10492)',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.numbers),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: invoiceUrlController,
-                  decoration: const InputDecoration(
-                    labelText: 'Invoice PDF Link / Storage URL (Optional)',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.link),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.upload_file, color: Colors.blue),
-                  label: const Text('📁 Select & Upload SOLO PDF Invoice'),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(44),
-                  ),
-                  onPressed: () async {
-                    try {
-                      final result = await FilePicker.platform.pickFiles(
-                        type: FileType.custom,
-                        allowedExtensions: ['pdf'],
-                        withData: true,
-                      );
-                      if (result != null && result.files.isNotEmpty) {
-                        final file = result.files.first;
-                        if (file.bytes != null) {
-                          final number = invoiceNumberController.text.trim();
-                          final invNum =
-                              number.isNotEmpty ? number : 'SOLO-PDF';
-
-                          final uploadedUrl = await ref
-                              .read(enrollmentPaymentsControllerProvider(
-                                      widget.enrollment.id)
-                                  .notifier)
-                              .uploadSoloInvoicePdf(
-                                paymentId: payment.id,
-                                invoiceNumber: invNum,
-                                pdfBytes: file.bytes!,
-                                fileName: file.name,
-                              );
-
-                          invoiceUrlController.text = uploadedUrl;
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    'SOLO PDF uploaded and attached successfully!'),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                          }
-                        }
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Upload failed: $e'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    }
-                  },
-                ),
-                if (payment.externalInvoiceUrl != null &&
-                    payment.externalInvoiceUrl!.trim().isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.picture_as_pdf),
-                    label: const Text('👁️ View / Open SOLO Invoice PDF'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade800,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size.fromHeight(44),
-                    ),
-                    onPressed: () async {
-                      final url = invoiceUrlController.text.trim();
-                      if (url.isNotEmpty) {
-                        final uri = Uri.parse(url);
-                        if (await canLaunchUrl(uri)) {
-                          await launchUrl(uri, mode: LaunchMode.externalApplication);
-                        }
-                      }
-                    },
-                  ),
-                ],
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final number = invoiceNumberController.text.trim();
-                final url = invoiceUrlController.text.trim();
-                if (number.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Please enter an invoice number')),
-                  );
-                  return;
-                }
-                Navigator.of(context).pop();
-                await ref
-                    .read(enrollmentPaymentsControllerProvider(
-                            widget.enrollment.id)
-                        .notifier)
-                    .saveExternalInvoice(
-                      paymentId: payment.id,
-                      invoiceNumber: number,
-                      invoiceUrl: url.isNotEmpty ? url : null,
-                    );
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('SOLO Invoice $number saved.')),
-                  );
-                }
-              },
-              child: const Text('Save Invoice'),
-            ),
-          ],
-        );
-      },
+      payment: payment,
+      enrollmentId: widget.enrollment.id,
     );
   }
 

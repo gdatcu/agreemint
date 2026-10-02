@@ -1,4 +1,4 @@
-# 🚀 Agreemint v1.5.12 Release Notes
+# 🚀 Agreemint v1.5.13 Release Notes
 
 Welcome to **Agreemint** - the all-in-one mobile and web management application for course creators, mentors, and educational program managers.
 
@@ -7,6 +7,8 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 ## 🌟 What the App Does & Key Features
 
 * **1-Tap ANAF CUI/CIF Live Auto-Lookup**: Instant company retrieval from Romania's official ANAF V9 registry, automatically filling company legal name, seat address, and Trade Register number.
+* **SOLO / Invoice Smart Link Parser (F-03)**: Instant detection, extraction, and auto-filling of invoice numbers, series, web links, amounts, and issue dates from copied SOLO links or WhatsApp/email messages.
+* **Historical FX Rate Snapshotting & Accounting Export (F-02)**: Immutable BNR/ECB FX rate locking upon payment creation, multi-currency calculations, and 1-tap fiscal CSV accounting export.
 * **Dual-Channel Outgoing Notifications (WhatsApp & Email)**: Direct deep-linking WhatsApp notifications and transactional Resend emails with personalized Romanian templates for contract signing, installment payment reminders, receipts, and student follow-ups.
 * **Student Birthdays & Romanian Name Days (Onomastică)**: Automatic detection of student birthdays (derived deterministically from 13-digit Romanian CNP) and 14 Romanian Orthodox feast name days (including dynamic Floriile), with automated Discord notifications and 1-tap WhatsApp greetings.
 * **Mentorship Cohort Management**: Create, edit, and track mentorship cohorts in **RON** and **EUR**.
@@ -23,21 +25,26 @@ Welcome to **Agreemint** - the all-in-one mobile and web management application 
 
 ---
 
-## 🎨 What's New in Version 1.5.12
+## 🎨 What's New in Version 1.5.13
 
-- 🏢 **1-Tap ANAF CUI/CIF Live Auto-Lookup (F-01)**:
-  - **Official ANAF V9 Integration**: Directly queries Romania's public fiscal service (`/api/PlatitorTvaRest/v9/tva`), stripping `RO` prefixes and validating 2–10 digit CUIs.
-  - **Instant B2B Auto-Population**: Automatically fills official company name (*Denumire*), registered headquarters (*Adresă sediu social*), Trade Register number (*nrRegCom*), and phone number with 1 tap.
-  - **VAT & Inactivity Status Banners**: Displays real-time toast confirmation highlighting VAT payer status (*Plătitor TVA* vs *Neplătitor TVA*) and warnings if an entity is fiscally suspended/inactive.
-  - **Inline UI Actions**: Added blue 🔍 search action buttons with integrated spinner loaders directly inside `EditStudentDialog` and `EnrolledStudentsView`.
-  - **Smart Paste Synergy**: Pairs with the existing smart text parser to detect pasted CUIs and resolve full company profiles in seconds.
-- 🌐 **Multi-Platform Web CORS Relays**:
-  - **Production Web Proxy**: Added `web/api/anaf.php` deployed to `apps.qualiadept.eu/agreemint/` on the same origin, eliminating browser CORS issues in production.
-  - **Node Server Relay**: Added `GET /api/anaf/:cui` to `server/whatsapp_bot_server.js` with full CORS support.
-  - **Supabase PostgreSQL Relay**: Added `lookup_cui_anaf` function in `supabase_rpc_setup.sql`.
-- 🧪 **Complete Test Pyramid (116/116 Tests Passing)**:
-  - **Unit Tests**: [`test/unit/anaf_service_test.dart`](file:///c:/Users/George/dev/agreemint/test/unit/anaf_service_test.dart) (5 tests covering sanitization, valid/invalid CUI, active/inactive entities, and VAT status).
-  - **Widget Integration Tests**: [`test/widget/anaf_cui_lookup_widget_test.dart`](file:///c:/Users/George/dev/agreemint/test/widget/anaf_cui_lookup_widget_test.dart) (3 tests verifying search button rendering, empty CUI warnings, and segment switching).
-  - **E2E Integration Tests**: [`integration_test/app_e2e_test.dart`](file:///c:/Users/George/dev/agreemint/integration_test/app_e2e_test.dart) (verifying end-to-end model mapping and payload parsing).
-- 📦 **Version Bump**: Promoted release version to `v1.5.12` (`1.5.12+134`).
+- ⚡ **SOLO / Invoice Smart Link Parser (F-03)**:
+  - **`InvoiceSmartLinkParser` Engine**: Robust regex-powered parser identifying series, invoice numbers, web URLs, amounts, currencies, and issue dates from any raw text, clipboard content, or message snippet.
+  - **Comprehensive SOLO Link Support**: Natively extracts from `app.solo.ro/invoices/SL-10492`, `/invoices/10492`, `/i/10492`, `/facturi/view/...`, `/factura/SL-2024-10492`, query params, and PDF storage links.
+  - **Smart Autofill & Series Normalization**: Automatically formats series/number pairs (e.g. `SL-10492`, `SOLO-10492`, `SL-2024-10492`) and identifies platforms (`SOLO`, `Smartbill`, `Oblio`, `FGO`).
+  - **`SoloInvoiceDialog` UI Overhaul**:
+    - **1-Tap Clipboard Autofill**: Automatically reads system clipboard and populates invoice fields in 1 click.
+    - **Inline Separation & Auto-Detect**: Pasting a full URL or mixed text into the invoice number field automatically extracts the number and moves the URL into the link field.
+    - **Visual Confirmation**: Green status badge displaying detected platform, invoice number, and parsed monetary amounts.
+    - **Supabase Cloud PDF Storage**: Integrated file picker and cloud upload to attach physical PDF invoices.
+  - **Roster Workflow Integration (`EnrolledStudentsView`)**:
+    - Installment breakdown dialog now features direct `[⚡ Atașează / Parsează]` and `[Editează]` actions for missing or existing invoices without navigating away from the student list.
+- 💱 **Historical FX Rate Snapshotting on Payment Creation & Accounting Export (F-02)**:
+  - Immutable historical exchange rate locking on payment creation for EUR programs.
+  - Unified CSV accounting export in `AccountingExportService` with locked FX conversion rates.
+- 🧪 **Full Test Pyramid (140/140 Tests Passing)**:
+  - **Unit Tests**: [`test/unit/invoice_smart_link_parser_test.dart`](file:///c:/Users/George/dev/agreemint/test/unit/invoice_smart_link_parser_test.dart) (14 tests covering URLs, series-year formats, query params, WhatsApp messages, amounts, and dates).
+  - **Widget Tests**: [`test/widget/solo_invoice_dialog_test.dart`](file:///c:/Users/George/dev/agreemint/test/widget/solo_invoice_dialog_test.dart) (4 tests validating UI rendering, smart link extraction, inline paste auto-detect, and validation guardrails).
+  - 100% test suite passing with 0 regressions.
+- 📦 **Version Bump**: Promoted release version to `v1.5.13` (`1.5.13+135`).
+
 

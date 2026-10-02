@@ -15,6 +15,7 @@ import '../../../core/services/anaf_service.dart';
 import '../../../core/widgets/copyable_text.dart';
 import 'certificate_preview_dialog.dart';
 import 'widgets/edit_student_dialog.dart';
+import '../../payments/views/solo_invoice_dialog.dart';
 
 class EnrolledStudentsView extends ConsumerStatefulWidget {
   final ProgramModel program;
@@ -1509,12 +1510,52 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                     const Icon(Icons.check_circle,
                                         size: 14, color: Colors.green),
                                     const SizedBox(width: 4),
-                                    Text(
-                                      'SOLO Invoice: ${p.externalInvoiceNumber}',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.green.shade900,
+                                    Expanded(
+                                      child: Text(
+                                        'SOLO Invoice: ${p.externalInvoiceNumber}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.green.shade900,
+                                        ),
+                                      ),
+                                    ),
+                                    InkWell(
+                                      onTap: () {
+                                        SoloInvoiceDialog.show(
+                                          context: context,
+                                          payment: p,
+                                          enrollmentId: enrollment.id,
+                                          onSaved: (_, __) {
+                                            ref.invalidate(
+                                                programEnrollmentsControllerProvider(
+                                                    widget.program.id));
+                                            if (context.mounted) {
+                                              Navigator.of(context).pop();
+                                            }
+                                          },
+                                        );
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.edit_outlined,
+                                                size: 12,
+                                                color: Colors.blue.shade700),
+                                            const SizedBox(width: 2),
+                                            Text(
+                                              'Editează',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.blue.shade800,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1525,13 +1566,48 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                     Icon(Icons.warning_amber_rounded,
                                         size: 14, color: Colors.orange.shade800),
                                     const SizedBox(width: 4),
-                                    Text(
-                                      'Paid — Missing SOLO Invoice',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.orange.shade900,
+                                    Expanded(
+                                      child: Text(
+                                        'Paid — Missing SOLO Invoice',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.orange.shade900,
+                                        ),
                                       ),
+                                    ),
+                                    ElevatedButton.icon(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.blue.shade700,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 4),
+                                        minimumSize: const Size(0, 26),
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      icon: const Icon(Icons.bolt, size: 12),
+                                      label: const Text(
+                                        '⚡ Atașează / Parsează',
+                                        style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      onPressed: () {
+                                        SoloInvoiceDialog.show(
+                                          context: context,
+                                          payment: p,
+                                          enrollmentId: enrollment.id,
+                                          onSaved: (_, __) {
+                                            ref.invalidate(
+                                                programEnrollmentsControllerProvider(
+                                                    widget.program.id));
+                                            if (context.mounted) {
+                                              Navigator.of(context).pop();
+                                            }
+                                          },
+                                        );
+                                      },
                                     ),
                                   ],
                                 )
@@ -1541,11 +1617,51 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                                     const Icon(Icons.hourglass_empty,
                                         size: 14, color: Colors.grey),
                                     const SizedBox(width: 4),
-                                    Text(
-                                      'Pending Payment — No Invoice',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey.shade700,
+                                    Expanded(
+                                      child: Text(
+                                        'Pending Payment — No Invoice',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey.shade700,
+                                        ),
+                                      ),
+                                    ),
+                                    InkWell(
+                                      onTap: () {
+                                        SoloInvoiceDialog.show(
+                                          context: context,
+                                          payment: p,
+                                          enrollmentId: enrollment.id,
+                                          onSaved: (_, __) {
+                                            ref.invalidate(
+                                                programEnrollmentsControllerProvider(
+                                                    widget.program.id));
+                                            if (context.mounted) {
+                                              Navigator.of(context).pop();
+                                            }
+                                          },
+                                        );
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.add_link,
+                                                size: 12,
+                                                color: Colors.blue.shade700),
+                                            const SizedBox(width: 2),
+                                            Text(
+                                              '+ Adaugă Factură',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.blue.shade800,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ],
