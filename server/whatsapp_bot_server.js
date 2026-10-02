@@ -93,6 +93,37 @@ app.get('/status', (req, res) => {
   });
 });
 
+// ANAF V9 Public CUI Lookup Relay (CORS-enabled for Web)
+app.get('/api/anaf/:cui', async (req, res) => {
+  try {
+    const rawCui = (req.params.cui || '').replace(/\D/g, '');
+    if (!rawCui || rawCui.length < 2 || rawCui.length > 10) {
+      return res.status(400).json({ error: 'CUI invalid (2-10 cifre)' });
+    }
+    const dateStr = new Date().toISOString().split('T')[0];
+    const payload = JSON.stringify([{ cui: parseInt(rawCui, 10), data: dateStr }]);
+
+    const response = await fetch('https://webservicesp.anaf.ro/api/PlatitorTvaRest/v9/tva', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      body: payload
+    });
+
+    if (!response.ok) {
+      return res.status(response.status).json({ error: `ANAF API error ${response.status}` });
+    }
+
+    const data = await response.json();
+    return res.json(data);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // View QR Code in browser endpoint
 app.get('/qr', (req, res) => {
   if (isReady) {

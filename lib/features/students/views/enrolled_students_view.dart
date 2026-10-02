@@ -11,6 +11,7 @@ import '../models/student_model.dart';
 import '../../../core/services/celebration_service.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/whatsapp_service.dart';
+import '../../../core/services/anaf_service.dart';
 import '../../../core/widgets/copyable_text.dart';
 import 'certificate_preview_dialog.dart';
 import 'widgets/edit_student_dialog.dart';
@@ -1772,6 +1773,7 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
     final ciSerieController = TextEditingController();
     final ciEliberatorController = TextEditingController();
     String clientType = 'PF';
+    bool isAnafLoading = false;
 
     showDialog(
       context: context,
@@ -1779,6 +1781,65 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
+            Future<void> lookupAnaf() async {
+              final rawCui = cuiController.text.trim();
+              if (rawCui.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Introduceți mai întâi un CUI / CIF pentru interogare.'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+                return;
+              }
+
+              setStateDialog(() => isAnafLoading = true);
+              try {
+                final details = await AnafService.lookupCompany(rawCui);
+                setStateDialog(() {
+                  cuiController.text = details.cui;
+                  if (nameController.text.trim().isEmpty) {
+                    nameController.text = details.denumire;
+                  }
+                  if (details.nrRegCom.isNotEmpty) {
+                    regComController.text = details.nrRegCom;
+                  }
+                  if (details.adresa.isNotEmpty) {
+                    billingAddressController.text = details.adresa;
+                  }
+                  if (details.telefon != null &&
+                      phoneController.text.trim().isEmpty) {
+                    phoneController.text = details.telefon!;
+                  }
+                });
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'ANAF: ${details.denumire} • ${details.tvaBadge}${details.isInactiv ? ' • ⚠️ INACTIV' : ''}',
+                      ),
+                      backgroundColor: details.isInactiv
+                          ? Colors.deepOrange
+                          : Colors.green[700],
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(e.toString()),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              } finally {
+                setStateDialog(() => isAnafLoading = false);
+              }
+            }
+
             return AlertDialog(
               title: const Text('Enroll New Student'),
               content: SingleChildScrollView(
@@ -1907,6 +1968,22 @@ class _EnrolledStudentsViewState extends ConsumerState<EnrolledStudentsView> {
                           labelText: clientType == 'PF' ? 'CNP (Optional)' : 'CUI / CIF (Optional)',
                           hintText: clientType == 'PF' ? 'e.g., 1900101...' : 'e.g., RO12345678',
                           prefixIcon: const Icon(Icons.badge_outlined),
+                          suffixIcon: clientType != 'PF'
+                              ? (isAnafLoading
+                                  ? const Padding(
+                                      padding: EdgeInsets.all(12),
+                                      child: SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                      ),
+                                    )
+                                  : IconButton(
+                                      icon: const Icon(Icons.search, color: Colors.blue),
+                                      tooltip: 'Caută date companie în ANAF',
+                                      onPressed: lookupAnaf,
+                                    ))
+                              : null,
                         ),
                       ),
                       if (clientType == 'PF') ...[

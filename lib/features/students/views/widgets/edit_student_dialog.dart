@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/services/anaf_service.dart';
 import '../../models/student_model.dart';
 import '../../controllers/student_controller.dart';
 
@@ -60,6 +61,66 @@ class _EditStudentDialogState extends ConsumerState<EditStudentDialog> {
   late final TextEditingController _billingAddressController;
   late String _clientType;
   bool _isSaving = false;
+  bool _isAnafLoading = false;
+
+  Future<void> _lookupAnaf() async {
+    final rawCui = _cuiController.text.trim();
+    if (rawCui.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Introduceți mai întâi un CUI / CIF pentru interogare.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isAnafLoading = true);
+    try {
+      final details = await AnafService.lookupCompany(rawCui);
+      if (!mounted) return;
+
+      setState(() {
+        _cuiController.text = details.cui;
+        if (_nameController.text.trim().isEmpty ||
+            _nameController.text == widget.student.name) {
+          _nameController.text = details.denumire;
+        }
+        if (details.nrRegCom.isNotEmpty) {
+          _regComController.text = details.nrRegCom;
+        }
+        if (details.adresa.isNotEmpty) {
+          _billingAddressController.text = details.adresa;
+        }
+        if (details.telefon != null && _phoneController.text.trim().isEmpty) {
+          _phoneController.text = details.telefon!;
+        }
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'ANAF: ${details.denumire} • ${details.tvaBadge}${details.isInactiv ? ' • ⚠️ INACTIV' : ''}',
+          ),
+          backgroundColor:
+              details.isInactiv ? Colors.deepOrange : Colors.green[700],
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isAnafLoading = false);
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -251,6 +312,22 @@ class _EditStudentDialogState extends ConsumerState<EditStudentDialog> {
                     labelText: _clientType == 'PF' ? 'CNP (Opțional)' : 'CUI / CIF Companie',
                     hintText: _clientType == 'PF' ? '13 cifre' : 'ex: RO12345678',
                     prefixIcon: const Icon(Icons.badge_outlined),
+                    suffixIcon: _clientType != 'PF'
+                        ? (_isAnafLoading
+                            ? const Padding(
+                                padding: EdgeInsets.all(12),
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              )
+                            : IconButton(
+                                icon: const Icon(Icons.search, color: Colors.blue),
+                                tooltip: 'Caută date companie în ANAF',
+                                onPressed: _lookupAnaf,
+                              ))
+                        : null,
                   ),
                 ),
                 if (_clientType != 'PF') ...[

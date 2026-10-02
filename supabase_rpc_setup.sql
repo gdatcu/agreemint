@@ -76,3 +76,44 @@ $$;
 -- Grant execution permission to anonymous web users
 GRANT EXECUTE ON FUNCTION public.send_email_otp(TEXT, TEXT, TEXT) TO anon;
 GRANT EXECUTE ON FUNCTION public.send_email_otp(TEXT, TEXT, TEXT) TO authenticated;
+
+-- ============================================================================
+-- 🏢 ANAF V9 Public CUI / CIF Lookup Relay (Bypasses Web Browser CORS)
+-- ============================================================================
+CREATE OR REPLACE FUNCTION public.lookup_cui_anaf(p_cui BIGINT, p_date TEXT DEFAULT NULL)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_response record;
+  v_date TEXT := COALESCE(p_date, TO_CHAR(CURRENT_DATE, 'YYYY-MM-DD'));
+  v_body jsonb;
+BEGIN
+  v_body := jsonb_build_array(
+    jsonb_build_object('cui', p_cui, 'data', v_date)
+  );
+
+  SELECT * INTO v_response FROM extensions.http((
+    'POST',
+    'https://webservicesp.anaf.ro/api/PlatitorTvaRest/v9/tva',
+    ARRAY[
+      extensions.http_header('Content-Type', 'application/json')
+    ],
+    'application/json',
+    v_body::text
+  )::extensions.http_request);
+
+  IF v_response.status != 200 THEN
+    RETURN jsonb_build_object(
+      'error', 'Serverul ANAF a returnat status ' || v_response.status
+    );
+  END IF;
+
+  RETURN v_response.content::jsonb;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.lookup_cui_anaf(BIGINT, TEXT) TO anon;
+GRANT EXECUTE ON FUNCTION public.lookup_cui_anaf(BIGINT, TEXT) TO authenticated;
+
