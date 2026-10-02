@@ -21,6 +21,8 @@ class EnrollmentPaymentsController extends _$EnrollmentPaymentsController {
   Future<void> generatePlan({
     required double totalAmount,
     required int numberOfInstallments,
+    double? fxRateSnapshot,
+    DateTime? fxRateDate,
   }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
@@ -29,6 +31,8 @@ class EnrollmentPaymentsController extends _$EnrollmentPaymentsController {
         enrollmentId: enrollmentId,
         totalAmount: totalAmount,
         numberOfInstallments: numberOfInstallments,
+        fxRateSnapshot: fxRateSnapshot,
+        fxRateDate: fxRateDate,
       );
 
       // Invalidate global dashboard, program enrollments, and analytics summary
@@ -46,6 +50,8 @@ class EnrollmentPaymentsController extends _$EnrollmentPaymentsController {
     required double amountPaid,
     required String status,
     required String paymentMethod,
+    double? fxRateSnapshot,
+    DateTime? fxRateDate,
   }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
@@ -55,6 +61,8 @@ class EnrollmentPaymentsController extends _$EnrollmentPaymentsController {
         amountPaid: amountPaid,
         status: status,
         paymentMethod: paymentMethod,
+        fxRateSnapshot: fxRateSnapshot,
+        fxRateDate: fxRateDate,
       );
 
       // Invalidate global dashboard, program enrollments, and analytics summary
@@ -90,6 +98,8 @@ class EnrollmentPaymentsController extends _$EnrollmentPaymentsController {
     required double amountDue,
     required DateTime dueDate,
     String? paymentMethod,
+    double? fxRateSnapshot,
+    DateTime? fxRateDate,
   }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
@@ -99,6 +109,8 @@ class EnrollmentPaymentsController extends _$EnrollmentPaymentsController {
         amountDue: amountDue,
         dueDate: dueDate,
         paymentMethod: paymentMethod,
+        fxRateSnapshot: fxRateSnapshot,
+        fxRateDate: fxRateDate,
       );
       ref.invalidate(globalPendingPaymentsControllerProvider);
       ref.invalidate(programEnrollmentsControllerProvider);

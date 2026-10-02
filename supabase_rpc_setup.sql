@@ -117,3 +117,10 @@ $$;
 GRANT EXECUTE ON FUNCTION public.lookup_cui_anaf(BIGINT, TEXT) TO anon;
 GRANT EXECUTE ON FUNCTION public.lookup_cui_anaf(BIGINT, TEXT) TO authenticated;
 
+-- ============================================================================
+-- 💶 [F-02] Historical FX Rate Snapshotting on Payment Creation
+-- ============================================================================
+ALTER TABLE public.payments 
+ADD COLUMN IF NOT EXISTS fx_rate_snapshot NUMERIC(7, 4),
+ADD COLUMN IF NOT EXISTS fx_rate_date TIMESTAMPTZ;
+

@@ -77,6 +77,8 @@ class PaymentRepository {
     required double totalAmount,
     required int numberOfInstallments,
     String? defaultMethod,
+    double? fxRateSnapshot,
+    DateTime? fxRateDate,
   }) async {
     try {
       if (numberOfInstallments <= 0) {
@@ -89,7 +91,7 @@ class PaymentRepository {
 
       for (int i = 0; i < numberOfInstallments; i++) {
         final dueDate = today.add(Duration(days: i * 30));
-        rows.add({
+        final Map<String, dynamic> row = {
           'enrollment_id': enrollmentId,
           'amount_due': installmentAmount,
           'amount_paid': 0.0,
@@ -97,7 +99,12 @@ class PaymentRepository {
           'due_date': dueDate.toIso8601String().split('T')[0],
           'status': 'Pending',
           'payment_method': defaultMethod,
-        });
+        };
+        if (fxRateSnapshot != null) {
+          row['fx_rate_snapshot'] = fxRateSnapshot;
+          row['fx_rate_date'] = (fxRateDate ?? today).toIso8601String();
+        }
+        rows.add(row);
       }
 
       await _client.from('payments').insert(rows);
@@ -112,13 +119,21 @@ class PaymentRepository {
     required double amountPaid,
     required String status,
     required String paymentMethod,
+    double? fxRateSnapshot,
+    DateTime? fxRateDate,
   }) async {
     try {
-      await _client.from('payments').update({
+      final Map<String, dynamic> updateData = {
         'amount_paid': amountPaid,
         'status': status,
         'payment_method': paymentMethod,
-      }).eq('id', paymentId);
+      };
+      if (fxRateSnapshot != null) {
+        updateData['fx_rate_snapshot'] = fxRateSnapshot;
+        updateData['fx_rate_date'] =
+            (fxRateDate ?? DateTime.now()).toIso8601String();
+      }
+      await _client.from('payments').update(updateData).eq('id', paymentId);
     } catch (e) {
       throw Exception('Failed to record payment: $e');
     }
@@ -132,6 +147,8 @@ class PaymentRepository {
     required String status,
     required String paymentMethod,
     DateTime? dueDate,
+    double? fxRateSnapshot,
+    DateTime? fxRateDate,
   }) async {
     try {
       final Map<String, dynamic> updateData = {
@@ -142,6 +159,11 @@ class PaymentRepository {
       };
       if (dueDate != null) {
         updateData['due_date'] = dueDate.toIso8601String().split('T')[0];
+      }
+      if (fxRateSnapshot != null) {
+        updateData['fx_rate_snapshot'] = fxRateSnapshot;
+        updateData['fx_rate_date'] =
+            (fxRateDate ?? DateTime.now()).toIso8601String();
       }
       await _client.from('payments').update(updateData).eq('id', paymentId);
     } catch (e) {
@@ -156,16 +178,24 @@ class PaymentRepository {
     required DateTime dueDate,
     String status = 'Pending',
     String? paymentMethod,
+    double? fxRateSnapshot,
+    DateTime? fxRateDate,
   }) async {
     try {
-      await _client.from('payments').insert({
+      final Map<String, dynamic> row = {
         'enrollment_id': enrollmentId,
         'amount_due': amountDue,
         'amount_paid': 0.0,
         'due_date': dueDate.toIso8601String().split('T')[0],
         'status': status,
         'payment_method': paymentMethod,
-      });
+      };
+      if (fxRateSnapshot != null) {
+        row['fx_rate_snapshot'] = fxRateSnapshot;
+        row['fx_rate_date'] =
+            (fxRateDate ?? DateTime.now()).toIso8601String();
+      }
+      await _client.from('payments').insert(row);
     } catch (e) {
       throw Exception('Failed to add installment: $e');
     }

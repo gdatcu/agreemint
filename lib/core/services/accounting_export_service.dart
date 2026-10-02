@@ -17,6 +17,7 @@ class AccountingRecord {
   final String installmentInfo;
   final double amountPaid;
   final String currency;
+  final double? fxRateUsed;
   final double amountPaidInRon;
   final String paymentMethod;
   final String soloInvoiceNumber;
@@ -33,6 +34,7 @@ class AccountingRecord {
     required this.installmentInfo,
     required this.amountPaid,
     required this.currency,
+    this.fxRateUsed,
     required this.amountPaidInRon,
     required this.paymentMethod,
     required this.soloInvoiceNumber,
@@ -53,7 +55,7 @@ class AccountingExportService {
     final response = await client
         .from('payments')
         .select(
-            'amount_paid, due_date, receipt_generated_at, status, payment_method, receipt_url, external_invoice_url, external_invoice_number, enrollments(programs(name, currency), students(name, client_type, cui, reg_com), contracts(status))')
+            'amount_paid, due_date, receipt_generated_at, status, payment_method, receipt_url, external_invoice_url, external_invoice_number, fx_rate_snapshot, fx_rate_date, enrollments(programs(name, currency), students(name, client_type, cui, reg_com), contracts(status))')
         .or('status.eq.Paid,status.eq.Partial');
 
     final List<AccountingRecord> records = [];
@@ -123,7 +125,9 @@ class AccountingExportService {
       final currency = (programJson?['currency'] as String? ?? 'RON').toUpperCase();
 
       final amountPaid = (row['amount_paid'] as num?)?.toDouble() ?? 0.0;
-      final amountInRon = currency == 'EUR' ? amountPaid * liveEurRate : amountPaid;
+      final snapshotRate = (row['fx_rate_snapshot'] as num?)?.toDouble();
+      final effectiveRate = currency == 'EUR' ? (snapshotRate ?? liveEurRate) : null;
+      final amountInRon = currency == 'EUR' ? amountPaid * (effectiveRate ?? 1.0) : amountPaid;
 
       final instNum = 1;
       final paymentMethod = (row['payment_method'] as String?) ?? 'Transfer Bancar';
@@ -141,6 +145,7 @@ class AccountingExportService {
         installmentInfo: 'Transa $instNum',
         amountPaid: amountPaid,
         currency: currency,
+        fxRateUsed: effectiveRate,
         amountPaidInRon: amountInRon,
         paymentMethod: paymentMethod,
         soloInvoiceNumber: soloNum,
@@ -159,7 +164,7 @@ class AccountingExportService {
 
     // CSV Header (Romanian Accounting & ANAF Standard)
     buffer.writeln(
-        'Data Platii,Nume Client / Firma,Tip Client,CUI / CIF,Reg. Com.,Program Mentorat,Transa,Suma Platita,Moneda,Echivalent RON,Metoda Plata,Numar Factura SOLO,URL Factura SOLO,URL Chitanta');
+        'Data Platii,Nume Client / Firma,Tip Client,CUI / CIF,Reg. Com.,Program Mentorat,Transa,Suma Platita,Moneda,Curs Valutar,Echivalent RON,Metoda Plata,Numar Factura SOLO,URL Factura SOLO,URL Chitanta');
 
     for (final r in records) {
       final safeName = _escapeCsv(r.clientName);
@@ -168,9 +173,10 @@ class AccountingExportService {
       final safeRegCom = _escapeCsv(r.regCom);
       final safeSoloNum = _escapeCsv(r.soloInvoiceNumber);
       final safeMethod = _escapeCsv(r.paymentMethod);
+      final safeRate = r.fxRateUsed != null ? r.fxRateUsed!.toStringAsFixed(4) : '-';
 
       buffer.writeln(
-          '${r.paymentDate},$safeName,${r.clientType},$safeCui,$safeRegCom,$safeProgram,${r.installmentInfo},${r.amountPaid.toStringAsFixed(2)},${r.currency},${r.amountPaidInRon.toStringAsFixed(2)},$safeMethod,$safeSoloNum,${r.soloInvoiceUrl},${r.receiptUrl}');
+          '${r.paymentDate},$safeName,${r.clientType},$safeCui,$safeRegCom,$safeProgram,${r.installmentInfo},${r.amountPaid.toStringAsFixed(2)},${r.currency},$safeRate,${r.amountPaidInRon.toStringAsFixed(2)},$safeMethod,$safeSoloNum,${r.soloInvoiceUrl},${r.receiptUrl}');
     }
 
     return buffer.toString();

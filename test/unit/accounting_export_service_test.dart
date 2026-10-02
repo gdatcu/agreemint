@@ -26,7 +26,8 @@ void main() {
       final csv = AccountingExportService.generateCsvContent(records);
 
       expect(csv, contains('Data Platii,Nume Client / Firma,Tip Client,CUI / CIF'));
-      expect(csv, contains('2026-08-17,Popescu Ion (SC TECH SRL),SRL,RO12345678,J40/1234/2020,Mentorat Fullstack,Transa 1,2500.00,RON,2500.00,Transfer Bancar,GD-17-26'));
+      expect(csv, contains('Curs Valutar'));
+      expect(csv, contains('2026-08-17,Popescu Ion (SC TECH SRL),SRL,RO12345678,J40/1234/2020,Mentorat Fullstack,Transa 1,2500.00,RON,-,2500.00,Transfer Bancar,GD-17-26'));
       expect(csv, contains('https://solo.ro/inv/123'));
     });
 
@@ -42,6 +43,7 @@ void main() {
           installmentInfo: 'Transa 2',
           amountPaid: 500.0,
           currency: 'EUR',
+          fxRateUsed: 4.9750,
           amountPaidInRon: 2487.50,
           paymentMethod: 'Card',
           soloInvoiceNumber: '-',
@@ -54,6 +56,7 @@ void main() {
 
       expect(csv, contains('"Ana-Maria ""Elena"" Pop"'));
       expect(csv, contains('"Program, Special"'));
+      expect(csv, contains('4.9750'));
       expect(csv, contains('2487.50'));
     });
   });

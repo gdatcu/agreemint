@@ -134,12 +134,14 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
     }
   }
 
-  String _formatAmount(double amount, String currency) {
+  String _formatAmount(double amount, String currency, [double? snapshotRate]) {
     if (currency == 'EUR') {
       final eurText = '${amount.toStringAsFixed(2)} EUR';
-      if (_liveRate != null) {
-        final ronVal = amount * _liveRate!;
-        return '$eurText (~${ronVal.toStringAsFixed(2)} RON)';
+      final effectiveRate = snapshotRate ?? _liveRate;
+      if (effectiveRate != null) {
+        final ronVal = amount * effectiveRate;
+        final prefix = snapshotRate != null ? 'fix ' : '~';
+        return '$eurText ($prefix${ronVal.toStringAsFixed(2)} RON)';
       }
       return eurText;
     }
@@ -519,7 +521,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                               runSpacing: 4,
                               children: [
                                 Text(
-                                  'Due: ${_formatAmount(payment.amountDue, currency)}',
+                                  'Due: ${_formatAmount(payment.amountDue, currency, payment.fxRateSnapshot)}',
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: Theme.of(context)
@@ -528,7 +530,7 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                   ),
                                 ),
                                 Text(
-                                  'Paid: ${_formatAmount(effectivePaid, currency)}',
+                                  'Paid: ${_formatAmount(effectivePaid, currency, payment.fxRateSnapshot)}',
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: isRefundedItem
@@ -579,6 +581,34 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                                             fontSize: 10,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.green.shade800,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                if (payment.fxRateSnapshot != null)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.shade50,
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                          color: Colors.blue.shade200),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.lock_clock,
+                                            size: 11,
+                                            color: Colors.blue.shade700),
+                                        const SizedBox(width: 3),
+                                        Text(
+                                          'Curs BNR: ${payment.fxRateSnapshot!.toStringAsFixed(4)}',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.blue.shade800,
                                           ),
                                         ),
                                       ],
@@ -1019,6 +1049,8 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                       .generatePlan(
                         totalAmount: programPrice,
                         numberOfInstallments: installments,
+                        fxRateSnapshot: currency == 'EUR' ? _liveRate : null,
+                        fxRateDate: currency == 'EUR' ? DateTime.now() : null,
                       );
                   navigator.pop();
                 },
@@ -1146,6 +1178,8 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                             amountDue: amountDue,
                             dueDate: selectedDate,
                             paymentMethod: selectedMethod,
+                            fxRateSnapshot: currency == 'EUR' ? _liveRate : null,
+                            fxRateDate: currency == 'EUR' ? DateTime.now() : null,
                           );
 
                       navigator.pop();
@@ -1530,6 +1564,10 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                   final isFullyCovered = newPaid >= newDue && newDue > 0;
                   final finalStatus = isFullyCovered ? 'Paid' : selectedStatus;
 
+                  final rateToSnapshot = currency == 'EUR'
+                      ? (payment.fxRateSnapshot ?? _liveRate)
+                      : null;
+
                   // Save current installment update
                   await ref
                       .read(paymentRepositoryProvider)
@@ -1540,6 +1578,10 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                         status: finalStatus,
                         paymentMethod: selectedMethod,
                         dueDate: selectedDueDate,
+                        fxRateSnapshot: rateToSnapshot,
+                        fxRateDate: rateToSnapshot != null
+                            ? (payment.fxRateDate ?? DateTime.now())
+                            : null,
                       );
 
                   // If user selected to create a follow-up installment for the difference
@@ -1553,6 +1595,8 @@ class _PaymentTrackerViewState extends ConsumerState<PaymentTrackerView> {
                           amountDue: diff,
                           dueDate: nextDueDate,
                           paymentMethod: selectedMethod,
+                          fxRateSnapshot: currency == 'EUR' ? _liveRate : null,
+                          fxRateDate: currency == 'EUR' ? DateTime.now() : null,
                         );
                   }
 

@@ -12,6 +12,8 @@ class PaymentModel {
   final DateTime? receiptGeneratedAt;
   final String? externalInvoiceNumber;
   final String? externalInvoiceUrl;
+  final double? fxRateSnapshot;
+  final DateTime? fxRateDate;
   final EnrollmentModel? enrollment;
 
   const PaymentModel({
@@ -26,6 +28,8 @@ class PaymentModel {
     this.receiptGeneratedAt,
     this.externalInvoiceNumber,
     this.externalInvoiceUrl,
+    this.fxRateSnapshot,
+    this.fxRateDate,
     this.enrollment,
   });
 
@@ -36,6 +40,18 @@ class PaymentModel {
   /// Alias getters for SOLO invoice details
   String? get invoiceNumber => externalInvoiceNumber;
   String? get invoiceUrl => externalInvoiceUrl;
+
+  /// Calculates the equivalent amount in RON.
+  /// For RON programs, returns [amountPaid].
+  /// For EUR programs, uses [fxRateSnapshot] if locked, or [fallbackLiveRate].
+  double getAmountInRon({
+    required String currency,
+    double fallbackLiveRate = 4.9750,
+  }) {
+    if (currency.toUpperCase() == 'RON') return amountPaid;
+    final rate = fxRateSnapshot ?? fallbackLiveRate;
+    return amountPaid * rate;
+  }
 
   /// Factory constructor to parse PostgreSQL json results cleanly and defensively.
   factory PaymentModel.fromJson(Map<String, dynamic> json) {
@@ -65,6 +81,10 @@ class PaymentModel {
           json['invoice_number'] as String?,
       externalInvoiceUrl: json['external_invoice_url'] as String? ??
           json['invoice_url'] as String?,
+      fxRateSnapshot: (json['fx_rate_snapshot'] as num?)?.toDouble(),
+      fxRateDate: json['fx_rate_date'] != null
+          ? DateTime.tryParse(json['fx_rate_date'] as String)
+          : null,
       enrollment: enrollmentJson != null
           ? EnrollmentModel.fromJson(enrollmentJson)
           : null,
@@ -84,6 +104,8 @@ class PaymentModel {
       'receipt_generated_at': receiptGeneratedAt?.toIso8601String(),
       'external_invoice_number': externalInvoiceNumber,
       'external_invoice_url': externalInvoiceUrl,
+      if (fxRateSnapshot != null) 'fx_rate_snapshot': fxRateSnapshot,
+      if (fxRateDate != null) 'fx_rate_date': fxRateDate?.toIso8601String(),
       if (enrollment != null) 'enrollments': enrollment?.toJson(),
     };
   }
